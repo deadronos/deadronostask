@@ -7,21 +7,11 @@ import '@testing-library/jest-dom/vitest';
 import React from 'react';
 import { vi, afterEach } from 'vitest';
 
-vi.mock('lucide-react', () => {
-  return new Proxy(
-    {},
-    {
-      get: (_, prop) => {
-        if (typeof prop === 'string') {
-          return function MockIcon() {
-            return React.createElement('span', { 'data-icon': prop });
-          };
-        }
-        return undefined;
-      },
-    },
-  );
-});
+vi.mock('lucide-react', () => ({
+  Search: () => React.createElement('span', { 'data-icon': 'Search' }),
+  Plus: () => React.createElement('span', { 'data-icon': 'Plus' }),
+  Sparkles: () => React.createElement('span', { 'data-icon': 'Sparkles' }),
+}));
 
 vi.mock('sonner', () => ({
   toast: {
