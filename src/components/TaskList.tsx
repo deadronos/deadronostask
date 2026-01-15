@@ -1,54 +1,56 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { Plus, Sparkles } from "lucide-react";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import type { Doc, Id } from "@/convex/_generated/dataModel";
-import { toast } from "sonner";
-import { Button } from "./ui/button";
-import { TaskItem } from "./TaskItem";
-import { TaskEditorDialog } from "./TaskEditorDialog";
-import { LabelChips } from "./LabelChips";
+import { useMutation, useQuery } from 'convex/react';
+import { Plus, Sparkles } from 'lucide-react';
+import * as React from 'react';
+import { toast } from 'sonner';
+
+import { LabelChips } from './LabelChips';
+import { TaskEditorDialog } from './TaskEditorDialog';
+import { TaskItem } from './TaskItem';
+import { Button } from './ui/button';
+
+import { api } from '@/convex/_generated/api';
+import type { Doc, Id } from '@/convex/_generated/dataModel';
 
 export function TaskList({
   title,
   subtitle,
   tasks,
   projectId,
-  allowReorder = false
+  allowReorder = false,
 }: {
   title: string;
   subtitle: string;
-  tasks: Doc<"tasks">[] | undefined;
-  projectId?: Id<"projects"> | null;
+  tasks: Doc<'tasks'>[] | undefined;
+  projectId?: Id<'projects'> | null;
   allowReorder?: boolean;
 }) {
   const labels = useQuery(api.labels.list) ?? [];
   const reorder = useMutation(api.tasks.reorderInProject);
-  const [selectedLabels, setSelectedLabels] = React.useState<Id<"labels">[]>([]);
-  const [priorityFilter, setPriorityFilter] = React.useState<"all" | "low" | "med" | "high">("all");
+  const [selectedLabels, setSelectedLabels] = React.useState<Id<'labels'>[]>([]);
+  const [priorityFilter, setPriorityFilter] = React.useState<'all' | 'low' | 'med' | 'high'>('all');
   const [editorOpen, setEditorOpen] = React.useState(false);
-  const [editingTask, setEditingTask] = React.useState<Doc<"tasks"> | null>(null);
+  const [editingTask, setEditingTask] = React.useState<Doc<'tasks'> | null>(null);
 
   const labelById = React.useMemo(() => {
-    const map = new Map<Id<"labels">, Doc<"labels">>();
-    labels.forEach((label) => map.set(label._id, label));
+    const map = new Map<Id<'labels'>, Doc<'labels'>>();
+    labels.forEach(label => map.set(label._id, label));
     return map;
   }, [labels]);
 
   const filtered = React.useMemo(() => {
     if (!tasks) return [];
-    return tasks.filter((task) => {
-      if (priorityFilter !== "all" && task.priority !== priorityFilter) return false;
+    return tasks.filter(task => {
+      if (priorityFilter !== 'all' && task.priority !== priorityFilter) return false;
       if (selectedLabels.length > 0) {
-        return selectedLabels.every((id) => task.labelIds.includes(id));
+        return selectedLabels.every(id => task.labelIds.includes(id));
       }
       return true;
     });
   }, [tasks, priorityFilter, selectedLabels]);
 
-  const handleEdit = (task: Doc<"tasks">) => {
+  const handleEdit = (task: Doc<'tasks'>) => {
     setEditingTask(task);
     setEditorOpen(true);
   };
@@ -62,11 +64,11 @@ export function TaskList({
     try {
       await reorder({
         projectId: projectId ?? null,
-        orderedIds: ordered.map((task) => task._id)
+        orderedIds: ordered.map(task => task._id),
       });
     } catch (error) {
       console.error(error);
-      toast.error("Could not reorder tasks");
+      toast.error('Could not reorder tasks');
     }
   };
 
@@ -101,8 +103,8 @@ export function TaskList({
             id="tasklist-priority"
             className="h-9 rounded-md border border-border bg-white/80 px-3 text-sm dark:bg-slate-950/50"
             value={priorityFilter}
-            onChange={(event) =>
-              setPriorityFilter(event.target.value as "all" | "low" | "med" | "high")
+            onChange={event =>
+              setPriorityFilter(event.target.value as 'all' | 'low' | 'med' | 'high')
             }
           >
             <option value="all">All</option>

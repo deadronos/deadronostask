@@ -1,14 +1,15 @@
-import { auth } from "@/auth";
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
-export default auth((req) => {
+import { auth } from '@/auth';
+
+export default auth(req => {
   if (!req.auth) {
-    const url = new URL("/", req.nextUrl.origin);
+    const url = new URL('/', req.nextUrl.origin);
     return NextResponse.redirect(url);
   }
   return NextResponse.next();
 });
 
 export const config = {
-  matcher: ["/app/:path*"]
+  matcher: ['/app/:path*'],
 };

@@ -1,24 +1,25 @@
-import "server-only";
+import 'server-only';
 
+import { ConvexHttpClient } from 'convex/browser';
 import type {
   Adapter,
   AdapterAccount,
   AdapterAuthenticator,
   AdapterSession,
   AdapterUser,
-  VerificationToken
-} from "next-auth/adapters";
-import { ConvexHttpClient } from "convex/browser";
-import { api } from "@/convex/_generated/api";
+  VerificationToken,
+} from 'next-auth/adapters';
+
+import { api } from '@/convex/_generated/api';
 
 const CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL;
 const ADAPTER_SECRET = process.env.CONVEX_AUTH_ADAPTER_SECRET;
 
 if (!CONVEX_URL) {
-  throw new Error("Missing NEXT_PUBLIC_CONVEX_URL for Convex adapter");
+  throw new Error('Missing NEXT_PUBLIC_CONVEX_URL for Convex adapter');
 }
 if (!ADAPTER_SECRET) {
-  throw new Error("Missing CONVEX_AUTH_ADAPTER_SECRET for Convex adapter");
+  throw new Error('Missing CONVEX_AUTH_ADAPTER_SECRET for Convex adapter');
 }
 
 const client = new ConvexHttpClient(CONVEX_URL);
@@ -64,7 +65,7 @@ function mapUser(user: ConvexUser): AdapterUser {
     name: user.name ?? null,
     email: user.email ?? null,
     emailVerified: toDate(user.emailVerified),
-    image: user.image ?? null
+    image: user.image ?? null,
   };
 }
 
@@ -72,7 +73,7 @@ function mapSession(session: ConvexSession): AdapterSession {
   return {
     sessionToken: session.sessionToken,
     userId: session.userId,
-    expires: new Date(session.expires)
+    expires: new Date(session.expires),
   };
 }
 
@@ -80,7 +81,7 @@ function mapVerificationToken(token: ConvexVerificationToken): VerificationToken
   return {
     identifier: token.identifier,
     token: token.token,
-    expires: new Date(token.expires)
+    expires: new Date(token.expires),
   };
 }
 
@@ -92,7 +93,7 @@ function mapAuthenticator(authenticator: ConvexAuthenticator): AdapterAuthentica
     userId: authenticator.userId,
     transports: authenticator.transports ?? null,
     credentialDeviceType: authenticator.credentialDeviceType,
-    credentialBackedUp: authenticator.credentialBackedUp
+    credentialBackedUp: authenticator.credentialBackedUp,
   };
 }
 
@@ -104,22 +105,22 @@ export function ConvexAdapter(): Adapter {
         secret: ADAPTER_SECRET,
         data: {
           ...userData,
-          emailVerified: toEpoch(userData.emailVerified)
-        }
+          emailVerified: toEpoch(userData.emailVerified),
+        },
       });
       return mapUser(user);
     },
     async getUser(id) {
       const user = await client.query(api.authAdapter.getUser, {
         secret: ADAPTER_SECRET,
-        id
+        id,
       });
       return user ? mapUser(user) : null;
     },
     async getUserByEmail(email) {
       const user = await client.query(api.authAdapter.getUserByEmail, {
         secret: ADAPTER_SECRET,
-        email
+        email,
       });
       return user ? mapUser(user) : null;
     },
@@ -127,7 +128,7 @@ export function ConvexAdapter(): Adapter {
       const user = await client.query(api.authAdapter.getUserByAccount, {
         secret: ADAPTER_SECRET,
         provider,
-        providerAccountId
+        providerAccountId,
       });
       return user ? mapUser(user) : null;
     },
@@ -138,21 +139,21 @@ export function ConvexAdapter(): Adapter {
         id,
         data: {
           ...userData,
-          emailVerified: toEpoch(userData.emailVerified)
-        }
+          emailVerified: toEpoch(userData.emailVerified),
+        },
       });
       return mapUser(user);
     },
     async deleteUser(id) {
       await client.mutation(api.authAdapter.deleteUser, {
         secret: ADAPTER_SECRET,
-        id
+        id,
       });
     },
     async linkAccount(data) {
       const account = await client.mutation(api.authAdapter.linkAccount, {
         secret: ADAPTER_SECRET,
-        data
+        data,
       });
       return account as AdapterAccount;
     },
@@ -160,7 +161,7 @@ export function ConvexAdapter(): Adapter {
       await client.mutation(api.authAdapter.unlinkAccount, {
         secret: ADAPTER_SECRET,
         provider,
-        providerAccountId
+        providerAccountId,
       });
     },
     async createSession(data) {
@@ -168,20 +169,20 @@ export function ConvexAdapter(): Adapter {
         secret: ADAPTER_SECRET,
         data: {
           ...data,
-          expires: data.expires.getTime()
-        }
+          expires: data.expires.getTime(),
+        },
       });
       return mapSession(session);
     },
     async getSessionAndUser(sessionToken) {
       const result = await client.query(api.authAdapter.getSessionAndUser, {
         secret: ADAPTER_SECRET,
-        sessionToken
+        sessionToken,
       });
       if (!result) return null;
       return {
         session: mapSession(result.session),
-        user: mapUser(result.user)
+        user: mapUser(result.user),
       };
     },
     async updateSession(data) {
@@ -190,15 +191,15 @@ export function ConvexAdapter(): Adapter {
         sessionToken: data.sessionToken,
         data: {
           ...data,
-          expires: toEpoch(data.expires)
-        }
+          expires: toEpoch(data.expires),
+        },
       });
       return session ? mapSession(session) : null;
     },
     async deleteSession(sessionToken) {
       await client.mutation(api.authAdapter.deleteSession, {
         secret: ADAPTER_SECRET,
-        sessionToken
+        sessionToken,
       });
     },
     async createVerificationToken(data) {
@@ -206,8 +207,8 @@ export function ConvexAdapter(): Adapter {
         secret: ADAPTER_SECRET,
         data: {
           ...data,
-          expires: data.expires.getTime()
-        }
+          expires: data.expires.getTime(),
+        },
       });
       return mapVerificationToken(token);
     },
@@ -215,7 +216,7 @@ export function ConvexAdapter(): Adapter {
       const token = await client.mutation(api.authAdapter.useVerificationToken, {
         secret: ADAPTER_SECRET,
         identifier: params.identifier,
-        token: params.token
+        token: params.token,
       });
       return token ? mapVerificationToken(token) : null;
     },
@@ -223,28 +224,28 @@ export function ConvexAdapter(): Adapter {
       const account = await client.query(api.authAdapter.getAccount, {
         secret: ADAPTER_SECRET,
         provider: providerAccountId.provider,
-        providerAccountId: providerAccountId.providerAccountId
+        providerAccountId: providerAccountId.providerAccountId,
       });
       return account as AdapterAccount | null;
     },
     async createAuthenticator(data) {
       const authenticator = await client.mutation(api.authAdapter.createAuthenticator, {
         secret: ADAPTER_SECRET,
-        data
+        data,
       });
       return mapAuthenticator(authenticator);
     },
     async getAuthenticator(credentialID) {
       const authenticator = await client.query(api.authAdapter.getAuthenticator, {
         secret: ADAPTER_SECRET,
-        credentialID
+        credentialID,
       });
       return authenticator ? mapAuthenticator(authenticator) : null;
     },
     async listAuthenticatorsByUser(userId) {
       const authenticators = await client.query(api.authAdapter.listAuthenticatorsByUser, {
         secret: ADAPTER_SECRET,
-        userId
+        userId,
       });
       return authenticators.map(mapAuthenticator);
     },
@@ -252,9 +253,9 @@ export function ConvexAdapter(): Adapter {
       const authenticator = await client.mutation(api.authAdapter.updateAuthenticatorCounter, {
         secret: ADAPTER_SECRET,
         credentialID,
-        counter
+        counter,
       });
       return mapAuthenticator(authenticator);
-    }
+    },
   } as Adapter;
 }

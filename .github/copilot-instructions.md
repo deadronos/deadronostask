@@ -1,7 +1,7 @@
 ---
 name: copilot-instructions
 description: Project-specific Copilot guidance for Next.js, Convex, and NextAuth.
-applyTo: "**"
+applyTo: '**'
 ---
 
 ## Scope
@@ -9,6 +9,17 @@ applyTo: "**"
 Use these instructions for all changes in this repo. Keep responses brief,
 impersonal, and follow existing patterns. Prefer minimal diffs and avoid
 reformatting unrelated code.
+
+Also refer to root `AGENTS.md` for mandatory reading.
+
+## Skills
+
+Look for valuable guidance from skills in .github\skills that apply to the task at hand, such as:
+`.github/skills/vercel-react-best-practices`
+`.github/skills/frontend-design`
+`.github/skills/web-design-guidelines`
+`.github/skills/webapp-testing`
+and others as relevant.
 
 ## Architecture snapshot
 

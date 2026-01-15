@@ -1,16 +1,17 @@
-"use client";
+'use client';
 
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { TaskList } from "@/components/TaskList";
-import { useSearch } from "@/components/search-context";
+import { useQuery } from 'convex/react';
+
+import { useSearch } from '@/components/search-context';
+import { TaskList } from '@/components/TaskList';
+import { api } from '@/convex/_generated/api';
 
 export default function InboxPage() {
   const { query } = useSearch();
   const trimmed = query.trim();
   const tasks = useQuery(
     trimmed ? api.tasks.search : api.tasks.listInbox,
-    trimmed ? { query: trimmed } : {}
+    trimmed ? { query: trimmed } : {},
   );
 
   return (

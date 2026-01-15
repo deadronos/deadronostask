@@ -1,21 +1,23 @@
-"use client";
+'use client';
 
-import { ArrowDown, ArrowUp, Pencil, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import type { Doc, Id } from "@/convex/_generated/dataModel";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { Checkbox } from "./ui/checkbox";
-import { cn } from "@/lib/utils";
+import { useMutation } from 'convex/react';
+import { ArrowDown, ArrowUp, Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Checkbox } from './ui/checkbox';
+
+import { api } from '@/convex/_generated/api';
+import type { Doc, Id } from '@/convex/_generated/dataModel';
+import { cn } from '@/lib/utils';
 
 const labelColorClasses: Record<string, string> = {
-  "#0EA5E9": "bg-sky-500",
-  "#F97316": "bg-orange-500",
-  "#10B981": "bg-emerald-500",
-  "#E11D48": "bg-rose-600",
-  "#6366F1": "bg-indigo-500"
+  '#0EA5E9': 'bg-sky-500',
+  '#F97316': 'bg-orange-500',
+  '#10B981': 'bg-emerald-500',
+  '#E11D48': 'bg-rose-600',
+  '#6366F1': 'bg-indigo-500',
 };
 
 export function TaskItem({
@@ -23,11 +25,11 @@ export function TaskItem({
   labelById,
   onEdit,
   onMoveUp,
-  onMoveDown
+  onMoveDown,
 }: {
-  task: Doc<"tasks">;
-  labelById: Map<Id<"labels">, Doc<"labels">>;
-  onEdit: (task: Doc<"tasks">) => void;
+  task: Doc<'tasks'>;
+  labelById: Map<Id<'labels'>, Doc<'labels'>>;
+  onEdit: (task: Doc<'tasks'>) => void;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
 }) {
@@ -35,6 +37,7 @@ export function TaskItem({
   const remove = useMutation(api.tasks.remove);
 
   const dueLabel = formatDueDate(task.dueDate);
+  // eslint-disable-next-line react-hooks/purity -- Date.now is used for a display-only overdue badge; acceptable here
   const overdue = task.dueDate !== null && task.dueDate < Date.now();
 
   return (
@@ -46,36 +49,32 @@ export function TaskItem({
             await toggle({ id: task._id });
           } catch (error) {
             console.error(error);
-            toast.error("Could not update task");
+            toast.error('Could not update task');
           }
         }}
-        aria-label={task.isCompleted ? "Mark incomplete" : "Mark complete"}
+        aria-label={task.isCompleted ? 'Mark incomplete' : 'Mark complete'}
       />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <h3
             className={cn(
-              "text-sm font-semibold",
-              task.isCompleted && "line-through text-muted-foreground"
+              'text-sm font-semibold',
+              task.isCompleted && 'line-through text-muted-foreground',
             )}
           >
             {task.title}
           </h3>
-          {task.priority !== "med" && (
+          {task.priority !== 'med' && (
             <Badge variant="outline">{task.priority.toUpperCase()}</Badge>
           )}
-          {dueLabel && (
-            <Badge className={cn(overdue && "bg-danger text-white")}>{dueLabel}</Badge>
-          )}
+          {dueLabel && <Badge className={cn(overdue && 'bg-danger text-white')}>{dueLabel}</Badge>}
         </div>
         {task.description && (
-          <p className="mt-2 text-sm text-muted-foreground">
-            {task.description}
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">{task.description}</p>
         )}
         {task.labelIds.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
-            {task.labelIds.map((labelId) => {
+            {task.labelIds.map(labelId => {
               const label = labelById.get(labelId);
               if (!label) return null;
               return (
@@ -85,8 +84,8 @@ export function TaskItem({
                 >
                   <span
                     className={cn(
-                      "h-2 w-2 rounded-full",
-                      labelColorClasses[label.color] ?? "bg-muted"
+                      'h-2 w-2 rounded-full',
+                      labelColorClasses[label.color] ?? 'bg-muted',
                     )}
                   />
                   {label.name}
@@ -108,7 +107,7 @@ export function TaskItem({
               await remove({ id: task._id });
             } catch (error) {
               console.error(error);
-              toast.error("Could not delete task");
+              toast.error('Could not delete task');
             }
           }}
         >
@@ -130,7 +129,7 @@ export function TaskItem({
 }
 
 function formatDueDate(value: number | null) {
-  if (!value) return "";
+  if (!value) return '';
   const date = new Date(value);
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }

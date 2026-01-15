@@ -1,77 +1,74 @@
-"use client";
+'use client';
 
-import { Pencil, Plus, Trash2 } from "lucide-react";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { Button } from "./ui/button";
+import { useMutation, useQuery } from 'convex/react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
-const colors = ["#0EA5E9", "#F97316", "#10B981", "#E11D48", "#6366F1"];
+import { Button } from './ui/button';
+
+import { api } from '@/convex/_generated/api';
+import type { Id } from '@/convex/_generated/dataModel';
+import { cn } from '@/lib/utils';
+
+const colors = ['#0EA5E9', '#F97316', '#10B981', '#E11D48', '#6366F1'];
 
 const labelColorClasses: Record<string, string> = {
-  "#0EA5E9": "bg-sky-500",
-  "#F97316": "bg-orange-500",
-  "#10B981": "bg-emerald-500",
-  "#E11D48": "bg-rose-600",
-  "#6366F1": "bg-indigo-500"
+  '#0EA5E9': 'bg-sky-500',
+  '#F97316': 'bg-orange-500',
+  '#10B981': 'bg-emerald-500',
+  '#E11D48': 'bg-rose-600',
+  '#6366F1': 'bg-indigo-500',
 };
 
 type Props = {
-  selectedIds?: Id<"labels">[];
-  onChange?: (value: Id<"labels">[]) => void;
+  selectedIds?: Id<'labels'>[];
+  onChange?: (value: Id<'labels'>[]) => void;
   compact?: boolean;
   allowCreate?: boolean;
 };
 
-export function LabelChips({
-  selectedIds,
-  onChange,
-  compact = false,
-  allowCreate = false
-}: Props) {
+export function LabelChips({ selectedIds, onChange, compact = false, allowCreate = false }: Props) {
   const labels = useQuery(api.labels.list) ?? [];
   const createLabel = useMutation(api.labels.create);
   const renameLabel = useMutation(api.labels.rename);
   const removeLabel = useMutation(api.labels.remove);
 
-  const handleToggle = (id: Id<"labels">) => {
+  const handleToggle = (id: Id<'labels'>) => {
     if (!selectedIds || !onChange) return;
     if (selectedIds.includes(id)) {
-      onChange(selectedIds.filter((value) => value !== id));
+      onChange(selectedIds.filter(value => value !== id));
     } else {
       onChange([...selectedIds, id]);
     }
   };
 
   const handleCreate = async () => {
-    const name = window.prompt("Label name?");
+    const name = window.prompt('Label name?');
     if (!name) return;
     const color = colors[Math.floor(Math.random() * colors.length)];
     try {
       await createLabel({ name, color });
     } catch (error) {
       console.error(error);
-      toast.error("Could not create label");
+      toast.error('Could not create label');
     }
   };
 
-  const handleRename = async (id: Id<"labels">, current: string) => {
-    const name = window.prompt("Rename label", current);
+  const handleRename = async (id: Id<'labels'>, current: string) => {
+    const name = window.prompt('Rename label', current);
     if (!name || name === current) return;
     try {
       await renameLabel({ id, name });
     } catch (error) {
       console.error(error);
-      toast.error("Could not rename label");
+      toast.error('Could not rename label');
     }
   };
 
   return (
-    <div className={cn("space-y-3", compact && "space-y-2")}> 
+    <div className={cn('space-y-3', compact && 'space-y-2')}>
       <div className="flex items-center justify-between">
-        <h3 className={cn("text-sm font-semibold", compact && "text-xs")}>Labels</h3>
+        <h3 className={cn('text-sm font-semibold', compact && 'text-xs')}>Labels</h3>
         {allowCreate && (
           <Button size="sm" variant="ghost" onClick={handleCreate}>
             <Plus className="h-4 w-4" />
@@ -80,17 +77,15 @@ export function LabelChips({
         )}
       </div>
       <div className="flex flex-wrap gap-2">
-        {labels.length === 0 && (
-          <p className="text-xs text-muted-foreground">No labels yet.</p>
-        )}
-        {labels.map((label) => {
+        {labels.length === 0 && <p className="text-xs text-muted-foreground">No labels yet.</p>}
+        {labels.map(label => {
           const selected = selectedIds?.includes(label._id);
           return (
             <div
               key={label._id}
               className={cn(
-                "group flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs",
-                selected && "border-primary text-primary"
+                'group flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs',
+                selected && 'border-primary text-primary',
               )}
             >
               <button
@@ -100,8 +95,8 @@ export function LabelChips({
               >
                 <span
                   className={cn(
-                    "h-2.5 w-2.5 rounded-full",
-                    labelColorClasses[label.color] ?? "bg-muted"
+                    'h-2.5 w-2.5 rounded-full',
+                    labelColorClasses[label.color] ?? 'bg-muted',
                   )}
                 />
                 {label.name}
@@ -118,10 +113,10 @@ export function LabelChips({
                   <button
                     type="button"
                     onClick={() => {
-                      if (window.confirm("Delete label?")) {
-                        removeLabel({ id: label._id }).catch((error) => {
+                      if (window.confirm('Delete label?')) {
+                        removeLabel({ id: label._id }).catch(error => {
                           console.error(error);
-                          toast.error("Could not delete label");
+                          toast.error('Could not delete label');
                         });
                       }
                     }}

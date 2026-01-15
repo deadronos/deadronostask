@@ -1,16 +1,13 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { SessionProvider, useSession } from "next-auth/react";
-import type { Session } from "next-auth";
-import {
-  ConvexProviderWithAuth,
-  ConvexReactClient
-} from "convex/react";
+import { ConvexProviderWithAuth, ConvexReactClient } from 'convex/react';
+import type { Session } from 'next-auth';
+import { SessionProvider, useSession } from 'next-auth/react';
+import * as React from 'react';
 
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
 if (!convexUrl) {
-  throw new Error("Missing NEXT_PUBLIC_CONVEX_URL");
+  throw new Error('Missing NEXT_PUBLIC_CONVEX_URL');
 }
 const convex = new ConvexReactClient(convexUrl);
 
@@ -23,19 +20,19 @@ function useConvexAuth() {
       }
       return session?.convexToken ?? null;
     },
-    [session, update]
+    [session, update],
   );
 
   return {
-    isLoading: status === "loading",
+    isLoading: status === 'loading',
     isAuthenticated: Boolean(session?.userId),
-    fetchAccessToken
+    fetchAccessToken,
   };
 }
 
 export function AppProviders({
   children,
-  session
+  session,
 }: {
   children: React.ReactNode;
   session: Session | null;

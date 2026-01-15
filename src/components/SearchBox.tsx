@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import { Search } from "lucide-react";
-import { Input } from "./ui/input";
-import { useSearch } from "./search-context";
+import { Search } from 'lucide-react';
+
+import { useSearch } from './search-context';
+import { Input } from './ui/input';
 
 export function SearchBox() {
   const { query, setQuery } = useSearch();
@@ -14,7 +15,7 @@ export function SearchBox() {
         placeholder="Search tasks, descriptions, labels..."
         className="pl-9"
         value={query}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={event => setQuery(event.target.value)}
       />
     </div>
   );

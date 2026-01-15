@@ -333,13 +333,13 @@ Performance isn't just a buzzword—it's the difference between a product people
 
 ```javascript
 // BAD: Triggers API call on every keystroke
-input.addEventListener('input', (e) => {
+input.addEventListener('input', e => {
   fetch(`/search?q=${e.target.value}`);
 });
 
 // GOOD: Debounce API calls
 let timeout;
-input.addEventListener('input', (e) => {
+input.addEventListener('input', e => {
   clearTimeout(timeout);
   timeout = setTimeout(() => {
     fetch(`/search?q=${e.target.value}`);
@@ -419,7 +419,7 @@ function getCachedData(key, fetchFunction) {
   return new Promise((resolve, reject) => {
     client.get(key, (err, data) => {
       if (data) return resolve(JSON.parse(data));
-      fetchFunction().then((result) => {
+      fetchFunction().then(result => {
         client.setex(key, 3600, JSON.stringify(result));
         resolve(result);
       });

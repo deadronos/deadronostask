@@ -1,6 +1,7 @@
-import * as React from "react";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { cn } from "@/lib/utils";
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import * as React from 'react';
+
+import { cn } from '@/lib/utils';
 
 export const Sheet = DialogPrimitive.Root;
 export const SheetTrigger = DialogPrimitive.Trigger;
@@ -12,7 +13,7 @@ export const SheetOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     ref={ref}
-    className={cn("fixed inset-0 z-50 bg-black/40", className)}
+    className={cn('fixed inset-0 z-50 bg-black/40', className)}
     {...props}
   />
 ));
@@ -27,8 +28,8 @@ export const SheetContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-0 top-0 z-50 h-full w-[85vw] max-w-sm border-r border-border bg-white/95 p-6 shadow-xl backdrop-blur-sm dark:bg-slate-950/95",
-        className
+        'fixed left-0 top-0 z-50 h-full w-[85vw] max-w-sm border-r border-border bg-white/95 p-6 shadow-xl backdrop-blur-sm dark:bg-slate-950/95',
+        className,
       )}
       {...props}
     >

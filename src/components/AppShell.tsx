@@ -1,11 +1,12 @@
-"use client";
+'use client';
 
-import { Menu } from "lucide-react";
-import { SearchProvider } from "./search-context";
-import { Sidebar } from "./Sidebar";
-import { Topbar } from "./Topbar";
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
-import { Button } from "./ui/button";
+import { Menu } from 'lucide-react';
+
+import { SearchProvider } from './search-context';
+import { Sidebar } from './Sidebar';
+import { Topbar } from './Topbar';
+import { Button } from './ui/button';
+import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -37,9 +38,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
-            {children}
-          </main>
+          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
         </div>
       </div>
     </SearchProvider>

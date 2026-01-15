@@ -1,7 +1,8 @@
-import Link from "next/link";
-import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
-import { auth, signIn } from "@/auth";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+
+import { auth, signIn } from '@/auth';
+import { Button } from '@/components/ui/button';
 
 export default async function HomePage() {
   const session = await auth();
@@ -18,8 +19,8 @@ export default async function HomePage() {
             Track today, plan tomorrow, and let Convex do the syncing.
           </h1>
           <p className="text-base text-muted-foreground md:text-lg">
-            Taskflow is a realtime task manager built for momentum. Keep your inbox
-            clear, visualize projects, and never miss a due date.
+            Taskflow is a realtime task manager built for momentum. Keep your inbox clear, visualize
+            projects, and never miss a due date.
           </p>
           <div className="flex flex-wrap items-center gap-3">
             {session ? (
@@ -31,8 +32,8 @@ export default async function HomePage() {
             ) : (
               <form
                 action={async () => {
-                  "use server";
-                  await signIn("github");
+                  'use server';
+                  await signIn('github');
                 }}
               >
                 <Button type="submit">
@@ -65,38 +66,31 @@ export default async function HomePage() {
             <div className="space-y-4">
               <div className="rounded-2xl border border-border bg-white/80 p-4">
                 <h3 className="text-sm font-semibold">Today</h3>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  3 tasks due. 2 overdue.
-                </p>
+                <p className="mt-2 text-xs text-muted-foreground">3 tasks due. 2 overdue.</p>
                 <div className="mt-3 space-y-2">
-                  {["Draft roadmap", "Client feedback", "Ship onboarding"].map(
-                    (task) => (
-                      <div
-                        key={task}
-                        className="flex items-center justify-between rounded-xl border border-border px-3 py-2 text-xs"
-                      >
-                        {task}
-                        <span className="rounded-full bg-muted px-2 py-0.5 text-[10px]">
-                          Today
-                        </span>
-                      </div>
-                    )
-                  )}
+                  {['Draft roadmap', 'Client feedback', 'Ship onboarding'].map(task => (
+                    <div
+                      key={task}
+                      className="flex items-center justify-between rounded-xl border border-border px-3 py-2 text-xs"
+                    >
+                      {task}
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px]">Today</span>
+                    </div>
+                  ))}
                 </div>
               </div>
               <div className="rounded-2xl border border-border bg-white/80 p-4">
                 <h3 className="text-sm font-semibold">Projects</h3>
                 <div className="mt-3 grid gap-2 text-xs">
-                  {["Launch prep", "Design refresh", "Hiring"]
-                    .map((project) => (
-                      <div
-                        key={project}
-                        className="flex items-center justify-between rounded-lg border border-border px-3 py-2"
-                      >
-                        {project}
-                        <span className="text-muted-foreground">4 tasks</span>
-                      </div>
-                    ))}
+                  {['Launch prep', 'Design refresh', 'Hiring'].map(project => (
+                    <div
+                      key={project}
+                      className="flex items-center justify-between rounded-lg border border-border px-3 py-2"
+                    >
+                      {project}
+                      <span className="text-muted-foreground">4 tasks</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -108,22 +102,19 @@ export default async function HomePage() {
         <div className="grid gap-6 md:grid-cols-3">
           {[
             {
-              title: "Realtime everywhere",
-              body: "Convex keeps every view fresh without refresh buttons."
+              title: 'Realtime everywhere',
+              body: 'Convex keeps every view fresh without refresh buttons.',
             },
             {
-              title: "Flexible planning",
-              body: "Projects, labels, priorities, and due dates keep you organized."
+              title: 'Flexible planning',
+              body: 'Projects, labels, priorities, and due dates keep you organized.',
             },
             {
-              title: "Secure by default",
-              body: "Auth.js and Convex JWTs keep user data isolated."
-            }
-          ].map((feature) => (
-            <div
-              key={feature.title}
-              className="glass rounded-2xl border border-border p-6"
-            >
+              title: 'Secure by default',
+              body: 'Auth.js and Convex JWTs keep user data isolated.',
+            },
+          ].map(feature => (
+            <div key={feature.title} className="glass rounded-2xl border border-border p-6">
               <h3 className="text-lg font-semibold">{feature.title}</h3>
               <p className="mt-2 text-sm text-muted-foreground">{feature.body}</p>
             </div>

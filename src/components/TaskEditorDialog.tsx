@@ -1,70 +1,59 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { toast } from "sonner";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import type { Doc, Id } from "@/convex/_generated/dataModel";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle
-} from "./ui/dialog";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Textarea } from "./ui/textarea";
-import { cn } from "@/lib/utils";
+import { useMutation, useQuery } from 'convex/react';
+import * as React from 'react';
+import { toast } from 'sonner';
+
+import { Button } from './ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
+import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
+
+import { api } from '@/convex/_generated/api';
+import type { Doc, Id } from '@/convex/_generated/dataModel';
+import { cn } from '@/lib/utils';
 
 const priorities = [
-  { value: "low", label: "Low" },
-  { value: "med", label: "Medium" },
-  { value: "high", label: "High" }
+  { value: 'low', label: 'Low' },
+  { value: 'med', label: 'Medium' },
+  { value: 'high', label: 'High' },
 ] as const;
 
 const labelColorClasses: Record<string, string> = {
-  "#0EA5E9": "bg-sky-500",
-  "#F97316": "bg-orange-500",
-  "#10B981": "bg-emerald-500",
-  "#E11D48": "bg-rose-600",
-  "#6366F1": "bg-indigo-500"
+  '#0EA5E9': 'bg-sky-500',
+  '#F97316': 'bg-orange-500',
+  '#10B981': 'bg-emerald-500',
+  '#E11D48': 'bg-rose-600',
+  '#6366F1': 'bg-indigo-500',
 };
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initialTask?: Doc<"tasks"> | null;
-  defaultProjectId?: Id<"projects"> | null;
+  initialTask?: Doc<'tasks'> | null;
+  defaultProjectId?: Id<'projects'> | null;
 };
 
-export function TaskEditorDialog({
-  open,
-  onOpenChange,
-  initialTask,
-  defaultProjectId
-}: Props) {
+export function TaskEditorDialog({ open, onOpenChange, initialTask, defaultProjectId }: Props) {
   const projects = useQuery(api.projects.list) ?? [];
   const labels = useQuery(api.labels.list) ?? [];
   const createTask = useMutation(api.tasks.create);
   const updateTask = useMutation(api.tasks.update);
 
-  const [title, setTitle] = React.useState("");
-  const [description, setDescription] = React.useState("");
-  const [priority, setPriority] = React.useState("med");
-  const [dueDate, setDueDate] = React.useState<string>("");
-  const [projectId, setProjectId] = React.useState<Id<"projects"> | null>(
-    null
-  );
-  const [labelIds, setLabelIds] = React.useState<Id<"labels">[]>([]);
+  const [title, setTitle] = React.useState('');
+  const [description, setDescription] = React.useState('');
+  const [priority, setPriority] = React.useState('med');
+  const [dueDate, setDueDate] = React.useState<string>('');
+  const [projectId, setProjectId] = React.useState<Id<'projects'> | null>(null);
+  const [labelIds, setLabelIds] = React.useState<Id<'labels'>[]>([]);
   const [isSaving, setIsSaving] = React.useState(false);
 
   React.useEffect(() => {
     if (!open) return;
-    setTitle(initialTask?.title ?? "");
-    setDescription(initialTask?.description ?? "");
-    setPriority(initialTask?.priority ?? "med");
-    setDueDate(initialTask?.dueDate ? toDateInput(initialTask.dueDate) : "");
+    setTitle(initialTask?.title ?? '');
+    setDescription(initialTask?.description ?? '');
+    setPriority(initialTask?.priority ?? 'med');
+    setDueDate(initialTask?.dueDate ? toDateInput(initialTask.dueDate) : '');
     setProjectId(initialTask?.projectId ?? defaultProjectId ?? null);
     setLabelIds(initialTask?.labelIds ?? []);
   }, [open, initialTask, defaultProjectId]);
@@ -72,7 +61,7 @@ export function TaskEditorDialog({
   const handleSubmit = async () => {
     if (isSaving) return;
     if (!title.trim()) {
-      toast.error("Title is required");
+      toast.error('Title is required');
       return;
     }
     const due = dueDate ? new Date(dueDate).getTime() : null;
@@ -84,26 +73,26 @@ export function TaskEditorDialog({
           patch: {
             title,
             description,
-            priority: priority as "low" | "med" | "high",
+            priority: priority as 'low' | 'med' | 'high',
             dueDate: due,
             projectId,
-            labelIds
-          }
+            labelIds,
+          },
         });
       } else {
         await createTask({
           title,
           description,
-          priority: priority as "low" | "med" | "high",
+          priority: priority as 'low' | 'med' | 'high',
           dueDate: due,
           projectId,
-          labelIds
+          labelIds,
         });
       }
       onOpenChange(false);
     } catch (error) {
       console.error(error);
-      toast.error("Could not save task");
+      toast.error('Could not save task');
     } finally {
       setIsSaving(false);
     }
@@ -113,29 +102,36 @@ export function TaskEditorDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <form
-          onSubmit={(event) => {
+          onSubmit={event => {
             event.preventDefault();
             void handleSubmit();
           }}
         >
           <DialogHeader>
-            <DialogTitle>{initialTask ? "Edit task" : "New task"}</DialogTitle>
-            <DialogDescription>
-              Capture the details and keep your day moving.
-            </DialogDescription>
+            <DialogTitle>{initialTask ? 'Edit task' : 'New task'}</DialogTitle>
+            <DialogDescription>Capture the details and keep your day moving.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Title</label>
-              <Input value={title} onChange={(event) => setTitle(event.target.value)} />
+              <label className="text-sm font-medium" htmlFor="task-title">
+                Title
+              </label>
+              <Input
+                id="task-title"
+                value={title}
+                onChange={event => setTitle(event.target.value)}
+              />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Description</label>
+              <label className="text-sm font-medium" htmlFor="task-desc">
+                Description
+              </label>
               <Textarea
+                id="task-desc"
                 value={description}
-                onChange={(event) => setDescription(event.target.value)}
+                onChange={event => setDescription(event.target.value)}
               />
             </div>
 
@@ -148,9 +144,9 @@ export function TaskEditorDialog({
                   id="task-priority"
                   className="h-10 w-full rounded-md border border-border bg-white/80 px-3 text-sm dark:bg-slate-950/50"
                   value={priority}
-                  onChange={(event) => setPriority(event.target.value)}
+                  onChange={event => setPriority(event.target.value)}
                 >
-                  {priorities.map((p) => (
+                  {priorities.map(p => (
                     <option key={p.value} value={p.value}>
                       {p.label}
                     </option>
@@ -159,11 +155,14 @@ export function TaskEditorDialog({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Due date</label>
+                <label className="text-sm font-medium" htmlFor="task-due">
+                  Due date
+                </label>
                 <Input
+                  id="task-due"
                   type="date"
                   value={dueDate}
-                  onChange={(event) => setDueDate(event.target.value)}
+                  onChange={event => setDueDate(event.target.value)}
                 />
               </div>
             </div>
@@ -176,13 +175,11 @@ export function TaskEditorDialog({
                 <select
                   id="task-project"
                   className="h-10 w-full rounded-md border border-border bg-white/80 px-3 text-sm dark:bg-slate-950/50"
-                  value={projectId ?? ""}
-                  onChange={(event) =>
-                    setProjectId((event.target.value as Id<"projects">) || null)
-                  }
+                  value={projectId ?? ''}
+                  onChange={event => setProjectId((event.target.value as Id<'projects'>) || null)}
                 >
                   <option value="">Inbox</option>
-                  {projects.map((project) => (
+                  {projects.map(project => (
                     <option key={project._id} value={project._id}>
                       {project.name}
                     </option>
@@ -190,30 +187,30 @@ export function TaskEditorDialog({
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Labels</label>
-                <div className="flex flex-wrap gap-2">
-                  {labels.map((label) => {
+              <fieldset className="space-y-2">
+                <legend className="text-sm font-medium">Labels</legend>
+                <div className="flex flex-wrap gap-2" role="group" aria-labelledby="labels-legend">
+                  {labels.map(label => {
                     const selected = labelIds.includes(label._id);
                     return (
                       <button
                         key={label._id}
                         type="button"
                         onClick={() =>
-                          setLabelIds((prev) =>
+                          setLabelIds(prev =>
                             prev.includes(label._id)
-                              ? prev.filter((id) => id !== label._id)
-                              : [...prev, label._id]
+                              ? prev.filter(id => id !== label._id)
+                              : [...prev, label._id],
                           )
                         }
                         className={`flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${
-                          selected ? "border-primary text-primary" : "border-border"
+                          selected ? 'border-primary text-primary' : 'border-border'
                         }`}
                       >
                         <span
                           className={cn(
-                            "h-2.5 w-2.5 rounded-full",
-                            labelColorClasses[label.color] ?? "bg-muted"
+                            'h-2.5 w-2.5 rounded-full',
+                            labelColorClasses[label.color] ?? 'bg-muted',
                           )}
                         />
                         {label.name}
@@ -224,7 +221,7 @@ export function TaskEditorDialog({
                     <p className="text-xs text-muted-foreground">Create labels in the sidebar.</p>
                   )}
                 </div>
-              </div>
+              </fieldset>
             </div>
           </div>
 
@@ -233,7 +230,7 @@ export function TaskEditorDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={isSaving}>
-              {isSaving ? "Saving..." : initialTask ? "Save" : "Create"}
+              {isSaving ? 'Saving...' : initialTask ? 'Save' : 'Create'}
             </Button>
           </div>
         </form>
@@ -245,7 +242,7 @@ export function TaskEditorDialog({
 function toDateInput(value: number) {
   const date = new Date(value);
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
