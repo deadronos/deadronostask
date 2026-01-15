@@ -1,4 +1,4 @@
-import { SignJWT, importPKCS8, type KeyLike } from 'jose';
+import { SignJWT, importPKCS8 } from 'jose';
 import NextAuth from 'next-auth';
 import GitHub from 'next-auth/providers/github';
 
@@ -11,9 +11,9 @@ if (!process.env.AUTH_GITHUB_ID || !process.env.AUTH_GITHUB_SECRET) {
   console.warn('Missing AUTH_GITHUB_ID or AUTH_GITHUB_SECRET env vars.');
 }
 
-let cachedKey: KeyLike | null = null;
+let cachedKey: unknown = null;
 
-async function getPrivateKey() {
+async function getPrivateKey(): Promise<unknown> {
   if (!CONVEX_AUTH_PRIVATE_KEY) {
     throw new Error('Missing CONVEX_AUTH_PRIVATE_KEY env var');
   }
@@ -28,14 +28,17 @@ async function createConvexToken(userId: string) {
     throw new Error('Missing NEXT_PUBLIC_CONVEX_URL env var');
   }
   const key = await getPrivateKey();
-  return new SignJWT({})
-    .setProtectedHeader({ alg: 'RS256', kid: 'convex-auth' })
-    .setIssuer(CONVEX_SITE_URL)
-    .setAudience('convex')
-    .setSubject(userId)
-    .setIssuedAt()
-    .setExpirationTime('1h')
-    .sign(key);
+  return (
+    new SignJWT({})
+      .setProtectedHeader({ alg: 'RS256', kid: 'convex-auth' })
+      .setIssuer(CONVEX_SITE_URL)
+      .setAudience('convex')
+      .setSubject(userId)
+      .setIssuedAt()
+      .setExpirationTime('1h')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- jose typing incompatibility across versions
+      .sign(key as any)
+  );
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({

@@ -9,10 +9,9 @@ import { api } from '@/convex/_generated/api';
 export default function TodayPage() {
   const { query } = useSearch();
   const trimmed = query.trim();
-  const tasks = useQuery(
-    trimmed ? api.tasks.search : api.tasks.listToday,
-    trimmed ? { query: trimmed } : {},
-  );
+  const queryFn = trimmed ? api.tasks.search : api.tasks.listToday;
+  const queryArgs = trimmed ? { query: trimmed } : undefined;
+  const tasks = useQuery(queryFn, queryArgs);
 
   return <TaskList title="Today" subtitle="Due today and overdue tasks." tasks={tasks} />;
 }

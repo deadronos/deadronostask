@@ -15,17 +15,17 @@ function assertSecret(secret: string) {
 
 const adapterQuery = customQuery(query, {
   args: secretArg,
-  handler: async (ctx, args) => {
+  input: async (ctx, args) => {
     assertSecret(args.secret);
-    return ctx;
+    return { ctx, args: {} };
   },
 });
 
 const adapterMutation = customMutation(mutation, {
   args: secretArg,
-  handler: async (ctx, args) => {
+  input: async (ctx, args) => {
     assertSecret(args.secret);
-    return ctx;
+    return { ctx, args: {} };
   },
 });
 

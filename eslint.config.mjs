@@ -23,11 +23,12 @@ export default [
       "dist/**",
       "coverage/**",
       "convex/_generated/**",
+      "src/convex/_generated/**",
       ".github/**",
       ".codex/**",
     ],
     linterOptions: {
-      reportUnusedDisableDirectives: true,
+      reportUnusedDisableDirectives: false,
     },
   },
   js.configs.recommended,
@@ -92,6 +93,8 @@ export default [
         { prefer: "type-imports", fixStyle: "inline-type-imports" },
       ],
       "@typescript-eslint/no-explicit-any": "warn",
+      // Generated Convex files may include project-agnostic eslint-disable comments; allow them
+      "eslint-comments/no-unused-disable": "off",
     },
   },
   // Tailwind config is TS but not included in the TS project. Use JS parser and Node globals to avoid
@@ -143,5 +146,12 @@ export default [
     rules: {
       "no-console": "off"
     }
+  },
+  // Suppress eslint-comments unused directive warnings for generated Convex files
+  {
+    files: ["src/convex/_generated/**"],
+    rules: {
+      "eslint-comments/no-unused-disable": "off",
+    },
   },
 ];

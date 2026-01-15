@@ -9,10 +9,9 @@ import { api } from '@/convex/_generated/api';
 export default function CompletedPage() {
   const { query } = useSearch();
   const trimmed = query.trim();
-  const tasks = useQuery(
-    trimmed ? api.tasks.search : api.tasks.listCompleted,
-    trimmed ? { query: trimmed } : {},
-  );
+  const queryFn = trimmed ? api.tasks.search : api.tasks.listCompleted;
+  const queryArgs = trimmed ? { query: trimmed } : undefined;
+  const tasks = useQuery(queryFn, queryArgs);
 
   return (
     <TaskList
