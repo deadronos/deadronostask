@@ -1,4 +1,6 @@
-console.log('tests/setup.ts executed');
+// Ensure test env has a Convex URL so any module that constructs a client at import time doesn't throw
+process.env.NEXT_PUBLIC_CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL ?? 'http://localhost';
+
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
 import { vi } from 'vitest';
@@ -30,4 +32,21 @@ vi.mock('sonner', () => ({
 vi.mock('convex/react', () => ({
   useQuery: vi.fn(),
   useMutation: vi.fn(),
+}));
+
+// Prevent importing the generated Convex API (which pulls in `convex/server`) during tests.
+// Components import `@/convex/_generated/api`; mock it to avoid loading server-only modules.
+vi.mock('@/convex/_generated/api', () => ({
+  api: {
+    labels: { list: 'labels.list' },
+    projects: { list: 'projects.list' },
+    tasks: {
+      create: 'tasks.create',
+      update: 'tasks.update',
+      remove: 'tasks.remove',
+      toggleComplete: 'tasks.toggleComplete',
+      reorderInProject: 'tasks.reorderInProject',
+    },
+    authAdapter: {},
+  },
 }));

@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-console.log('tests/task-editor-dialog.test.tsx loaded');
 import { TaskEditorDialog } from '@/components/TaskEditorDialog';
 import type { Doc, Id } from '@/convex/_generated/dataModel';
 import { useMutation, useQuery } from 'convex/react';

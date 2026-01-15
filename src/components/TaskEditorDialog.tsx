@@ -1,6 +1,5 @@
 'use client';
 
-console.log('src/components/TaskEditorDialog.tsx loaded');
 import { useMutation, useQuery } from 'convex/react';
 import * as React from 'react';
 import { toast } from 'sonner';
