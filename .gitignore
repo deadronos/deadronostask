@@ -5,4 +5,4 @@ out
 .env
 .env.*.local
 .vercel
-convex/_generated
+src/convex/_generated

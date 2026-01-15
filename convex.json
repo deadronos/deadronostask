@@ -1,4 +1,3 @@
 {
-  "projectName": "taskflow",
-  "functions": "convex/"
+  "functions": "src/convex/"
 }

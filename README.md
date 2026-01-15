@@ -49,7 +49,7 @@ Required values:
 ### 3) Generate keys (JWKS + private key)
 
 ```bash
-node generateKeys.mjs
+node src/generateKeys.mjs
 ```
 
 - Paste `CONVEX_AUTH_PRIVATE_KEY` into `.env.local`
@@ -85,7 +85,7 @@ Set these in the Convex dashboard (both Development and Production environments)
 - `JWKS` (from `generateKeys.mjs`)
 - `CONVEX_AUTH_ADAPTER_SECRET` (same value as `.env.local`)
 
-`CONVEX_SITE_URL` is provided by Convex automatically and is used by `convex/auth.config.ts`.
+`CONVEX_SITE_URL` is provided by Convex automatically and is used by `src/convex/auth.config.ts`.
 
 ## Vercel Deployment
 
@@ -116,36 +116,40 @@ npx convex deploy --cmd 'npm run build' --cmd-url-env-var-name NEXT_PUBLIC_CONVE
 ## Repository Layout
 
 ```
-app/
-  layout.tsx
-  page.tsx
-  api/auth/[...nextauth]/route.ts
+src/
+  generateKeys.mjs
+  auth.ts
   app/
     layout.tsx
-    today/page.tsx
-    inbox/page.tsx
-    projects/page.tsx
-    projects/[projectId]/page.tsx
-    completed/page.tsx
-    settings/page.tsx
-components/
-  AppShell.tsx
-  Sidebar.tsx
-  Topbar.tsx
-  TaskList.tsx
-  TaskItem.tsx
-  TaskEditorDialog.tsx
-  ProjectList.tsx
-  LabelChips.tsx
-  SearchBox.tsx
-  Toaster.tsx
-convex/
-  schema.ts
-  http.ts
-  auth.config.ts
-  authAdapter.ts
-  tasks.ts
-  projects.ts
-  labels.ts
-  lib/auth.ts
+    page.tsx
+    api/auth/[...nextauth]/route.ts
+    app/
+      layout.tsx
+      today/page.tsx
+      inbox/page.tsx
+      projects/page.tsx
+      projects/[projectId]/page.tsx
+      completed/page.tsx
+      settings/page.tsx
+  components/
+    AppShell.tsx
+    Sidebar.tsx
+    Topbar.tsx
+    TaskList.tsx
+    TaskItem.tsx
+    TaskEditorDialog.tsx
+    ProjectList.tsx
+    LabelChips.tsx
+    SearchBox.tsx
+    Toaster.tsx
+  convex/
+    schema.ts
+    http.ts
+    auth.config.ts
+    authAdapter.ts
+    tasks.ts
+    projects.ts
+    labels.ts
+    lib/auth.ts
+  middleware.ts
 ```
