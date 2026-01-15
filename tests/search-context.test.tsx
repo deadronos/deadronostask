@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
+console.log('tests/search-context.test.tsx loaded');
 import { SearchBox } from '@/components/SearchBox';
 import { SearchProvider, useSearch } from '@/components/search-context';
 

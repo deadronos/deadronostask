@@ -1,5 +1,6 @@
 'use client';
 
+console.log('src/components/SearchBox.tsx loaded');
 import { Search } from 'lucide-react';
 
 import { useSearch } from './search-context';

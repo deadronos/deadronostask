@@ -9,6 +9,8 @@
     "start": "next start",
     "prepare": "husky install",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:ci": "vitest run --reporter verbose --coverage",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\" \"**/*.{mjs,cjs}\" next.config.mjs tailwind.config.ts --ignore-pattern \"src/convex/_generated/**\"",
