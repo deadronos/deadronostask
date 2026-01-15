@@ -9,9 +9,10 @@ import { api } from '@/convex/_generated/api';
 export default function CompletedPage() {
   const { query } = useSearch();
   const trimmed = query.trim();
-  const queryFn = trimmed ? api.tasks.search : api.tasks.listCompleted;
-  const queryArgs = trimmed ? { query: trimmed } : undefined;
-  const tasks = useQuery(queryFn, queryArgs);
+  // Call both hooks in a stable order and skip the search when there is no query
+  const searchResults = useQuery(api.tasks.search, trimmed ? { query: trimmed } : 'skip');
+  const completed = useQuery(api.tasks.listCompleted);
+  const tasks = trimmed ? searchResults : completed;
 
   return (
     <TaskList

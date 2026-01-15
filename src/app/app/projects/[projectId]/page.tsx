@@ -19,9 +19,12 @@ export default function ProjectDetailPage() {
     () => projects?.find(item => item._id === projectId),
     [projects, projectId],
   );
-  const queryFn = trimmed ? api.tasks.search : api.tasks.listByProject;
-  const queryArgs = trimmed ? { query: trimmed } : { projectId: projectId as Id<'projects'> };
-  const tasks = useQuery(queryFn, queryArgs);
+  // Call both hooks unconditionally; skip the search when there's no query
+  const searchResults = useQuery(api.tasks.search, trimmed ? { query: trimmed } : 'skip');
+  const projectTasks = useQuery(api.tasks.listByProject, {
+    projectId: projectId as Id<'projects'>,
+  });
+  const tasks = trimmed ? searchResults : projectTasks;
 
   if (!project) {
     return (
