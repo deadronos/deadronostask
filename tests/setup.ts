@@ -38,7 +38,8 @@ vi.mock('convex/react', () => {
     ConvexReactClient: class {
       constructor() {}
     },
-    ConvexProviderWithAuth: ({ children }: { children?: React.ReactNode }) => React.createElement(React.Fragment, null, children),
+    ConvexProviderWithAuth: ({ children }: { children?: React.ReactNode }) =>
+      React.createElement(React.Fragment, null, children),
     // Keep hooks mocked for components that rely on them
     useQuery: vi.fn(),
     useMutation: vi.fn(),

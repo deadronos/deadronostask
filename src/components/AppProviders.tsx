@@ -1,9 +1,10 @@
 'use client';
 
 import { ConvexProviderWithAuth, ConvexReactClient } from 'convex/react';
-import type { Session } from 'next-auth';
 import { SessionProvider, useSession } from 'next-auth/react';
 import * as React from 'react';
+
+import type { Session } from '@/auth/types';
 
 function useConvexAuth() {
   const { data: session, status, update } = useSession();

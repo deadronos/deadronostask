@@ -5,7 +5,6 @@ import { describe, expect, it } from 'vitest';
 import { SearchProvider, useSearch } from '@/components/search-context';
 import { SearchBox } from '@/components/SearchBox';
 
-
 function SearchStateProbe() {
   const { query } = useSearch();
   return <div data-testid="query">{query}</div>;

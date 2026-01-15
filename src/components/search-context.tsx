@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import * as React from "react";
+import * as React from 'react';
 
 const SearchContext = React.createContext<{
   query: string;
@@ -8,18 +8,14 @@ const SearchContext = React.createContext<{
 } | null>(null);
 
 export function SearchProvider({ children }: { children: React.ReactNode }) {
-  const [query, setQuery] = React.useState("");
-  return (
-    <SearchContext.Provider value={{ query, setQuery }}>
-      {children}
-    </SearchContext.Provider>
-  );
+  const [query, setQuery] = React.useState('');
+  return <SearchContext.Provider value={{ query, setQuery }}>{children}</SearchContext.Provider>;
 }
 
 export function useSearch() {
   const ctx = React.useContext(SearchContext);
   if (!ctx) {
-    throw new Error("useSearch must be used within SearchProvider");
+    throw new Error('useSearch must be used within SearchProvider');
   }
   return ctx;
 }

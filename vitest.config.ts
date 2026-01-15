@@ -24,18 +24,18 @@ export default defineConfig({
       provider: 'istanbul',
       reporter: ['text', 'lcov', 'html'],
       include: ['src/**/*.{ts,tsx}'],
-      exclude: ['tests/**', 'src/convex/_generated/**', 'node_modules/**']
+      exclude: ['tests/**', 'src/convex/_generated/**', 'node_modules/**'],
     },
 
     // Fail the run if no tests are found (helpful in CI)
     passWithNoTests: false,
-    slowTestThreshold: 500
+    slowTestThreshold: 500,
   },
 
   // Resolve `@/*` imports to ./src for tests and tooling parity with TS paths
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src')
-    }
-  }
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
 });

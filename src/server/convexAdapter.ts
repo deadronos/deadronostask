@@ -10,6 +10,7 @@ import type {
   VerificationToken,
 } from 'next-auth/adapters';
 
+// eslint-disable-next-line import/no-unresolved -- Convex generates these files at build time
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
 
@@ -43,8 +44,6 @@ type ConvexUser = {
   emailVerified?: number | null;
   image?: string | null;
 };
-
-// type ConvexAccount = AdapterAccount & { userId: string }; // removed - unused
 
 type ConvexSession = {
   sessionToken: string;

@@ -50,13 +50,7 @@ describe('TaskItem', () => {
 
     useMutationMock.mockReturnValue(vi.fn());
 
-    render(
-      <TaskItem
-        task={task}
-        labelById={new Map([[labelId, label]])}
-        onEdit={vi.fn()}
-      />,
-    );
+    render(<TaskItem task={task} labelById={new Map([[labelId, label]])} onEdit={vi.fn()} />);
 
     expect(screen.getByText('Finish quarterly plan')).toBeInTheDocument();
     expect(screen.getByText('LOW')).toBeInTheDocument();
@@ -68,7 +62,6 @@ describe('TaskItem', () => {
     const dueBadge = screen.getByText(dueLabel);
     expect(dueBadge).toHaveClass('bg-danger');
     expect(screen.getByText('Design')).toBeInTheDocument();
-
   });
 
   it('toggles completion when checkbox is clicked', async () => {
@@ -77,9 +70,7 @@ describe('TaskItem', () => {
     const removeMock = vi.fn();
     useMutationMock.mockReturnValueOnce(toggleMock).mockReturnValueOnce(removeMock);
 
-    render(
-      <TaskItem task={baseTask} labelById={new Map()} onEdit={vi.fn()} />,
-    );
+    render(<TaskItem task={baseTask} labelById={new Map()} onEdit={vi.fn()} />);
 
     const checkbox = screen.getByLabelText('Mark complete');
     await user.click(checkbox);
