@@ -20,10 +20,21 @@ if (!CONVEX_URL) {
   throw new Error('Missing NEXT_PUBLIC_CONVEX_URL for Convex adapter');
 }
 if (!ADAPTER_SECRET) {
-  throw new Error('Missing CONVEX_AUTH_ADAPTER_SECRET for Convex adapter');
+  // During test runs we may not have an adapter secret set; defer throwing until the adapter is created
+  // so tests that only import types or mock the module won't fail at import time.
+  // Keep a warning to catch misconfiguration in non-test environments.
+  if (process.env.NODE_ENV !== 'test') {
+    throw new Error('Missing CONVEX_AUTH_ADAPTER_SECRET for Convex adapter');
+  }
 }
 
-const client = new ConvexHttpClient(CONVEX_URL);
+// Defer creating the HTTP client until the adapter is constructed so tests can mock `convex/browser`
+function createClient() {
+  if (!CONVEX_URL) {
+    throw new Error('Missing NEXT_PUBLIC_CONVEX_URL for Convex adapter');
+  }
+  return new ConvexHttpClient(CONVEX_URL);
+}
 
 type ConvexUser = {
   id: string;
@@ -101,6 +112,7 @@ function mapAuthenticator(authenticator: ConvexAuthenticator): AdapterAuthentica
 }
 
 export function ConvexAdapter(): Adapter {
+  const client = createClient();
   return {
     async createUser(data) {
       const { id: _ignored, ...userData } = data;
@@ -116,6 +128,7 @@ export function ConvexAdapter(): Adapter {
       });
       return user ? mapUser(user) : null;
     },
+
     async getUser(id) {
       const user = await client.query(api.authAdapter.getUser, {
         secret: ADAPTER_SECRET as string,

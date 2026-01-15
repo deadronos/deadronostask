@@ -1,9 +1,11 @@
 // Ensure test env has a Convex URL so any module that constructs a client at import time doesn't throw
 process.env.NEXT_PUBLIC_CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL ?? 'http://localhost';
+// If a Convex adapter secret is required by server-only modules, make a harmless default during tests
+process.env.CONVEX_AUTH_ADAPTER_SECRET = process.env.CONVEX_AUTH_ADAPTER_SECRET ?? 'test-secret';
 
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 
 vi.mock('lucide-react', () => {
   return new Proxy(
@@ -27,11 +29,29 @@ vi.mock('sonner', () => ({
   },
 }));
 
-// Provide a lightweight global mock for Convex hooks so importing components
-// during tests doesn't initialize real clients or subscriptions.
-vi.mock('convex/react', () => ({
-  useQuery: vi.fn(),
-  useMutation: vi.fn(),
+// Provide a lightweight global mock for Convex so importing components
+// during tests doesn't initialize real clients, subscriptions, or make network calls.
+vi.mock('convex/react', () => {
+  // Use the React import above
+  return {
+    // Stub the client and provider used in AppProviders so no network is attempted at import time
+    ConvexReactClient: class {
+      constructor() {}
+    },
+    ConvexProviderWithAuth: ({ children }: { children?: React.ReactNode }) => React.createElement(React.Fragment, null, children),
+    // Keep hooks mocked for components that rely on them
+    useQuery: vi.fn(),
+    useMutation: vi.fn(),
+  };
+});
+
+// Also stub the browser HTTP client to avoid any accidental network activity
+vi.mock('convex/browser', () => ({
+  ConvexHttpClient: class {
+    constructor() {}
+    query = vi.fn();
+    mutation = vi.fn();
+  },
 }));
 
 // Prevent importing the generated Convex API (which pulls in `convex/server`) during tests.
@@ -50,3 +70,10 @@ vi.mock('@/convex/_generated/api', () => ({
     authAdapter: {},
   },
 }));
+
+// Provide per-test helpers and ensure mocks are reset between tests.
+import { resetConvexMocks } from './utils/mocks/convex';
+
+afterEach(() => {
+  resetConvexMocks();
+});
