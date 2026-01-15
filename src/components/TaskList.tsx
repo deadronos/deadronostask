@@ -26,7 +26,8 @@ export function TaskList({
   projectId?: Id<'projects'> | null;
   allowReorder?: boolean;
 }) {
-  const labels = useQuery(api.labels.list) ?? [];
+  const labelsQuery = useQuery(api.labels.list);
+  const labels = React.useMemo(() => labelsQuery ?? [], [labelsQuery]);
   const reorder = useMutation(api.tasks.reorderInProject);
   const [selectedLabels, setSelectedLabels] = React.useState<Id<'labels'>[]>([]);
   const [priorityFilter, setPriorityFilter] = React.useState<'all' | 'low' | 'med' | 'high'>('all');
