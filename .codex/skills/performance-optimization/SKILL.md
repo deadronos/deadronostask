@@ -37,8 +37,7 @@ Use this skill to make performance work repeatable and evidence-driven.
 ## R3F / Three.js tactics (common wins)
 
 - **Draw calls**: prefer instancing/merging; reduce unique materials.
-- **DPR**: cap DPR or use dynamic DPR.
-  - If you need dynamic DPR, use the existing `dynamic-res-scaler` skill.
+- **DPR**: cap DPR or apply device-specific caps. Dynamic DPR techniques are intended for R3F projects and are not applicable in this repo.
 - **Per-frame work**: keep `useFrame` callbacks tiny; avoid allocations inside `useFrame`.
 - **Memoization**: cache geometries/materials/textures; reuse vectors/quaternions.
 - **Postprocessing**: disable/scale effects on low perf; prefer fewer passes.
@@ -53,5 +52,5 @@ Use this skill to make performance work repeatable and evidence-driven.
 ## When to load deeper reference material
 
 - For generic perf checklists across frontend/backend/db: read `references/performance-optimization.md`.
-- For dynamic DPR in this repo: read the `dynamic-res-scaler` skill.
+- Dynamic DPR techniques are not applicable for this repository (no R3F usage).
 - For offloading CPU-heavy loops: consider the `js-worker-multithreading` skill.
