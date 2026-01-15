@@ -19,7 +19,7 @@ export default defineConfig({
     include: ['tests/**/*.{test,spec}.{ts,tsx}'],
     restoreMocks: true,
     clearMocks: true,
-    pool: 'forks',
+    pool: 'threads',
     maxWorkers: 1,
     fileParallelism: false,
   },
