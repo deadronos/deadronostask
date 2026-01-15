@@ -4,12 +4,8 @@ import { fileURLToPath } from "node:url";
 import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
 import tsParser from "@typescript-eslint/parser";
-import tsPlugin from "@typescript-eslint/eslint-plugin";
-import importPlugin from "eslint-plugin-import";
-import jsxA11y from "eslint-plugin-jsx-a11y";
-import reactPlugin from "eslint-plugin-react";
-import reactHooks from "eslint-plugin-react-hooks";
 import unusedImports from "eslint-plugin-unused-imports";
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,6 +23,8 @@ export default [
       "dist/**",
       "coverage/**",
       "convex/_generated/**",
+      ".github/**",
+      ".codex/**",
     ],
     linterOptions: {
       reportUnusedDisableDirectives: true,
@@ -34,8 +32,7 @@ export default [
   },
   js.configs.recommended,
   ...compat.extends(
-    "next/core-web-vitals",
-    "next/typescript",
+    "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
     "plugin:jsx-a11y/recommended",
@@ -52,21 +49,22 @@ export default [
         ecmaFeatures: { jsx: true },
       },
     },
+    // Plugins are loaded via `extends` where possible. Keep rules referencing plugin names. Only
+    // attach lightweight plugin objects that don't introduce circular references.
     plugins: {
-      "@typescript-eslint": tsPlugin,
-      import: importPlugin,
-      "jsx-a11y": jsxA11y,
-      react: reactPlugin,
-      "react-hooks": reactHooks,
-      "unused-imports": unusedImports,
+      "unused-imports": unusedImports
     },
+
     settings: {
       react: { version: "detect" },
       "import/resolver": {
         typescript: {
           project: "./tsconfig.json",
         },
+        node: { extensions: [".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"] }
       },
+      // Treat some virtual/core modules (like Next helpers) as known
+      "import/core-modules": ["server-only"],
     },
     rules: {
       "no-console": ["warn", { allow: ["warn", "error"] }],
@@ -96,8 +94,31 @@ export default [
       "@typescript-eslint/no-explicit-any": "warn",
     },
   },
+  // Tailwind config is TS but not included in the TS project. Use JS parser and Node globals to avoid
+  // type-aware parsing errors.
   {
-    files: ["**/*.ts", "**/*.tsx"],
+    files: ["tailwind.config.ts"],
+    languageOptions: {
+      // Use the TypeScript parser for `tailwind.config.ts` but DO NOT provide a `project` option
+      // so it runs in parser-only mode (no type-checking).
+      parser: tsParser,
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+      },
+      globals: {
+        module: "readonly",
+        require: "readonly",
+        process: "readonly",
+        __dirname: "readonly",
+        __filename: "readonly",
+        console: "readonly",
+      },
+    },
+  },
+  {
+    // Type-aware rules (project-based) only run for source files under `src/` to avoid
+    // accidentally applying them to build/config files like `tailwind.config.ts`.
+    files: ["src/**/*.ts", "src/**/*.tsx"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -105,5 +126,22 @@ export default [
         tsconfigRootDir: __dirname,
       },
     },
+  },
+  // Node-specific files (configs, scripts) should use Node environment
+  {
+    files: ["**/*.{cjs,mjs}", "*.config.{js,cjs,mjs}", "next.config.mjs"],
+    languageOptions: {
+      globals: {
+        module: "readonly",
+        require: "readonly",
+        process: "readonly",
+        __dirname: "readonly",
+        __filename: "readonly",
+        console: "readonly",
+      },
+    },
+    rules: {
+      "no-console": "off"
+    }
   },
 ];
