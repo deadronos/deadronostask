@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowDown, ArrowUp, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
@@ -8,6 +9,14 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import { cn } from "@/lib/utils";
+
+const labelColorClasses: Record<string, string> = {
+  "#0EA5E9": "bg-sky-500",
+  "#F97316": "bg-orange-500",
+  "#10B981": "bg-emerald-500",
+  "#E11D48": "bg-rose-600",
+  "#6366F1": "bg-indigo-500"
+};
 
 export function TaskItem({
   task,
@@ -32,7 +41,14 @@ export function TaskItem({
     <div className="group flex items-start gap-3 rounded-xl border border-border bg-white/80 p-4 shadow-xs transition hover:shadow-md dark:bg-slate-950/60">
       <Checkbox
         checked={task.isCompleted}
-        onCheckedChange={() => toggle({ id: task._id })}
+        onCheckedChange={async () => {
+          try {
+            await toggle({ id: task._id });
+          } catch (error) {
+            console.error(error);
+            toast.error("Could not update task");
+          }
+        }}
         aria-label={task.isCompleted ? "Mark incomplete" : "Mark complete"}
       />
       <div className="min-w-0 flex-1">
@@ -68,8 +84,10 @@ export function TaskItem({
                   className="inline-flex items-center gap-2 rounded-full border border-border px-2.5 py-1 text-xs"
                 >
                   <span
-                    className="h-2 w-2 rounded-full"
-                    style={{ backgroundColor: label.color }}
+                    className={cn(
+                      "h-2 w-2 rounded-full",
+                      labelColorClasses[label.color] ?? "bg-muted"
+                    )}
                   />
                   {label.name}
                 </span>
@@ -82,7 +100,18 @@ export function TaskItem({
         <Button size="sm" variant="ghost" onClick={() => onEdit(task)}>
           <Pencil className="h-4 w-4" />
         </Button>
-        <Button size="sm" variant="ghost" onClick={() => remove({ id: task._id })}>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={async () => {
+            try {
+              await remove({ id: task._id });
+            } catch (error) {
+              console.error(error);
+              toast.error("Could not delete task");
+            }
+          }}
+        >
           <Trash2 className="h-4 w-4 text-danger" />
         </Button>
         {onMoveUp && (

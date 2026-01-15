@@ -1,0 +1,7 @@
+.next
+dist
+out
+coverage
+node_modules
+convex/_generated
+public

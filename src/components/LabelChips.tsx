@@ -4,10 +4,19 @@ import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 
 const colors = ["#0EA5E9", "#F97316", "#10B981", "#E11D48", "#6366F1"];
+
+const labelColorClasses: Record<string, string> = {
+  "#0EA5E9": "bg-sky-500",
+  "#F97316": "bg-orange-500",
+  "#10B981": "bg-emerald-500",
+  "#E11D48": "bg-rose-600",
+  "#6366F1": "bg-indigo-500"
+};
 
 type Props = {
   selectedIds?: Id<"labels">[];
@@ -40,13 +49,23 @@ export function LabelChips({
     const name = window.prompt("Label name?");
     if (!name) return;
     const color = colors[Math.floor(Math.random() * colors.length)];
-    await createLabel({ name, color });
+    try {
+      await createLabel({ name, color });
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not create label");
+    }
   };
 
   const handleRename = async (id: Id<"labels">, current: string) => {
     const name = window.prompt("Rename label", current);
     if (!name || name === current) return;
-    await renameLabel({ id, name });
+    try {
+      await renameLabel({ id, name });
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not rename label");
+    }
   };
 
   return (
@@ -80,8 +99,10 @@ export function LabelChips({
                 onClick={() => handleToggle(label._id)}
               >
                 <span
-                  className="h-2.5 w-2.5 rounded-full"
-                  style={{ backgroundColor: label.color }}
+                  className={cn(
+                    "h-2.5 w-2.5 rounded-full",
+                    labelColorClasses[label.color] ?? "bg-muted"
+                  )}
                 />
                 {label.name}
               </button>
@@ -90,6 +111,7 @@ export function LabelChips({
                   <button
                     type="button"
                     onClick={() => handleRename(label._id, label.name)}
+                    aria-label={`Rename label ${label.name}`}
                   >
                     <Pencil className="h-3 w-3" />
                   </button>
@@ -97,9 +119,13 @@ export function LabelChips({
                     type="button"
                     onClick={() => {
                       if (window.confirm("Delete label?")) {
-                        removeLabel({ id: label._id });
+                        removeLabel({ id: label._id }).catch((error) => {
+                          console.error(error);
+                          toast.error("Could not delete label");
+                        });
                       }
                     }}
+                    aria-label={`Delete label ${label.name}`}
                   >
                     <Trash2 className="h-3 w-3 text-danger" />
                   </button>

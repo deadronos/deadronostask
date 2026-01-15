@@ -5,6 +5,7 @@ import { Plus, Sparkles } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
+import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { TaskItem } from "./TaskItem";
 import { TaskEditorDialog } from "./TaskEditorDialog";
@@ -58,10 +59,15 @@ export function TaskList({
     const ordered = [...tasks];
     const [moved] = ordered.splice(from, 1);
     ordered.splice(to, 0, moved);
-    await reorder({
-      projectId: projectId ?? null,
-      orderedIds: ordered.map((task) => task._id)
-    });
+    try {
+      await reorder({
+        projectId: projectId ?? null,
+        orderedIds: ordered.map((task) => task._id)
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not reorder tasks");
+    }
   };
 
   return (
@@ -88,8 +94,11 @@ export function TaskList({
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <LabelChips selectedIds={selectedLabels} onChange={setSelectedLabels} />
         <div className="flex items-center gap-2">
-          <label className="text-xs text-muted-foreground">Priority</label>
+          <label className="text-xs text-muted-foreground" htmlFor="tasklist-priority">
+            Priority
+          </label>
           <select
+            id="tasklist-priority"
             className="h-9 rounded-md border border-border bg-white/80 px-3 text-sm dark:bg-slate-950/50"
             value={priorityFilter}
             onChange={(event) =>

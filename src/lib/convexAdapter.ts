@@ -99,11 +99,12 @@ function mapAuthenticator(authenticator: ConvexAuthenticator): AdapterAuthentica
 export function ConvexAdapter(): Adapter {
   return {
     async createUser(data) {
+      const { id: _ignored, ...userData } = data;
       const user = await client.mutation(api.authAdapter.createUser, {
         secret: ADAPTER_SECRET,
         data: {
-          ...data,
-          emailVerified: toEpoch(data.emailVerified)
+          ...userData,
+          emailVerified: toEpoch(userData.emailVerified)
         }
       });
       return mapUser(user);
@@ -131,12 +132,13 @@ export function ConvexAdapter(): Adapter {
       return user ? mapUser(user) : null;
     },
     async updateUser(data) {
+      const { id, ...userData } = data;
       const user = await client.mutation(api.authAdapter.updateUser, {
         secret: ADAPTER_SECRET,
-        id: data.id,
+        id,
         data: {
-          ...data,
-          emailVerified: toEpoch(data.emailVerified)
+          ...userData,
+          emailVerified: toEpoch(userData.emailVerified)
         }
       });
       return mapUser(user);

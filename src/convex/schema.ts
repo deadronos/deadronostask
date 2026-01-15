@@ -5,7 +5,7 @@ const schema = defineSchema({
   users: defineTable({
     name: v.optional(v.string()),
     email: v.optional(v.string()),
-    emailVerified: v.optional(v.number()),
+    emailVerified: v.optional(v.union(v.null(), v.number())),
     image: v.optional(v.string())
   }).index("email", ["email"]),
   accounts: defineTable({

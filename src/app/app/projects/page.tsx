@@ -5,6 +5,16 @@ import { FolderOpen, Plus } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+const projectColorClasses: Record<string, { bg: string; text: string }> = {
+  "#F97316": { bg: "bg-orange-500/15", text: "text-orange-500" },
+  "#0EA5E9": { bg: "bg-sky-500/15", text: "text-sky-500" },
+  "#10B981": { bg: "bg-emerald-500/15", text: "text-emerald-500" },
+  "#8B5CF6": { bg: "bg-violet-500/15", text: "text-violet-500" },
+  "#F43F5E": { bg: "bg-pink-500/15", text: "text-pink-500" }
+};
 
 export default function ProjectsPage() {
   const projects = useQuery(api.projects.list) ?? [];
@@ -32,11 +42,16 @@ export default function ProjectsPage() {
           onClick={async () => {
             const name = window.prompt("Project name?");
             if (!name) return;
-            await createProject({
-              name,
-              color: "#0EA5E9",
-              icon: "📌"
-            });
+            try {
+              await createProject({
+                name,
+                color: "#0EA5E9",
+                icon: "📌"
+              });
+            } catch (error) {
+              console.error(error);
+              toast.error("Could not create project");
+            }
           }}
         >
           <Plus className="h-4 w-4" />
@@ -62,8 +77,11 @@ export default function ProjectsPage() {
             >
               <div className="flex items-center gap-3">
                 <div
-                  className="grid h-12 w-12 place-items-center rounded-2xl text-xl"
-                  style={{ backgroundColor: `${project.color}22`, color: project.color }}
+                  className={cn(
+                    "grid h-12 w-12 place-items-center rounded-2xl text-xl",
+                    projectColorClasses[project.color]?.bg ?? "bg-muted",
+                    projectColorClasses[project.color]?.text ?? "text-foreground"
+                  )}
                 >
                   {project.icon}
                 </div>
