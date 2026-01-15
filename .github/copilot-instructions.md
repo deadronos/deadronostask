@@ -10,7 +10,7 @@ Use these instructions for all changes in this repo. Keep responses brief,
 impersonal, and follow existing patterns. Prefer minimal diffs and avoid
 reformatting unrelated code.
 
-Also refer to root `AGENTS.md` for mandatory reading.
+Also refer to root `AGENTS.md` for mandatory reading for agentic use.
 
 ## Skills
 
