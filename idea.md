@@ -1,4 +1,4 @@
-# idea.md — Next.js + Convex + Auth.js (NextAuth v5) Task Manager (Vercel *.vercel.app friendly)
+# idea.md — Next.js + Convex + Auth.js (NextAuth v5) Task Manager (Vercel \*.vercel.app friendly)
 
 You are an autonomous coding agent (e.g. Codex CLI). Generate a **complete, runnable repository** for a modern task manager web app.
 
@@ -26,7 +26,6 @@ The repo must run locally with:
 
 - Create `auth.ts` that exports `{ handlers, signIn, signOut, auth }` via `NextAuth(...)` (v5 style).
 - Create `app/api/auth/[...nextauth]/route.ts` that re-exports route handlers:
-
   - `export const { GET, POST } = handlers`
 
 - Add middleware to keep sessions alive and to protect authenticated routes:
@@ -36,6 +35,7 @@ The repo must run locally with:
 ### B) Auth.js + Convex authentication (JWT issued by Next.js, verified by Convex)
 
 Use the Convex “NextAuth adapter” approach:
+
 - Next.js issues a signed JWT (“convexToken”) in the Auth.js `session` callback.
 - Convex validates the token using a public key served from **Convex HTTP routes** (`/.well-known/jwks.json` and `/.well-known/openid-configuration`).
 - Convex auth config uses `domain: process.env.CONVEX_SITE_URL` and `applicationID: "convex"` (audience).
@@ -43,6 +43,7 @@ Use the Convex “NextAuth adapter” approach:
 ### C) Auth.js uses Convex as its database adapter
 
 Implement the Convex adapter endpoints and the Auth.js models in Convex:
+
 - Tables: `users`, `accounts`, `sessions`, `verificationTokens`, `authenticators`
 - Indexes as required by Auth.js models
 - An adapter secret `CONVEX_AUTH_ADAPTER_SECRET` must be required for calling adapter endpoints.
@@ -50,9 +51,10 @@ Implement the Convex adapter endpoints and the Auth.js models in Convex:
 ### D) Per-user authorization in Convex functions
 
 Every app query/mutation must:
-1) `const identity = await ctx.auth.getUserIdentity();`
-2) Throw if unauthenticated
-3) Use `identity.subject` (the Convex user id) for ownership checks, and only access rows owned by that user.
+
+1. `const identity = await ctx.auth.getUserIdentity();`
+2. Throw if unauthenticated
+3. Use `identity.subject` (the Convex user id) for ownership checks, and only access rows owned by that user.
 
 ---
 
@@ -72,6 +74,7 @@ Every app query/mutation must:
 ### Task features
 
 Each task supports:
+
 - `title` (required)
 - `description` (optional, markdown allowed)
 - `isCompleted` boolean
@@ -159,7 +162,6 @@ Each task supports:
   - Optional: Email provider (Resend) if you want passwordless login
 - Use `adapter: ConvexAdapter` (your adapter module)
 - In `callbacks.session`, issue a Convex JWT called `convexToken`:
-
   - `issuer` must be the Convex “site” URL:
     - `const CONVEX_SITE_URL = NEXT_PUBLIC_CONVEX_URL.replace(/\.cloud$/, ".site")`
   - `audience` must be `"convex"`
@@ -218,6 +220,7 @@ This makes Convex validate JWTs issued by your Next.js server using the JWKS ser
 ### 1) Schema additions in `convex/schema.ts`
 
 Implement the Auth.js adapter tables exactly as the Auth.js adapter model expects:
+
 - `users` (index: `email`)
 - `sessions` (indexes: `sessionToken`, `userId`)
 - `accounts` (indexes: `providerAndAccountId`, `userId`)
@@ -235,6 +238,7 @@ Implement all endpoints necessary for the Auth.js Adapter interface, and secure 
 - Reject if missing or wrong
 
 Use `convex-helpers` custom functions for this (customQuery/customMutation), then implement endpoints like:
+
 - `createUser`, `getUser`, `getUserByEmail`, `getUserByAccount`, `updateUser`, `deleteUser`
 - `linkAccount`, `unlinkAccount`, `getAccount`
 - `createSession`, `getSessionAndUser`, `updateSession`, `deleteSession`
@@ -258,6 +262,7 @@ Use `identity.subject` as the user id (this should be the `Id<"users">` from Aut
 ### Tables
 
 #### `projects`
+
 - ownerId: Id<"users">
 - name: string
 - color: string
@@ -265,20 +270,22 @@ Use `identity.subject` as the user id (this should be the `Id<"users">` from Aut
 - order: number
 - createdAt: number
 - updatedAt: number
-Indexes:
+  Indexes:
 - by_owner_order: (ownerId, order)
 - by_owner_name: (ownerId, name)
 
 #### `labels`
+
 - ownerId: Id<"users">
 - name: string
 - color: string
 - createdAt: number
 - updatedAt: number
-Indexes:
+  Indexes:
 - by_owner_name: (ownerId, name)
 
 #### `tasks`
+
 - ownerId: Id<"users">
 - title: string
 - description: string
@@ -290,7 +297,7 @@ Indexes:
 - order: number
 - createdAt: number
 - updatedAt: number
-Indexes:
+  Indexes:
 - by_owner_updatedAt: (ownerId, updatedAt)
 - by_owner_project_order: (ownerId, projectId, order)
 - by_owner_dueDate: (ownerId, dueDate)
@@ -301,6 +308,7 @@ Indexes:
 ## Convex app API (implement all)
 
 ### `convex/lib/auth.ts`
+
 Provide helpers:
 
 - `requireUserId(ctx): Promise<Id<"users">>`:
@@ -311,6 +319,7 @@ Provide helpers:
 - `assertOwned(doc, ownerId)` helper for readable checks
 
 ### projects
+
 - `list()`
 - `create({ name, color, icon })`
 - `rename({ id, name })`
@@ -318,12 +327,14 @@ Provide helpers:
 - `remove({ id })` (also unassign tasks.projectId = null)
 
 ### labels
+
 - `list()`
 - `create({ name, color })`
 - `rename({ id, name })`
 - `remove({ id })` (also remove from tasks.labelIds)
 
 ### tasks
+
 - `listInbox()` (open tasks where projectId is null)
 - `listByProject({ projectId })`
 - `listToday()` (open tasks due today OR overdue)
@@ -344,6 +355,7 @@ Security for each: enforce `ownerId` matches, never leak other users’ docs.
 ### Providers
 
 Create a client provider that supplies:
+
 - `SessionProvider` (from `next-auth/react`) with a `session` prop passed from server layout
 - `ConvexProviderWithAuth` with a `useAuth` hook that returns:
   - `isAuthenticated`
@@ -351,6 +363,7 @@ Create a client provider that supplies:
   - `fetchAccessToken({ forceRefreshToken })` → returns `session.convexToken` (and uses `update()` when force-refresh)
 
 Root layout:
+
 - Minimal public provider wrapping
 - Authenticated layout (`app/app/layout.tsx`) should:
   - call `const session = await auth()` on the server
@@ -359,6 +372,7 @@ Root layout:
 ### UI
 
 Build a cohesive UI:
+
 - App shell layout: sidebar + topbar + main
 - Sidebar:
   - nav links (Today, Inbox, Projects, Completed, Settings)
@@ -380,6 +394,7 @@ Prefer mostly client components inside `/app/*` so hooks work naturally.
 ### `.env.local` (Next.js)
 
 Required:
+
 - `NEXT_PUBLIC_CONVEX_URL` (created by `npx convex dev`)
 - `AUTH_SECRET` (random, required by Auth.js)
 - `AUTH_GITHUB_ID`
@@ -388,11 +403,13 @@ Required:
 - `CONVEX_AUTH_ADAPTER_SECRET` (random shared secret used to call Convex adapter endpoints)
 
 Optional (email magic links):
+
 - `AUTH_RESEND_KEY` (or whichever Email provider key you implement)
 
 ### Convex dashboard env vars (Development + Production deployments)
 
 Required:
+
 - `JWKS` (generated)
 - `CONVEX_AUTH_ADAPTER_SECRET` (same secret as Next.js)
 
@@ -400,24 +417,24 @@ Required:
 
 ## Local development steps (must document in README)
 
-1) Create Next.js + Convex:
+1. Create Next.js + Convex:
    - `npx create-next-app@latest ...`
    - `npm install convex`
    - `npx convex dev`
-2) Install auth deps:
+2. Install auth deps:
    - `npm install next-auth jose convex-helpers`
-3) Generate keys:
+3. Generate keys:
    - `node generateKeys.mjs`
    - Put `CONVEX_AUTH_PRIVATE_KEY` into `.env.local`
    - Put `JWKS` into Convex dashboard env vars
-4) Create secrets:
+4. Create secrets:
    - `AUTH_SECRET` (via `npx auth secret` or openssl)
    - `CONVEX_AUTH_ADAPTER_SECRET` (random)
-5) Configure GitHub OAuth:
+5. Configure GitHub OAuth:
    - callbacks:
      - `http://localhost:3000/api/auth/callback/github`
      - `https://<project>.vercel.app/api/auth/callback/github`
-6) Run:
+6. Run:
    - `npx convex dev`
    - `npm run dev`
 
@@ -425,19 +442,19 @@ Required:
 
 ## Vercel deployment (must document in README)
 
-1) Push repo to GitHub and import into Vercel
-2) In Vercel env vars (Production):
+1. Push repo to GitHub and import into Vercel
+2. In Vercel env vars (Production):
    - `AUTH_SECRET`
    - `AUTH_GITHUB_ID`
    - `AUTH_GITHUB_SECRET`
    - `CONVEX_AUTH_PRIVATE_KEY`
    - `CONVEX_AUTH_ADAPTER_SECRET`
-3) Create a Convex **deploy key** and set Vercel env var:
+3. Create a Convex **deploy key** and set Vercel env var:
    - `CONVEX_DEPLOY_KEY`
-4) In Convex dashboard env vars (Production deployment):
+4. In Convex dashboard env vars (Production deployment):
    - `JWKS`
    - `CONVEX_AUTH_ADAPTER_SECRET`
-5) Vercel Build Command:
+5. Vercel Build Command:
    - `npx convex deploy --cmd 'npm run build' --cmd-url-env-var-name NEXT_PUBLIC_CONVEX_URL`
 
 ---

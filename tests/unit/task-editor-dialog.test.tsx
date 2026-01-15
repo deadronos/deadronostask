@@ -26,12 +26,8 @@ describe('TaskEditorDialog', () => {
     const labelId = 'label-1' as Id<'labels'>;
 
     useQueryMock
-      .mockReturnValueOnce([
-        { _id: projectId, name: 'Marketing' } as Doc<'projects'>,
-      ])
-      .mockReturnValueOnce([
-        { _id: labelId, name: 'Design', color: '#0EA5E9' } as Doc<'labels'>,
-      ]);
+      .mockReturnValueOnce([{ _id: projectId, name: 'Marketing' } as Doc<'projects'>])
+      .mockReturnValueOnce([{ _id: labelId, name: 'Design', color: '#0EA5E9' } as Doc<'labels'>]);
 
     const dueLocal = new Date(2026, 1, 1, 12, 0, 0).getTime();
     const initialTask = {

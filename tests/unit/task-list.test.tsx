@@ -20,9 +20,7 @@ vi.mock('@/components/LabelChips', () => ({
 }));
 
 vi.mock('@/components/TaskItem', () => ({
-  TaskItem: ({ task }: { task: Doc<'tasks'> }) => (
-    <div data-testid="task-item">{task.title}</div>
-  ),
+  TaskItem: ({ task }: { task: Doc<'tasks'> }) => <div data-testid="task-item">{task.title}</div>,
 }));
 
 vi.mock('@/components/TaskEditorDialog', () => ({
@@ -60,9 +58,7 @@ describe('TaskList', () => {
       } as Doc<'tasks'>,
     ];
 
-    render(
-      <TaskList title="Today" subtitle="Focus" tasks={tasks} allowReorder={false} />,
-    );
+    render(<TaskList title="Today" subtitle="Focus" tasks={tasks} allowReorder={false} />);
 
     expect(screen.getAllByTestId('task-item')).toHaveLength(2);
     await user.selectOptions(screen.getByLabelText('Priority'), 'high');
@@ -94,9 +90,7 @@ describe('TaskList', () => {
       } as Doc<'tasks'>,
     ];
 
-    render(
-      <TaskList title="Inbox" subtitle="All tasks" tasks={tasks} allowReorder={false} />,
-    );
+    render(<TaskList title="Inbox" subtitle="All tasks" tasks={tasks} allowReorder={false} />);
 
     expect(screen.getAllByTestId('task-item')).toHaveLength(2);
     await user.click(screen.getByRole('button', { name: 'Filter Labels' }));

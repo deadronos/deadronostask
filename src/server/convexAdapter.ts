@@ -45,8 +45,6 @@ type ConvexUser = {
   image?: string | null;
 };
 
-// type ConvexAccount = AdapterAccount & { userId: string }; // removed - unused
-
 type ConvexSession = {
   sessionToken: string;
   userId: string;
