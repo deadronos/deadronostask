@@ -72,9 +72,29 @@ vi.mock('@/convex/_generated/api', () => ({
   },
 }));
 
-// Provide per-test helpers and ensure mocks are reset between tests.
-import { resetConvexMocks } from './utils/mocks/convex';
+// Provide per-test helpers and ensure convex-related mocks are reset and defaults applied before each test.
+import { resetConvexMocks, mockUseQueryReturn, mockUseMutationReturn } from './utils/mocks/convex';
+import { beforeEach } from 'vitest';
 
-afterEach(() => {
+// Global mock for next-auth so components that import SessionProvider or useSession don't try to contact real auth
+vi.mock('next-auth/react', () => ({
+  SessionProvider: ({ children }: { children?: React.ReactNode }) => React.createElement(React.Fragment, null, children),
+  useSession: vi.fn().mockReturnValue({ data: null, status: 'unauthenticated', update: vi.fn() }),
+  signOut: vi.fn(),
+}));
+
+// Global fetch stub to prevent accidental network calls in tests; tests can override with vi.spyOn(globalThis, 'fetch')
+if (!globalThis.fetch) {
+  // @ts-ignore - add a lightweight fetch mock
+  globalThis.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) });
+}
+
+beforeEach(() => {
   resetConvexMocks();
+  // Apply sane defaults for convex hooks so components that render without per-test setup behave consistently
+  mockUseQueryReturn(undefined);
+  mockUseMutationReturn(vi.fn());
+  // Re-stub fetch default so per-test overrides are predictable
+  // @ts-ignore
+  (globalThis.fetch as unknown) = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) });
 });
