@@ -1,10 +1,10 @@
 'use client';
 
-import { ConvexProviderWithAuth, ConvexReactClient } from 'convex/react';
-import { getSession, SessionProvider, useSession } from 'next-auth/react';
 import * as React from 'react';
 
 import type { Session } from '@/auth/types';
+import { getSessionClient, SessionProvider, useSession } from '@/lib/auth-client';
+import { ConvexProviderWithAuth, ConvexReactClient } from '@/lib/convex-client';
 
 function useConvexAuth() {
   const { data: session, status } = useSession();
@@ -14,7 +14,7 @@ function useConvexAuth() {
       if (!forceRefreshToken && session?.convexToken) {
         return session.convexToken;
       }
-      const refreshed = await getSession();
+      const refreshed = await getSessionClient();
       if (!refreshed?.convexToken) {
         console.error('Missing convexToken in session. Check auth callbacks and env config.');
       }

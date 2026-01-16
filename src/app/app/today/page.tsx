@@ -1,10 +1,9 @@
 'use client';
 
-import { useQuery } from 'convex/react';
-
 import { useSearch } from '@/components/search-context';
 import { TaskList } from '@/components/TaskList';
 import { api } from '@/convex/_generated/api';
+import { useQuery } from '@/lib/convex-client';
 
 export default function TodayPage() {
   const { query } = useSearch();

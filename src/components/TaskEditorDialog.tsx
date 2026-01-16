@@ -1,6 +1,5 @@
 'use client';
 
-import { useMutation, useQuery } from 'convex/react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -11,6 +10,7 @@ import { Textarea } from './ui/textarea';
 
 import { api } from '@/convex/_generated/api';
 import type { Doc, Id } from '@/convex/_generated/dataModel';
+import { useMutation, useQuery } from '@/lib/convex-client';
 import { cn } from '@/lib/utils';
 
 const priorities = [

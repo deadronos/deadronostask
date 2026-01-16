@@ -1,12 +1,12 @@
 'use client';
 
-import { useMutation, useQuery } from 'convex/react';
 import { FolderOpen, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { api } from '@/convex/_generated/api';
+import { useMutation, useQuery } from '@/lib/convex-client';
 import { cn } from '@/lib/utils';
 
 const projectColorClasses: Record<string, { bg: string; text: string }> = {

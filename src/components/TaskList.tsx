@@ -1,6 +1,5 @@
 'use client';
 
-import { useMutation, useQuery } from 'convex/react';
 import { Plus, Sparkles } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -12,6 +11,7 @@ import { Button } from './ui/button';
 
 import { api } from '@/convex/_generated/api';
 import type { Doc, Id } from '@/convex/_generated/dataModel';
+import { useMutation, useQuery } from '@/lib/convex-client';
 
 export function TaskList({
   title,

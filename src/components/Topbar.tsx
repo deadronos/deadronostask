@@ -1,10 +1,11 @@
 'use client';
 
 import { LogOut } from 'lucide-react';
-import { useSession, signOut } from 'next-auth/react';
 
 import { SearchBox } from './SearchBox';
 import { Button } from './ui/button';
+
+import { signOut, useSession } from '@/lib/auth-client';
 
 export function Topbar() {
   const { data: session } = useSession();

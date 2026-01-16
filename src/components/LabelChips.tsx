@@ -1,6 +1,5 @@
 'use client';
 
-import { useMutation, useQuery } from 'convex/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -8,6 +7,7 @@ import { Button } from './ui/button';
 
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
+import { useMutation, useQuery } from '@/lib/convex-client';
 import { cn } from '@/lib/utils';
 
 const colors = ['#0EA5E9', '#F97316', '#10B981', '#E11D48', '#6366F1'];

@@ -55,6 +55,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^9.39.2",
+    "@edge-runtime/vm": "^4.0.1",
     "@tailwindcss/postcss": "^4.1.18",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
@@ -65,6 +66,7 @@
     "@typescript-eslint/eslint-plugin": "^8.53.0",
     "@typescript-eslint/parser": "^8.53.0",
     "@vitejs/plugin-react": "^5.1.2",
+    "convex-test": "^0.0.41",
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.1.2",
     "eslint-config-prettier": "^10.1.8",

@@ -1,6 +1,5 @@
 'use client';
 
-import { useMutation } from 'convex/react';
 import { ArrowDown, ArrowUp, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -10,6 +9,7 @@ import { Checkbox } from './ui/checkbox';
 
 import { api } from '@/convex/_generated/api';
 import type { Doc, Id } from '@/convex/_generated/dataModel';
+import { useMutation } from '@/lib/convex-client';
 import { cn } from '@/lib/utils';
 
 const labelColorClasses: Record<string, string> = {

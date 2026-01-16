@@ -1,6 +1,5 @@
 'use client';
 
-import { useMutation, useQuery } from 'convex/react';
 import { ChevronDown, ChevronUp, Pencil, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -9,6 +8,7 @@ import { Button } from './ui/button';
 
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
+import { useMutation, useQuery } from '@/lib/convex-client';
 import { cn } from '@/lib/utils';
 
 const colors = ['#F97316', '#0EA5E9', '#10B981', '#8B5CF6', '#F43F5E'];

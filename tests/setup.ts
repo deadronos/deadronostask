@@ -5,8 +5,10 @@ process.env.CONVEX_AUTH_ADAPTER_SECRET = process.env.CONVEX_AUTH_ADAPTER_SECRET 
 
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
-import { vi, afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
+import { afterEach, beforeEach, vi } from 'vitest';
+
+import { mockUseMutationReturn, mockUseQueryReturn, resetConvexMocks } from './utils/mocks/convex';
 
 vi.mock('lucide-react', () => ({
   Search: () => React.createElement('span', { 'data-icon': 'Search' }),
@@ -30,22 +32,28 @@ vi.mock('sonner', () => ({
   },
 }));
 
+// Global mock for next-auth so components that import SessionProvider/useSession don't try to contact real auth.
+vi.mock('next-auth/react', () => ({
+  SessionProvider: ({ children }: { children?: React.ReactNode }) =>
+    React.createElement(React.Fragment, null, children),
+  useSession: vi.fn().mockReturnValue({ data: null, status: 'unauthenticated', update: vi.fn() }),
+  getSession: vi.fn(async () => null),
+  signOut: vi.fn(async () => undefined),
+}));
+
 // Provide a lightweight global mock for Convex so importing components
 // during tests doesn't initialize real clients, subscriptions, or make network calls.
-vi.mock('convex/react', () => {
-  // Use the React import above
-  return {
-    // Stub the client and provider used in AppProviders so no network is attempted at import time
-    ConvexReactClient: class {
-      constructor() {}
-    },
-    ConvexProviderWithAuth: ({ children }: { children?: React.ReactNode }) =>
-      React.createElement(React.Fragment, null, children),
-    // Keep hooks mocked for components that rely on them
-    useQuery: vi.fn(),
-    useMutation: vi.fn(),
-  };
-});
+vi.mock('convex/react', () => ({
+  // Stub the client and provider used in AppProviders so no network is attempted at import time
+  ConvexReactClient: class {
+    constructor() {}
+  },
+  ConvexProviderWithAuth: ({ children }: { children?: React.ReactNode }) =>
+    React.createElement(React.Fragment, null, children),
+  // Keep hooks mocked for components that rely on them
+  useQuery: vi.fn(),
+  useMutation: vi.fn(),
+}));
 
 // Also stub the browser HTTP client to avoid any accidental network activity
 vi.mock('convex/browser', () => ({
@@ -54,6 +62,29 @@ vi.mock('convex/browser', () => ({
     query = vi.fn();
     mutation = vi.fn();
   },
+}));
+
+// Route app-level adapters to mocks so UI tests never import server code directly.
+vi.mock('@/lib/convex-client', () => ({
+  ConvexReactClient: class {
+    constructor() {}
+  },
+  ConvexProviderWithAuth: ({ children }: { children?: React.ReactNode }) =>
+    React.createElement(React.Fragment, null, children),
+  useQuery: vi.fn(),
+  useMutation: vi.fn(),
+}));
+
+vi.mock('@/lib/auth-client', () => ({
+  SessionProvider: ({ children }: { children?: React.ReactNode }) =>
+    React.createElement(React.Fragment, null, children),
+  useSession: vi.fn().mockReturnValue({ data: null, status: 'unauthenticated', update: vi.fn() }),
+  getSessionClient: vi.fn(async () => null),
+  signOut: vi.fn(async () => undefined),
+}));
+
+vi.mock('@/server/convexAdapter', () => ({
+  ConvexAdapter: vi.fn(() => ({})),
 }));
 
 // Prevent importing the generated Convex API (which pulls in `convex/server`) during tests.
@@ -71,18 +102,6 @@ vi.mock('@/convex/_generated/api', () => ({
     },
     authAdapter: {},
   },
-}));
-
-// Provide per-test helpers and ensure convex-related mocks are reset and defaults applied before each test.
-import { resetConvexMocks, mockUseQueryReturn, mockUseMutationReturn } from './utils/mocks/convex';
-import { beforeEach } from 'vitest';
-
-// Global mock for next-auth so components that import SessionProvider or useSession don't try to contact real auth
-vi.mock('next-auth/react', () => ({
-  SessionProvider: ({ children }: { children?: React.ReactNode }) =>
-    React.createElement(React.Fragment, null, children),
-  useSession: vi.fn().mockReturnValue({ data: null, status: 'unauthenticated', update: vi.fn() }),
-  signOut: vi.fn(),
 }));
 
 // Global fetch stub to prevent accidental network calls in tests; tests can override with vi.spyOn(globalThis, 'fetch')

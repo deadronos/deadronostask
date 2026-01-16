@@ -1,6 +1,5 @@
 'use client';
 
-import { useQuery } from 'convex/react';
 import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
 
@@ -8,6 +7,7 @@ import { useSearch } from '@/components/search-context';
 import { TaskList } from '@/components/TaskList';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
+import { useQuery } from '@/lib/convex-client';
 
 export default function ProjectDetailPage() {
   const params = useParams();
