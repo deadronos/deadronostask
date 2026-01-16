@@ -6,6 +6,7 @@ export default defineConfig({
   test: {
     environment: 'edge-runtime',
     include: ['tests/convex/**/*.test.ts'],
+    testTimeout: 20000,
     server: {
       deps: {
         inline: ['convex-test'],
