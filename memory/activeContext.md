@@ -1,7 +1,9 @@
 # Active Context
 
 ## Current Work
-- Completed Convex unit test refactors and coverage extension.
+
+- Modernized TaskFlow UI styling across core pages and added the Projects index route.
 
 ## Next Steps
-- Share results with reviewers and address any follow-up feedback.
+
+- Capture feedback on the refreshed UI and iterate on any usability issues.

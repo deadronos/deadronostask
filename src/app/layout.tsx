@@ -1,9 +1,22 @@
 import { ClerkProvider } from '@clerk/nextjs';
 import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
+import { Fraunces, Manrope } from 'next/font/google';
 
 import { ConvexClientProvider } from '@/lib/convex/ConvexClientProvider';
 import '@/styles/globals.css';
+
+const displayFont = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-display',
+  weight: ['400', '600', '700'],
+});
+
+const bodyFont = Manrope({
+  subsets: ['latin'],
+  variable: '--font-body',
+  weight: ['400', '500', '600', '700'],
+});
 
 export const metadata: Metadata = {
   title: 'Task Manager',
@@ -14,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <ClerkProvider>
       <html lang="en">
-        <body>
+        <body className={`${bodyFont.variable} ${displayFont.variable} antialiased`}>
           <ConvexClientProvider>
             {children}
             <Analytics />
