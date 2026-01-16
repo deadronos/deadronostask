@@ -34,3 +34,5 @@
 - Logged Vercel build failure caused by missing Convex `_generated` bindings.
 - Added design/requirements/task docs for build-time Convex codegen fix.
 - Removed build-time codegen, tracked `src/convex/_generated`, and ran lint/format.
+- Added normalization helper and tests for Convex auth private key formatting.
+- Documented Vercel env formatting guidance for auth private key.
