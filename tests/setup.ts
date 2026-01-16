@@ -4,7 +4,9 @@ import { expect, vi } from 'vitest';
 (globalThis as any).expect = expect;
 // Importing jest-dom dynamically ensures the global `expect` is set before
 // `jest-dom` registers its matchers.
-await import('@testing-library/jest-dom');
+// Use eval to avoid TypeScript trying to resolve the package as a module
+// during the Next build typecheck (some jest-dom typings are not ESM-friendly).
+await (eval('import("@testing-library/jest-dom")') as Promise<any>);
 
 // Mock convex client-side hooks used in components
 vi.mock('convex/react', () => {
