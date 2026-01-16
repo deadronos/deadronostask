@@ -1,36 +1,31 @@
 'use client';
 
 import { ConvexProviderWithAuth, ConvexReactClient } from 'convex/react';
-import { SessionProvider, useSession } from 'next-auth/react';
+import { getSession, SessionProvider, useSession } from 'next-auth/react';
 import * as React from 'react';
 
 import type { Session } from '@/auth/types';
 
 function useConvexAuth() {
-  const { data: session, status, update } = useSession();
-  const hasSession = Boolean(session);
-  const hasUserId = Boolean(session?.userId);
-  const hasToken = Boolean(session?.convexToken);
+  const { data: session, status } = useSession();
   const fetchAccessToken = React.useCallback(
     async ({ forceRefreshToken }: { forceRefreshToken?: boolean } = {}) => {
-      if (!hasSession) {
-        return null;
+      if (status === 'loading') return null;
+      if (!forceRefreshToken && session?.convexToken) {
+        return session.convexToken;
       }
-      if (forceRefreshToken || !hasUserId || !hasToken) {
-        const refreshed = await update();
-        if (!refreshed?.convexToken) {
-          console.error('Missing convexToken in session. Check auth callbacks and env config.');
-        }
-        return refreshed?.convexToken ?? null;
+      const refreshed = await getSession();
+      if (!refreshed?.convexToken) {
+        console.error('Missing convexToken in session. Check auth callbacks and env config.');
       }
-      return session?.convexToken ?? null;
+      return refreshed?.convexToken ?? null;
     },
-    [hasSession, hasToken, hasUserId, session?.convexToken, update],
+    [session, status],
   );
 
   return {
     isLoading: status === 'loading',
-    isAuthenticated: hasSession && hasToken,
+    isAuthenticated: Boolean(session?.userId),
     fetchAccessToken,
   };
 }

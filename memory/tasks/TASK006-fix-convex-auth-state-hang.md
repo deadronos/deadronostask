@@ -10,11 +10,11 @@
 
 ## Thought Process
 
-When `useSession` is loading or the session lacks `convexToken`/`userId`, Convex can wait for auth and never send mutations. Tighten auth state handling so Convex only treats the user as authenticated when a token exists, and refresh the session when fields are missing.
+When `useSession` is loading or the session lacks `convexToken`/`userId`, Convex can wait for auth and never send mutations. Keep `isAuthenticated` tied to the auth provider (session), and refresh the session via `getSession()` when the token is missing.
 
 ## Implementation Plan
 
-- **Green**: Gate `isAuthenticated` on `convexToken`, adjust loading state, and log missing token.
+- **Green**: Keep `isAuthenticated` based on session presence and refresh tokens via `getSession()`.
 - **Refactor**: Keep change localized to `AppProviders`.
 
 ## Progress Tracking
@@ -33,5 +33,5 @@ When `useSession` is loading or the session lacks `convexToken`/`userId`, Convex
 ### 2026-01-16
 
 - Adjusted Convex auth state to avoid hanging on missing tokens.
-- Refreshed session when `userId` or `convexToken` are missing.
+- Refreshed session via `getSession()` when the token is missing.
 - Ran `npm run lint`, `npm run format`, and `npm run test`.
