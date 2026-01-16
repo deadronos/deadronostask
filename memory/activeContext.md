@@ -4,17 +4,16 @@
 
 ## Current Focus
 
-- Confirm Vercel build success after committing Convex `_generated` bindings
+- Confirm Vercel auth works after normalizing `CONVEX_AUTH_PRIVATE_KEY`
 
 ## Recent Changes
 
-- Added requirements/design/task docs for Convex codegen build fix.
-- Removed build-time codegen and tracked `src/convex/_generated` in Git.
-- Ran `npx convex codegen`, lint, and formatting to validate changes.
+- Added normalization helper for `CONVEX_AUTH_PRIVATE_KEY` and tests.
+- Updated README guidance for Vercel env formatting.
 
 ## Next Steps
 
-- Run a fresh Vercel deploy (or `npm run build`) to confirm the module resolution error is gone.
+- Run a fresh Vercel deploy and validate the auth flow end-to-end.
 
 ## Notes
 

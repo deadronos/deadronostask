@@ -95,7 +95,7 @@ Set these in the Convex dashboard (both Development and Production environments)
 - `AUTH_SECRET`
 - `AUTH_GITHUB_ID`
 - `AUTH_GITHUB_SECRET`
-- `CONVEX_AUTH_PRIVATE_KEY`
+- `CONVEX_AUTH_PRIVATE_KEY` (paste the raw multi-line PEM, or replace line breaks with `\n` and remove surrounding quotes)
 - `CONVEX_AUTH_ADAPTER_SECRET`
 
 3. Create a Convex deploy key and set in Vercel:
