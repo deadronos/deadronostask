@@ -9,10 +9,10 @@ import { api } from '@/convex/_generated/api';
 export default function InboxPage() {
   const { query } = useSearch();
   const trimmed = query.trim();
-  const tasks = useQuery(
-    trimmed ? api.tasks.search : api.tasks.listInbox,
-    trimmed ? { query: trimmed } : {},
-  );
+  // Call both hooks unconditionally; skip the search when there's no query
+  const searchResults = useQuery(api.tasks.search, trimmed ? { query: trimmed } : 'skip');
+  const inbox = useQuery(api.tasks.listInbox);
+  const tasks = trimmed ? searchResults : inbox;
 
   return (
     <TaskList

@@ -1,22 +1,20 @@
 # Active Context
 
-**Last updated:** 2026-01-15
+**Last updated:** 2026-01-16
 
 ## Current Focus
 
-- Backfill the memory bank with project documents
-- Add design and associated task: Worker Pool for CPU-heavy operations
+- Confirm Vercel build success after committing Convex `_generated` bindings
 
 ## Recent Changes
 
-- Memory bank files created for project brief, product context, system patterns, and tech context.
+- Added requirements/design/task docs for Convex codegen build fix.
+- Removed build-time codegen and tracked `src/convex/_generated` in Git.
+- Ran `npx convex codegen`, lint, and formatting to validate changes.
 
 ## Next Steps
 
-- Create implementation tasks with TDD-style steps and ownership
-- Surface any missing architecture gaps (observability, performance tests)
-- Begin PoC for Worker Pool (low-risk, easy to validate)
-- Worker Pool design added; schedule PoC in next sprint
+- Run a fresh Vercel deploy (or `npm run build`) to confirm the module resolution error is gone.
 
 ## Notes
 

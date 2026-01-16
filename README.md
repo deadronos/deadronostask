@@ -89,8 +89,8 @@ Set these in the Convex dashboard (both Development and Production environments)
 
 ## Vercel Deployment
 
-1) Push the repo to GitHub and import it in Vercel.
-2) Add these **Vercel** environment variables (Production):
+1. Push the repo to GitHub and import it in Vercel.
+2. Add these **Vercel** environment variables (Production):
 
 - `AUTH_SECRET`
 - `AUTH_GITHUB_ID`
@@ -98,16 +98,16 @@ Set these in the Convex dashboard (both Development and Production environments)
 - `CONVEX_AUTH_PRIVATE_KEY`
 - `CONVEX_AUTH_ADAPTER_SECRET`
 
-3) Create a Convex deploy key and set in Vercel:
+3. Create a Convex deploy key and set in Vercel:
 
 - `CONVEX_DEPLOY_KEY`
 
-4) In the Convex dashboard (Production), set:
+4. In the Convex dashboard (Production), set:
 
 - `JWKS`
 - `CONVEX_AUTH_ADAPTER_SECRET`
 
-5) Set the Vercel **Build Command**:
+5. Set the Vercel **Build Command**:
 
 ```bash
 npx convex deploy --cmd 'npm run build' --cmd-url-env-var-name NEXT_PUBLIC_CONVEX_URL

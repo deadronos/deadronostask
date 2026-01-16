@@ -1,5 +1,5 @@
 @config "../../tailwind.config.ts";
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: 30 20% 98%;
@@ -39,19 +39,24 @@
 body {
   @apply bg-background text-foreground antialiased;
   font-family: var(--font-body);
-  background-image: radial-gradient(circle at top left, rgba(255, 150, 120, 0.2), transparent 45%),
+  background-image:
+    radial-gradient(circle at top left, rgba(255, 150, 120, 0.2), transparent 45%),
     radial-gradient(circle at 80% 10%, rgba(120, 200, 220, 0.18), transparent 40%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.9));
   min-height: 100vh;
 }
 
 .dark body {
-  background-image: radial-gradient(circle at top left, rgba(255, 120, 80, 0.2), transparent 45%),
+  background-image:
+    radial-gradient(circle at top left, rgba(255, 120, 80, 0.2), transparent 45%),
     radial-gradient(circle at 80% 10%, rgba(70, 160, 200, 0.2), transparent 40%),
     linear-gradient(180deg, rgba(16, 18, 24, 0.9), rgba(16, 18, 24, 1));
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   font-family: var(--font-display);
 }
 

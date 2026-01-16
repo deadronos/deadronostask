@@ -9,10 +9,10 @@ import { api } from '@/convex/_generated/api';
 export default function TodayPage() {
   const { query } = useSearch();
   const trimmed = query.trim();
-  const tasks = useQuery(
-    trimmed ? api.tasks.search : api.tasks.listToday,
-    trimmed ? { query: trimmed } : {},
-  );
+  // Call both hooks unconditionally; skip the search when there's no query
+  const searchResults = useQuery(api.tasks.search, trimmed ? { query: trimmed } : 'skip');
+  const today = useQuery(api.tasks.listToday);
+  const tasks = trimmed ? searchResults : today;
 
   return <TaskList title="Today" subtitle="Due today and overdue tasks." tasks={tasks} />;
 }
