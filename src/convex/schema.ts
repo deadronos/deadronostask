@@ -28,7 +28,7 @@ export default defineSchema({
     description: v.optional(v.string()),
     status: v.union(v.literal('todo'), v.literal('doing'), v.literal('done')),
     priority: v.union(v.literal(0), v.literal(1), v.literal(2), v.literal(3)),
-    dueAt: v.optional(v.number()),
+    dueAt: v.optional(v.union(v.number(), v.null())),
     order: v.number(),
     archived: v.boolean(),
     createdAt: v.number(),
