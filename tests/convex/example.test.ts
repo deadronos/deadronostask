@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { api } from './_generated/api';
-import schema from './schema';
+import { api } from '@/convex/_generated/api';
+import schema from '@/convex/schema';
 
-const modules = import.meta.glob('./**/*.ts');
+const modules = import.meta.glob('../../src/convex/**/*.ts');
 
 describe('convex-test example', () => {
   it('creates and lists an inbox task', async () => {
