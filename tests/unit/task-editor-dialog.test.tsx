@@ -31,9 +31,6 @@ describe('TaskEditorDialog', () => {
     const projectId = 'project-1' as Id<'projects'>;
     const labelId = 'label-1' as Id<'labels'>;
 
-    // Debug: show useQueryMock state
-    // eslint-disable-next-line no-console
-    console.log('useQueryMock exists:', !!useQueryMock, 'mockName:', useQueryMock.getMockName?.());
 
     // Ensure correct values based on the query arg (more robust than ordered mockReturnValueOnce)
     useQueryMock.mockImplementation((q: any) => {
@@ -67,9 +64,6 @@ describe('TaskEditorDialog', () => {
     expect(screen.getByLabelText('Title')).toHaveValue('Review brief');
     expect(screen.getByLabelText('Description')).toHaveValue('Check scope and goals');
     expect(screen.getByLabelText('Priority')).toHaveValue('high');
-    // Debug: dump project select state
-    // eslint-disable-next-line no-console
-    console.log('PROJECT SELECT:', screen.getByLabelText('Project').outerHTML);
     expect(screen.getByLabelText('Project')).toHaveValue(projectId);
     expect(screen.getByLabelText('Due date')).toHaveValue('2026-02-01');
 
