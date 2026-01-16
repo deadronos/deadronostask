@@ -4,16 +4,17 @@
 
 ## Current Focus
 
-- Confirm Vercel auth works after normalizing `CONVEX_AUTH_PRIVATE_KEY`
+- Validate Convex mutations succeed after session token refresh fix
 
 ## Recent Changes
 
 - Added normalization helper for `CONVEX_AUTH_PRIVATE_KEY` and tests.
 - Updated README guidance for Vercel env formatting.
+- Refresh Convex access token when missing in `AppProviders`.
 
 ## Next Steps
 
-- Run a fresh Vercel deploy and validate the auth flow end-to-end.
+- Re-test create-task mutation locally and in Vercel after deploy.
 
 ## Notes
 

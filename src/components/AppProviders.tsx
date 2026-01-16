@@ -10,8 +10,9 @@ function useConvexAuth() {
   const { data: session, status, update } = useSession();
   const fetchAccessToken = React.useCallback(
     async ({ forceRefreshToken }: { forceRefreshToken?: boolean } = {}) => {
-      if (forceRefreshToken) {
-        await update();
+      if (forceRefreshToken || (session?.userId && !session?.convexToken)) {
+        const refreshed = await update();
+        return refreshed?.convexToken ?? null;
       }
       return session?.convexToken ?? null;
     },
