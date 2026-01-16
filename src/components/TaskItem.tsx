@@ -17,7 +17,7 @@ interface TaskItemProps {
     description?: string;
     status: 'todo' | 'doing' | 'done';
     priority: 0 | 1 | 2 | 3;
-    dueAt?: number;
+    dueAt?: number | null;
   };
 }
 
