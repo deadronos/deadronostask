@@ -1,6 +1,6 @@
 import { customCtx, customMutation, customQuery } from 'convex-helpers/server/customFunctions';
 
-import { type QueryCtx, type MutationCtx } from '../_generated/server';
+import { mutation, query, type QueryCtx, type MutationCtx } from '../_generated/server';
 
 export async function getUserIdentity(ctx: QueryCtx | MutationCtx) {
   const identity = await ctx.auth.getUserIdentity();
@@ -16,6 +16,7 @@ export async function requireUserId(ctx: QueryCtx | MutationCtx) {
 }
 
 export const queryWithUser = customQuery(
+  query,
   customCtx(async ctx => {
     const clerkUserId = await requireUserId(ctx);
     return { clerkUserId };
@@ -23,6 +24,7 @@ export const queryWithUser = customQuery(
 );
 
 export const mutationWithUser = customMutation(
+  mutation,
   customCtx(async ctx => {
     const clerkUserId = await requireUserId(ctx);
     return { clerkUserId };

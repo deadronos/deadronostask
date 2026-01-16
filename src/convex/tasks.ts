@@ -27,11 +27,12 @@ export const list = query({
           q.eq('ownerClerkUserId', clerkUserId).eq('projectId', args.projectId),
         )
         .collect();
-    } else if (args.status) {
+    } else if (args.status !== undefined) {
+      const status = args.status as 'todo' | 'doing' | 'done';
       tasks = await ctx.db
         .query('tasks')
         .withIndex('by_owner_status', q =>
-          q.eq('ownerClerkUserId', clerkUserId).eq('status', args.status),
+          q.eq('ownerClerkUserId', clerkUserId).eq('status', status),
         )
         .collect();
     } else {
