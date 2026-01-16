@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 // Convex function tests using convex-test (mocked backend)
@@ -9,6 +10,11 @@ export default defineConfig({
       deps: {
         inline: ['convex-test'],
       },
+    },
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
     },
   },
 });
