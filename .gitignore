@@ -12,6 +12,9 @@ out
 .env.keys
 .env.key*
 
+# Convex generated files
+src/convex/_generated/
+.convex/
 
 .vercel
 tsconfig.tsbuildinfo
