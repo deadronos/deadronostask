@@ -36,3 +36,4 @@
 - Removed build-time codegen, tracked `src/convex/_generated`, and ran lint/format.
 - Added normalization helper and tests for Convex auth private key formatting.
 - Documented Vercel env formatting guidance for auth private key.
+- Refreshed Convex access token when missing to prevent hanging mutations.
