@@ -20,10 +20,22 @@ import { api } from '@/convex/_generated/api';
 
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
-  const currentUser = useQuery(api.users.getMe);
+  
+  // Only run Convex queries when user is authenticated
+  // Pass "skip" to prevent queries from running when user is not loaded or not authenticated
+  const currentUser = useQuery(
+    api.users.getMe,
+    !isLoaded || !user ? 'skip' : {},
+  );
   const upsertMe = useMutation(api.users.upsertMe);
-  const projects = useQuery(api.projects.list, { includeArchived: false });
-  const tasks = useQuery(api.tasks.list, { includeArchived: false });
+  const projects = useQuery(
+    api.projects.list,
+    !isLoaded || !user ? 'skip' : { includeArchived: false },
+  );
+  const tasks = useQuery(
+    api.tasks.list,
+    !isLoaded || !user ? 'skip' : { includeArchived: false },
+  );
 
   // Ensure user exists in Convex DB
   useEffect(() => {

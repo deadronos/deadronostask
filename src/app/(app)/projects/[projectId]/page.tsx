@@ -1,5 +1,6 @@
 'use client';
 
+import { useUser } from '@clerk/nextjs';
 import { useQuery } from 'convex/react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -13,14 +14,22 @@ import { api } from '@/convex/_generated/api';
 import { type Id } from '@/convex/_generated/dataModel';
 
 export default function ProjectPage() {
+  const { user, isLoaded } = useUser();
   const params = useParams();
   const projectId = params.projectId as Id<'projects'>;
 
-  const project = useQuery(api.projects.list, { includeArchived: false });
+  // Guard Convex queries - only run when user is authenticated
+  const project = useQuery(
+    api.projects.list,
+    !isLoaded || !user ? 'skip' : { includeArchived: false },
+  );
   const currentProject = project?.find((p) => p._id === projectId);
-  const tasks = useQuery(api.tasks.list, { projectId, includeArchived: false });
+  const tasks = useQuery(
+    api.tasks.list,
+    !isLoaded || !user ? 'skip' : { projectId, includeArchived: false },
+  );
 
-  if (tasks === undefined || project === undefined) {
+  if (!isLoaded || !user || tasks === undefined || project === undefined) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-lg">Loading...</div>
