@@ -4,23 +4,23 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TaskItem } from '@/components/TaskItem';
 import type { Doc, Id } from '@/convex/_generated/dataModel';
-import { useMutation } from 'convex/react';
+import { mockUseMutationReturn, useMutationMock } from '../utils/mocks/convex';
 
-vi.mock('convex/react', () => ({
-  useMutation: vi.fn(),
-}));
-
-const useMutationMock = vi.mocked(useMutation);
-
-const baseTask = {
+const baseTask: Doc<'tasks'> = {
   _id: 'task-1' as Id<'tasks'>,
+  _creationTime: 0,
+  ownerId: 'user-1' as Id<'users'>,
+  order: 0,
+  createdAt: 0,
+  updatedAt: 0,
   title: 'Finish quarterly plan',
   description: 'Outline goals and milestones',
   isCompleted: false,
   priority: 'low',
   dueDate: null,
+  projectId: null,
   labelIds: [],
-} as Doc<'tasks'>;
+};
 
 describe('TaskItem', () => {
   beforeEach(() => {
@@ -48,7 +48,7 @@ describe('TaskItem', () => {
       labelIds: [labelId],
     } as Doc<'tasks'>;
 
-    useMutationMock.mockReturnValue(vi.fn());
+    mockUseMutationReturn(vi.fn());
 
     render(<TaskItem task={task} labelById={new Map([[labelId, label]])} onEdit={vi.fn()} />);
 

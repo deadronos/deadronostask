@@ -5,12 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { TaskEditorDialog } from '@/components/TaskEditorDialog';
 import type { Doc, Id } from '@/convex/_generated/dataModel';
 import { toast } from 'sonner';
-import {
-  mockUseQueryReturnOnce,
-  mockUseMutationReturnOnce,
-  useQueryMock,
-  useMutationMock,
-} from '../utils/mocks/convex';
+import { useQueryMock, useMutationMock } from '../utils/mocks/convex';
 
 // Helpers: use `useQueryMock` and `useMutationMock` provided by `tests/utils/mocks/convex` for per-test control.
 function mockMutations(createMock: any, updateMock: any) {

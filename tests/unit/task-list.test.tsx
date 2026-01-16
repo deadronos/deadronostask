@@ -4,12 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { TaskList } from '@/components/TaskList';
 import type { Doc, Id } from '@/convex/_generated/dataModel';
-import { useMutation, useQuery } from 'convex/react';
-
-vi.mock('convex/react', () => ({
-  useQuery: vi.fn(),
-  useMutation: vi.fn(),
-}));
+import { mockUseMutationReturn, mockUseQueryReturn } from '../utils/mocks/convex';
 
 vi.mock('@/components/LabelChips', () => ({
   LabelChips: ({ onChange }: { onChange?: (value: Id<'labels'>[]) => void }) => (
@@ -27,9 +22,6 @@ vi.mock('@/components/TaskEditorDialog', () => ({
   TaskEditorDialog: ({ open }: { open: boolean }) => (open ? <div>Editor</div> : null),
 }));
 
-const useQueryMock = vi.mocked(useQuery);
-const useMutationMock = vi.mocked(useMutation);
-
 const baseTask = {
   isCompleted: false,
   description: '',
@@ -40,8 +32,8 @@ const baseTask = {
 describe('TaskList', () => {
   it('filters tasks by priority', async () => {
     const user = userEvent.setup();
-    useQueryMock.mockReturnValue([]);
-    useMutationMock.mockReturnValue(vi.fn());
+    mockUseQueryReturn([]);
+    mockUseMutationReturn(vi.fn());
 
     const tasks = [
       {
@@ -69,8 +61,8 @@ describe('TaskList', () => {
 
   it('filters tasks by selected labels', async () => {
     const user = userEvent.setup();
-    useQueryMock.mockReturnValue([]);
-    useMutationMock.mockReturnValue(vi.fn());
+    mockUseQueryReturn([]);
+    mockUseMutationReturn(vi.fn());
 
     const labelId = 'label-1' as Id<'labels'>;
     const tasks = [

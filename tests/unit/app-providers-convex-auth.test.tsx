@@ -27,8 +27,8 @@ vi.mock('@/lib/convex-client', () => {
   };
 });
 
-const mockedGetSessionClient = vi.fn<[], Promise<Session | null>>();
-const mockedUseSession = vi.fn<[], { data: Session | null; status: 'loading' | 'authenticated' }>();
+const mockedGetSessionClient = vi.fn<() => Promise<Session | null>>();
+const mockedUseSession = vi.fn<() => { data: Session | null; status: 'loading' | 'authenticated' }>();
 
 vi.mock('@/lib/auth-client', () => {
   return {
