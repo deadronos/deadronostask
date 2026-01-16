@@ -33,4 +33,4 @@
 
 - Logged Vercel build failure caused by missing Convex `_generated` bindings.
 - Added design/requirements/task docs for build-time Convex codegen fix.
-- Added `prebuild` codegen step and ran lint/format.
+- Removed build-time codegen, tracked `src/convex/_generated`, and ran lint/format.

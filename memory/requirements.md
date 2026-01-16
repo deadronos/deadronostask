@@ -4,6 +4,6 @@
 
 ## Build pipeline
 
-- WHEN `npm run build` executes in CI or Vercel, THE SYSTEM SHALL generate Convex `_generated` bindings before `next build` runs. [Acceptance: `npm run build` completes without `Module not found: '@/convex/_generated/api'` errors.]
-- WHEN developers run `npm run build` locally, THE SYSTEM SHALL produce/update `src/convex/_generated` so TypeScript imports resolve. [Acceptance: `src/convex/_generated/api.js` exists after build.]
-- WHEN Convex codegen fails, THE SYSTEM SHALL surface the failure as a build error. [Acceptance: CI build exits non-zero with the codegen error output.]
+- WHEN CI or Vercel runs `npm run build`, THE SYSTEM SHALL rely on committed `src/convex/_generated` bindings rather than running Convex codegen. [Acceptance: build succeeds without `Module not found: '@/convex/_generated/api'` errors and no `convex codegen` step in CI.]
+- WHEN developers update Convex functions or schema, THE SYSTEM SHALL regenerate bindings locally and commit the updated `src/convex/_generated` files. [Acceptance: git shows updated `_generated` files after running `npx convex codegen`.]
+- WHEN Convex codegen fails locally, THE SYSTEM SHALL surface the failure to the developer. [Acceptance: `npx convex codegen` exits non-zero with error output.]

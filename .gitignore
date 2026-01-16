@@ -14,5 +14,4 @@ out
 
 
 .vercel
-src/convex/_generated
 tsconfig.tsbuildinfo

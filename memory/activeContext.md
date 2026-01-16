@@ -4,13 +4,13 @@
 
 ## Current Focus
 
-- Confirm Vercel build success after adding Convex codegen prebuild step
+- Confirm Vercel build success after committing Convex `_generated` bindings
 
 ## Recent Changes
 
 - Added requirements/design/task docs for Convex codegen build fix.
-- Added `prebuild` script to run `convex codegen` before `next build`.
-- Ran lint and formatting to validate changes.
+- Removed build-time codegen and tracked `src/convex/_generated` in Git.
+- Ran `npx convex codegen`, lint, and formatting to validate changes.
 
 ## Next Steps
 
