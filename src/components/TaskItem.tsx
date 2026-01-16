@@ -34,8 +34,8 @@ export function TaskItem({ task }: TaskItemProps) {
 
   const statusConfig = {
     todo: { label: 'To Do', icon: Circle, color: 'text-muted-foreground' },
-    doing: { label: 'In Progress', icon: Clock, color: 'text-blue-600' },
-    done: { label: 'Done', icon: CheckCircle2, color: 'text-green-600' },
+    doing: { label: 'In Progress', icon: Clock, color: 'text-primary' },
+    done: { label: 'Done', icon: CheckCircle2, color: 'text-emerald-600' },
   };
 
   const priority = priorityConfig[task.priority];
@@ -45,7 +45,7 @@ export function TaskItem({ task }: TaskItemProps) {
   return (
     <div
       className={cn(
-        'group rounded-lg border bg-card p-4 transition-all hover:shadow-md',
+        'group rounded-2xl border border-border/60 bg-background/80 p-4 shadow-sm transition-all hover:border-primary/40 hover:bg-card hover:shadow-md',
         task.status === 'done' && 'opacity-60',
       )}
     >
@@ -54,10 +54,7 @@ export function TaskItem({ task }: TaskItemProps) {
         <div className="flex-1 space-y-2">
           <div className="flex items-start justify-between gap-2">
             <h4
-              className={cn(
-                'font-medium leading-snug',
-                task.status === 'done' && 'line-through',
-              )}
+              className={cn('font-medium leading-snug', task.status === 'done' && 'line-through')}
             >
               {task.title}
             </h4>
@@ -66,14 +63,12 @@ export function TaskItem({ task }: TaskItemProps) {
             </Badge>
           </div>
 
-          {task.description && (
-            <p className="text-sm text-muted-foreground">{task.description}</p>
-          )}
+          {task.description && <p className="text-sm text-muted-foreground">{task.description}</p>}
 
           <div className="flex items-center gap-2 pt-1">
             <Select
               value={task.status}
-              onChange={(e) =>
+              onChange={e =>
                 setStatus({
                   taskId: task._id,
                   status: e.target.value as 'todo' | 'doing' | 'done',
