@@ -1,0 +1,363 @@
+01:16:30.778 Running build in Washington, D.C., USA (East) – iad1
+01:16:30.779 Build machine configuration: 2 cores, 8 GB
+01:16:31.076 Cloning github.com/deadronos/deadronostask (Branch: preview, Commit: d5809c2)
+01:16:31.091 Previous build caches not available.
+01:16:31.661 Cloning completed: 571.000ms
+01:16:32.931 Running "vercel build"
+01:16:33.902 Vercel CLI 50.4.3
+01:16:34.246 Installing dependencies...
+01:16:49.488 
+01:16:49.489 > convex-task-manager@0.1.0 prepare
+01:16:49.489 > husky install
+01:16:49.489 
+01:16:49.523 husky - install command is DEPRECATED
+01:16:49.550 
+01:16:49.550 added 551 packages in 15s
+01:16:49.551 
+01:16:49.551 195 packages are looking for funding
+01:16:49.551   run `npm fund` for details
+01:16:49.623 Detected Next.js version: 16.1.2
+01:16:49.624 Running "npx convex deploy --cmd 'npm run build' --cmd-url-env-var-name NEXT_PUBLIC_CONVEX_URL"
+01:16:51.177 - Running 'npm run build' with environment variable "NEXT_PUBLIC_CONVEX_URL" set...
+01:16:51.178 
+01:16:51.462 
+01:16:51.463 > convex-task-manager@0.1.0 build
+01:16:51.463 > next build
+01:16:51.463 
+01:16:52.020 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+01:16:52.021 This information is used to shape Next.js' roadmap and prioritize features.
+01:16:52.021 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+01:16:52.021 https://nextjs.org/telemetry
+01:16:52.022 
+01:16:52.035 ▲ Next.js 16.1.2 (Turbopack)
+01:16:52.036 
+01:16:52.075   Creating an optimized production build ...
+01:17:04.096 
+01:17:04.096 > Build error occurred
+01:17:04.096 Error: Turbopack build failed with 11 errors:
+01:17:04.096 ./src/app/app/completed/page.tsx:7:1
+01:17:04.096 Module not found: Can't resolve '@/convex/_generated/api'
+01:17:04.096 [0m [90m  5 |[39m [36mimport[39m { useSearch } [36mfrom[39m [32m'@/components/search-context'[39m[33m;[39m
+01:17:04.096  [90m  6 |[39m [36mimport[39m { [33mTaskList[39m } [36mfrom[39m [32m'@/components/TaskList'[39m[33m;[39m
+01:17:04.096 [31m[1m>[22m[39m[90m  7 |[39m [36mimport[39m { api } [36mfrom[39m [32m'@/convex/_generated/api'[39m[33m;[39m
+01:17:04.096  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+01:17:04.097  [90m  8 |[39m
+01:17:04.097  [90m  9 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mCompletedPage[39m() {
+01:17:04.097  [90m 10 |[39m   [36mconst[39m { query } [33m=[39m useSearch()[33m;[39m[0m
+01:17:04.097 
+01:17:04.097 Import map: aliased to relative './src/convex/_generated/api' inside of [project]/
+01:17:04.097 
+01:17:04.097 
+01:17:04.097 Import traces:
+01:17:04.097   Client Component Browser:
+01:17:04.097     ./src/app/app/completed/page.tsx [Client Component Browser]
+01:17:04.097     ./src/app/app/completed/page.tsx [Server Component]
+01:17:04.097 
+01:17:04.097   Client Component SSR:
+01:17:04.097     ./src/app/app/completed/page.tsx [Client Component SSR]
+01:17:04.097     ./src/app/app/completed/page.tsx [Server Component]
+01:17:04.097 
+01:17:04.097 https://nextjs.org/docs/messages/module-not-found
+01:17:04.097 
+01:17:04.097 
+01:17:04.097 ./src/app/app/inbox/page.tsx:7:1
+01:17:04.098 Module not found: Can't resolve '@/convex/_generated/api'
+01:17:04.098 [0m [90m  5 |[39m [36mimport[39m { useSearch } [36mfrom[39m [32m'@/components/search-context'[39m[33m;[39m
+01:17:04.098  [90m  6 |[39m [36mimport[39m { [33mTaskList[39m } [36mfrom[39m [32m'@/components/TaskList'[39m[33m;[39m
+01:17:04.098 [31m[1m>[22m[39m[90m  7 |[39m [36mimport[39m { api } [36mfrom[39m [32m'@/convex/_generated/api'[39m[33m;[39m
+01:17:04.098  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+01:17:04.098  [90m  8 |[39m
+01:17:04.098  [90m  9 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mInboxPage[39m() {
+01:17:04.098  [90m 10 |[39m   [36mconst[39m { query } [33m=[39m useSearch()[33m;[39m[0m
+01:17:04.098 
+01:17:04.098 Import map: aliased to relative './src/convex/_generated/api' inside of [project]/
+01:17:04.098 
+01:17:04.099 
+01:17:04.099 Import traces:
+01:17:04.099   Client Component Browser:
+01:17:04.099     ./src/app/app/inbox/page.tsx [Client Component Browser]
+01:17:04.099     ./src/app/app/inbox/page.tsx [Server Component]
+01:17:04.099 
+01:17:04.099   Client Component SSR:
+01:17:04.099     ./src/app/app/inbox/page.tsx [Client Component SSR]
+01:17:04.099     ./src/app/app/inbox/page.tsx [Server Component]
+01:17:04.099 
+01:17:04.099 https://nextjs.org/docs/messages/module-not-found
+01:17:04.099 
+01:17:04.099 
+01:17:04.099 ./src/app/app/projects/[projectId]/page.tsx:9:1
+01:17:04.099 Module not found: Can't resolve '@/convex/_generated/api'
+01:17:04.099 [0m [90m  7 |[39m [36mimport[39m { useSearch } [36mfrom[39m [32m'@/components/search-context'[39m[33m;[39m
+01:17:04.099  [90m  8 |[39m [36mimport[39m { [33mTaskList[39m } [36mfrom[39m [32m'@/components/TaskList'[39m[33m;[39m
+01:17:04.100 [31m[1m>[22m[39m[90m  9 |[39m [36mimport[39m { api } [36mfrom[39m [32m'@/convex/_generated/api'[39m[33m;[39m
+01:17:04.100  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+01:17:04.100  [90m 10 |[39m [36mimport[39m type { [33mId[39m } [36mfrom[39m [32m'@/convex/_generated/dataModel'[39m[33m;[39m
+01:17:04.104  [90m 11 |[39m
+01:17:04.104  [90m 12 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mProjectDetailPage[39m() {[0m
+01:17:04.104 
+01:17:04.104 Import map: aliased to relative './src/convex/_generated/api' inside of [project]/
+01:17:04.104 
+01:17:04.104 
+01:17:04.104 Import traces:
+01:17:04.105   Client Component Browser:
+01:17:04.105     ./src/app/app/projects/[projectId]/page.tsx [Client Component Browser]
+01:17:04.105     ./src/app/app/projects/[projectId]/page.tsx [Server Component]
+01:17:04.105 
+01:17:04.105   Client Component SSR:
+01:17:04.105     ./src/app/app/projects/[projectId]/page.tsx [Client Component SSR]
+01:17:04.105     ./src/app/app/projects/[projectId]/page.tsx [Server Component]
+01:17:04.105 
+01:17:04.105 https://nextjs.org/docs/messages/module-not-found
+01:17:04.105 
+01:17:04.105 
+01:17:04.105 ./src/app/app/projects/page.tsx:9:1
+01:17:04.105 Module not found: Can't resolve '@/convex/_generated/api'
+01:17:04.105 [0m [90m  7 |[39m
+01:17:04.105  [90m  8 |[39m [36mimport[39m { [33mButton[39m } [36mfrom[39m [32m'@/components/ui/button'[39m[33m;[39m
+01:17:04.105 [31m[1m>[22m[39m[90m  9 |[39m [36mimport[39m { api } [36mfrom[39m [32m'@/convex/_generated/api'[39m[33m;[39m
+01:17:04.105  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+01:17:04.105  [90m 10 |[39m [36mimport[39m { cn } [36mfrom[39m [32m'@/lib/utils'[39m[33m;[39m
+01:17:04.105  [90m 11 |[39m
+01:17:04.105  [90m 12 |[39m [36mconst[39m projectColorClasses[33m:[39m [33mRecord[39m[33m<[39m[33mstring[39m[33m,[39m { bg[33m:[39m string[33m;[39m text[33m:[39m string }[33m>[39m [33m=[39m {[0m
+01:17:04.105 
+01:17:04.105 Import map: aliased to relative './src/convex/_generated/api' inside of [project]/
+01:17:04.105 
+01:17:04.105 
+01:17:04.105 Import traces:
+01:17:04.105   Client Component Browser:
+01:17:04.105     ./src/app/app/projects/page.tsx [Client Component Browser]
+01:17:04.105     ./src/app/app/projects/page.tsx [Server Component]
+01:17:04.105 
+01:17:04.105   Client Component SSR:
+01:17:04.105     ./src/app/app/projects/page.tsx [Client Component SSR]
+01:17:04.105     ./src/app/app/projects/page.tsx [Server Component]
+01:17:04.105 
+01:17:04.105 https://nextjs.org/docs/messages/module-not-found
+01:17:04.105 
+01:17:04.106 
+01:17:04.106 ./src/app/app/today/page.tsx:7:1
+01:17:04.106 Module not found: Can't resolve '@/convex/_generated/api'
+01:17:04.106 [0m [90m  5 |[39m [36mimport[39m { useSearch } [36mfrom[39m [32m'@/components/search-context'[39m[33m;[39m
+01:17:04.106  [90m  6 |[39m [36mimport[39m { [33mTaskList[39m } [36mfrom[39m [32m'@/components/TaskList'[39m[33m;[39m
+01:17:04.106 [31m[1m>[22m[39m[90m  7 |[39m [36mimport[39m { api } [36mfrom[39m [32m'@/convex/_generated/api'[39m[33m;[39m
+01:17:04.106  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+01:17:04.106  [90m  8 |[39m
+01:17:04.106  [90m  9 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mTodayPage[39m() {
+01:17:04.106  [90m 10 |[39m   [36mconst[39m { query } [33m=[39m useSearch()[33m;[39m[0m
+01:17:04.106 
+01:17:04.106 Import map: aliased to relative './src/convex/_generated/api' inside of [project]/
+01:17:04.106 
+01:17:04.106 
+01:17:04.106 Import traces:
+01:17:04.106   Client Component Browser:
+01:17:04.106     ./src/app/app/today/page.tsx [Client Component Browser]
+01:17:04.106     ./src/app/app/today/page.tsx [Server Component]
+01:17:04.106 
+01:17:04.106   Client Component SSR:
+01:17:04.106     ./src/app/app/today/page.tsx [Client Component SSR]
+01:17:04.106     ./src/app/app/today/page.tsx [Server Component]
+01:17:04.106 
+01:17:04.107 https://nextjs.org/docs/messages/module-not-found
+01:17:04.107 
+01:17:04.107 
+01:17:04.107 ./src/components/LabelChips.tsx:9:1
+01:17:04.107 Module not found: Can't resolve '@/convex/_generated/api'
+01:17:04.107 [0m [90m  7 |[39m [36mimport[39m { [33mButton[39m } [36mfrom[39m [32m'./ui/button'[39m[33m;[39m
+01:17:04.107  [90m  8 |[39m
+01:17:04.107 [31m[1m>[22m[39m[90m  9 |[39m [36mimport[39m { api } [36mfrom[39m [32m'@/convex/_generated/api'[39m[33m;[39m
+01:17:04.107  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+01:17:04.107  [90m 10 |[39m [36mimport[39m type { [33mId[39m } [36mfrom[39m [32m'@/convex/_generated/dataModel'[39m[33m;[39m
+01:17:04.107  [90m 11 |[39m [36mimport[39m { cn } [36mfrom[39m [32m'@/lib/utils'[39m[33m;[39m
+01:17:04.107  [90m 12 |[39m[0m
+01:17:04.107 
+01:17:04.107 Import map: aliased to relative './src/convex/_generated/api' inside of [project]/
+01:17:04.107 
+01:17:04.107 
+01:17:04.107 Import traces:
+01:17:04.107   Client Component Browser:
+01:17:04.107     ./src/components/LabelChips.tsx [Client Component Browser]
+01:17:04.107     ./src/components/TaskList.tsx [Client Component Browser]
+01:17:04.107     ./src/app/app/today/page.tsx [Client Component Browser]
+01:17:04.107     ./src/app/app/today/page.tsx [Server Component]
+01:17:04.107 
+01:17:04.107   Client Component SSR:
+01:17:04.108     ./src/components/LabelChips.tsx [Client Component SSR]
+01:17:04.108     ./src/components/TaskList.tsx [Client Component SSR]
+01:17:04.108     ./src/app/app/today/page.tsx [Client Component SSR]
+01:17:04.108     ./src/app/app/today/page.tsx [Server Component]
+01:17:04.108 
+01:17:04.108 https://nextjs.org/docs/messages/module-not-found
+01:17:04.114 
+01:17:04.114 
+01:17:04.115 ./src/components/ProjectList.tsx:10:1
+01:17:04.115 Module not found: Can't resolve '@/convex/_generated/api'
+01:17:04.115 [0m [90m  8 |[39m [36mimport[39m { [33mButton[39m } [36mfrom[39m [32m'./ui/button'[39m[33m;[39m
+01:17:04.116  [90m  9 |[39m
+01:17:04.116 [31m[1m>[22m[39m[90m 10 |[39m [36mimport[39m { api } [36mfrom[39m [32m'@/convex/_generated/api'[39m[33m;[39m
+01:17:04.116  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+01:17:04.116  [90m 11 |[39m [36mimport[39m type { [33mId[39m } [36mfrom[39m [32m'@/convex/_generated/dataModel'[39m[33m;[39m
+01:17:04.117  [90m 12 |[39m [36mimport[39m { cn } [36mfrom[39m [32m'@/lib/utils'[39m[33m;[39m
+01:17:04.117  [90m 13 |[39m[0m
+01:17:04.117 
+01:17:04.118 Import map: aliased to relative './src/convex/_generated/api' inside of [project]/
+01:17:04.118 
+01:17:04.118 
+01:17:04.118 Import traces:
+01:17:04.119   Client Component Browser:
+01:17:04.119     ./src/components/ProjectList.tsx [Client Component Browser]
+01:17:04.119     ./src/components/Sidebar.tsx [Client Component Browser]
+01:17:04.120     ./src/components/AppShell.tsx [Client Component Browser]
+01:17:04.120     ./src/components/AppShell.tsx [Server Component]
+01:17:04.120     ./src/app/app/layout.tsx [Server Component]
+01:17:04.121 
+01:17:04.121   Client Component SSR:
+01:17:04.121     ./src/components/ProjectList.tsx [Client Component SSR]
+01:17:04.121     ./src/components/Sidebar.tsx [Client Component SSR]
+01:17:04.121     ./src/components/AppShell.tsx [Client Component SSR]
+01:17:04.121     ./src/components/AppShell.tsx [Server Component]
+01:17:04.121     ./src/app/app/layout.tsx [Server Component]
+01:17:04.121 
+01:17:04.121 https://nextjs.org/docs/messages/module-not-found
+01:17:04.121 
+01:17:04.121 
+01:17:04.122 ./src/components/TaskEditorDialog.tsx:12:1
+01:17:04.122 Module not found: Can't resolve '@/convex/_generated/api'
+01:17:04.122 [0m [90m 10 |[39m [36mimport[39m { [33mTextarea[39m } [36mfrom[39m [32m'./ui/textarea'[39m[33m;[39m
+01:17:04.122  [90m 11 |[39m
+01:17:04.122 [31m[1m>[22m[39m[90m 12 |[39m [36mimport[39m { api } [36mfrom[39m [32m'@/convex/_generated/api'[39m[33m;[39m
+01:17:04.122  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+01:17:04.122  [90m 13 |[39m [36mimport[39m type { [33mDoc[39m[33m,[39m [33mId[39m } [36mfrom[39m [32m'@/convex/_generated/dataModel'[39m[33m;[39m
+01:17:04.122  [90m 14 |[39m [36mimport[39m { cn } [36mfrom[39m [32m'@/lib/utils'[39m[33m;[39m
+01:17:04.122  [90m 15 |[39m[0m
+01:17:04.122 
+01:17:04.122 Import map: aliased to relative './src/convex/_generated/api' inside of [project]/
+01:17:04.122 
+01:17:04.122 
+01:17:04.122 Import traces:
+01:17:04.122   Client Component Browser:
+01:17:04.122     ./src/components/TaskEditorDialog.tsx [Client Component Browser]
+01:17:04.122     ./src/components/TaskList.tsx [Client Component Browser]
+01:17:04.122     ./src/app/app/completed/page.tsx [Client Component Browser]
+01:17:04.122     ./src/app/app/completed/page.tsx [Server Component]
+01:17:04.123 
+01:17:04.123   Client Component SSR:
+01:17:04.123     ./src/components/TaskEditorDialog.tsx [Client Component SSR]
+01:17:04.123     ./src/components/TaskList.tsx [Client Component SSR]
+01:17:04.123     ./src/app/app/completed/page.tsx [Client Component SSR]
+01:17:04.123     ./src/app/app/completed/page.tsx [Server Component]
+01:17:04.123 
+01:17:04.123 https://nextjs.org/docs/messages/module-not-found
+01:17:04.123 
+01:17:04.123 
+01:17:04.123 ./src/components/TaskItem.tsx:11:1
+01:17:04.123 Module not found: Can't resolve '@/convex/_generated/api'
+01:17:04.123 [0m [90m  9 |[39m [36mimport[39m { [33mCheckbox[39m } [36mfrom[39m [32m'./ui/checkbox'[39m[33m;[39m
+01:17:04.123  [90m 10 |[39m
+01:17:04.123 [31m[1m>[22m[39m[90m 11 |[39m [36mimport[39m { api } [36mfrom[39m [32m'@/convex/_generated/api'[39m[33m;[39m
+01:17:04.124  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+01:17:04.124  [90m 12 |[39m [36mimport[39m type { [33mDoc[39m[33m,[39m [33mId[39m } [36mfrom[39m [32m'@/convex/_generated/dataModel'[39m[33m;[39m
+01:17:04.124  [90m 13 |[39m [36mimport[39m { cn } [36mfrom[39m [32m'@/lib/utils'[39m[33m;[39m
+01:17:04.124  [90m 14 |[39m[0m
+01:17:04.124 
+01:17:04.124 Import map: aliased to relative './src/convex/_generated/api' inside of [project]/
+01:17:04.124 
+01:17:04.124 
+01:17:04.124 Import traces:
+01:17:04.124   Client Component Browser:
+01:17:04.124     ./src/components/TaskItem.tsx [Client Component Browser]
+01:17:04.124     ./src/components/TaskList.tsx [Client Component Browser]
+01:17:04.124     ./src/app/app/completed/page.tsx [Client Component Browser]
+01:17:04.124     ./src/app/app/completed/page.tsx [Server Component]
+01:17:04.124 
+01:17:04.124   Client Component SSR:
+01:17:04.124     ./src/components/TaskItem.tsx [Client Component SSR]
+01:17:04.124     ./src/components/TaskList.tsx [Client Component SSR]
+01:17:04.124     ./src/app/app/completed/page.tsx [Client Component SSR]
+01:17:04.124     ./src/app/app/completed/page.tsx [Server Component]
+01:17:04.124 
+01:17:04.124 https://nextjs.org/docs/messages/module-not-found
+01:17:04.124 
+01:17:04.124 
+01:17:04.124 ./src/components/TaskList.tsx:13:1
+01:17:04.124 Module not found: Can't resolve '@/convex/_generated/api'
+01:17:04.124 [0m [90m 11 |[39m [36mimport[39m { [33mButton[39m } [36mfrom[39m [32m'./ui/button'[39m[33m;[39m
+01:17:04.125  [90m 12 |[39m
+01:17:04.125 [31m[1m>[22m[39m[90m 13 |[39m [36mimport[39m { api } [36mfrom[39m [32m'@/convex/_generated/api'[39m[33m;[39m
+01:17:04.125  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+01:17:04.125  [90m 14 |[39m [36mimport[39m type { [33mDoc[39m[33m,[39m [33mId[39m } [36mfrom[39m [32m'@/convex/_generated/dataModel'[39m[33m;[39m
+01:17:04.125  [90m 15 |[39m
+01:17:04.125  [90m 16 |[39m [36mexport[39m [36mfunction[39m [33mTaskList[39m({[0m
+01:17:04.125 
+01:17:04.125 Import map: aliased to relative './src/convex/_generated/api' inside of [project]/
+01:17:04.125 
+01:17:04.125 
+01:17:04.125 Import traces:
+01:17:04.125   Client Component Browser:
+01:17:04.125     ./src/components/TaskList.tsx [Client Component Browser]
+01:17:04.125     ./src/app/app/completed/page.tsx [Client Component Browser]
+01:17:04.125     ./src/app/app/completed/page.tsx [Server Component]
+01:17:04.125 
+01:17:04.125   Client Component SSR:
+01:17:04.125     ./src/components/TaskList.tsx [Client Component SSR]
+01:17:04.125     ./src/app/app/completed/page.tsx [Client Component SSR]
+01:17:04.125     ./src/app/app/completed/page.tsx [Server Component]
+01:17:04.125 
+01:17:04.125 https://nextjs.org/docs/messages/module-not-found
+01:17:04.125 
+01:17:04.125 
+01:17:04.125 ./src/server/convexAdapter.ts:14:1
+01:17:04.125 Module not found: Can't resolve '@/convex/_generated/api'
+01:17:04.125 [0m [90m 12 |[39m
+01:17:04.125  [90m 13 |[39m [90m// eslint-disable-next-line import/no-unresolved -- Convex generates these files at build time[39m
+01:17:04.125 [31m[1m>[22m[39m[90m 14 |[39m [36mimport[39m { api } [36mfrom[39m [32m'@/convex/_generated/api'[39m[33m;[39m
+01:17:04.126  [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+01:17:04.126  [90m 15 |[39m [36mimport[39m type { [33mId[39m } [36mfrom[39m [32m'@/convex/_generated/dataModel'[39m[33m;[39m
+01:17:04.126  [90m 16 |[39m
+01:17:04.126  [90m 17 |[39m [36mconst[39m [33mCONVEX_URL[39m [33m=[39m process[33m.[39menv[33m.[39m[33mNEXT_PUBLIC_CONVEX_URL[39m[33m;[39m[0m
+01:17:04.126 
+01:17:04.126 Import map: aliased to relative './src/convex/_generated/api' inside of [project]/
+01:17:04.126 
+01:17:04.126 
+01:17:04.126 Import traces:
+01:17:04.126   App Route:
+01:17:04.126     ./src/server/convexAdapter.ts
+01:17:04.126     ./src/auth.ts
+01:17:04.126     ./src/app/api/auth/[...nextauth]/route.ts
+01:17:04.126 
+01:17:04.126   Middleware:
+01:17:04.126     ./src/server/convexAdapter.ts
+01:17:04.126     ./src/auth.ts
+01:17:04.126     ./src/proxy.ts
+01:17:04.126 
+01:17:04.126   Server Component:
+01:17:04.126     ./src/server/convexAdapter.ts
+01:17:04.126     ./src/auth.ts
+01:17:04.126     ./src/app/page.tsx
+01:17:04.126 
+01:17:04.126 https://nextjs.org/docs/messages/module-not-found
+01:17:04.127 
+01:17:04.127 
+01:17:04.127     at <unknown> (./src/app/app/completed/page.tsx:7:1)
+01:17:04.127     at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+01:17:04.127     at <unknown> (./src/app/app/inbox/page.tsx:7:1)
+01:17:04.127     at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+01:17:04.127     at <unknown> (./src/app/app/projects/[projectId]/page.tsx:9:1)
+01:17:04.127     at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+01:17:04.127     at <unknown> (./src/app/app/projects/page.tsx:9:1)
+01:17:04.127     at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+01:17:04.127     at <unknown> (./src/app/app/today/page.tsx:7:1)
+01:17:04.127     at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+01:17:04.127     at <unknown> (./src/components/LabelChips.tsx:9:1)
+01:17:04.127     at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+01:17:04.127     at <unknown> (./src/components/ProjectList.tsx:10:1)
+01:17:04.128     at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+01:17:04.128     at <unknown> (./src/components/TaskEditorDialog.tsx:12:1)
+01:17:04.128     at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+01:17:04.128     at <unknown> (./src/components/TaskItem.tsx:11:1)
+01:17:04.128     at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+01:17:04.128     at <unknown> (./src/components/TaskList.tsx:13:1)
+01:17:04.128     at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+01:17:04.128     at <unknown> (./src/server/convexAdapter.ts:14:1)
+01:17:04.128     at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+01:17:04.165 ✖ 'npm run build' failed
+01:17:04.211 Error: Command "npx convex deploy --cmd 'npm run build' --cmd-url-env-var-name NEXT_PUBLIC_CONVEX_URL" exited with 1

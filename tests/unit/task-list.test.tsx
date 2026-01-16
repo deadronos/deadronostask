@@ -92,7 +92,6 @@ describe('TaskList', () => {
 
     render(<TaskList title="Inbox" subtitle="All tasks" tasks={tasks} allowReorder={false} />);
 
-
     expect(screen.getAllByTestId('task-item')).toHaveLength(2);
     await user.click(screen.getByRole('button', { name: 'Filter Labels' }));
 

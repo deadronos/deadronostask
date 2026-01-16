@@ -79,7 +79,8 @@ import { beforeEach } from 'vitest';
 
 // Global mock for next-auth so components that import SessionProvider or useSession don't try to contact real auth
 vi.mock('next-auth/react', () => ({
-  SessionProvider: ({ children }: { children?: React.ReactNode }) => React.createElement(React.Fragment, null, children),
+  SessionProvider: ({ children }: { children?: React.ReactNode }) =>
+    React.createElement(React.Fragment, null, children),
   useSession: vi.fn().mockReturnValue({ data: null, status: 'unauthenticated', update: vi.fn() }),
   signOut: vi.fn(),
 }));

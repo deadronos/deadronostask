@@ -80,6 +80,7 @@ src/
 ### Server-Only Directive
 
 The `'server-only'` package is used at the top of server modules:
+
 ```typescript
 import 'server-only';
 ```
@@ -89,6 +90,7 @@ This ensures these modules cannot be imported by client components. Next.js will
 ### ESLint Configuration
 
 Added inline comments to suppress import resolution errors for Convex-generated files:
+
 ```typescript
 // eslint-disable-next-line import/no-unresolved -- Convex generates these files at build time
 import { api } from '@/convex/_generated/api';
