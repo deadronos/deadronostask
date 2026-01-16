@@ -137,7 +137,7 @@ src/
       router.ts                   # tRPC router with example endpoints
   styles/
     globals.css                   # Global styles
-  middleware.ts                   # Clerk middleware for auth
+  proxy.ts                       # Clerk proxy for auth
 convex.json                       # Convex config pointing to src/convex
 tsconfig.json                     # TypeScript config with @/* alias
 package.json                      # Dependencies

@@ -1,11 +1,13 @@
 # Implementation Summary
 
 ## Overview
+
 This document provides a comprehensive summary of the task manager application rewrite according to spec.md.
 
 ## Architecture Compliance
 
 ### ✅ Repository Structure (spec.md §3.2)
+
 All source code is now under `/src` as required:
 
 ```
@@ -45,12 +47,13 @@ src/
 ├── styles/
 │   └── globals.css
 ├── types/                       # (Empty, ready for shared types)
-└── middleware.ts                # Clerk middleware
+└── proxy.ts                # Clerk proxy
 ```
 
 ### ✅ Configuration (spec.md §4)
 
 #### convex.json
+
 ```json
 {
   "functions": "src/convex/"
@@ -58,10 +61,12 @@ src/
 ```
 
 #### tsconfig.json
+
 - ✅ `@/*` path alias pointing to `src/*`
 - ✅ Includes `src/**/*.ts` and `src/**/*.tsx`
 
 #### Environment Variables
+
 - ✅ Updated `.env.example` for Clerk (instead of Auth.js)
 - Required vars:
   - `NEXT_PUBLIC_CONVEX_URL`
@@ -72,13 +77,15 @@ src/
 ### ✅ Authentication (spec.md §5)
 
 #### Clerk Integration
+
 - ✅ `ClerkProvider` wraps app in `src/app/layout.tsx`
-- ✅ Middleware in `src/middleware.ts` protects routes
+- ✅ Proxy in `src/proxy.ts` protects routes
 - ✅ Sign-in/sign-up pages at proper routes
 - ✅ Convex auth config in `src/convex/auth.config.ts` for Clerk JWT validation
 - ✅ `ConvexProviderWithClerk` integrates both systems
 
 #### tRPC Integration
+
 - ✅ Context derives auth from Clerk (`src/server/trpc/context.ts`)
 - ✅ `publicProcedure` and `protectedProcedure` helpers
 - ✅ tRPC provider under `ClerkProvider`
@@ -86,17 +93,20 @@ src/
 ### ✅ Data Model (spec.md §6)
 
 #### Ownership Model
+
 - ✅ Personal workspace (MVP)
 - ✅ Every record has `ownerClerkUserId: string`
 - ✅ Never accepts `ownerClerkUserId` from clients
 - ✅ Derived from auth in every function
 
 #### Tables Implemented
+
 - ✅ **users** (clerkUserId, email, name, avatarUrl, timestamps)
 - ✅ **projects** (ownerClerkUserId, name, archived, timestamps)
 - ✅ **tasks** (ownerClerkUserId, projectId, title, description, status, priority, dueAt, order, archived, timestamps)
 
 #### Indexes (spec.md §6.3)
+
 - ✅ `projects.by_owner(ownerClerkUserId)`
 - ✅ `projects.by_owner_archived(ownerClerkUserId, archived)`
 - ✅ `tasks.by_owner(ownerClerkUserId)`
@@ -108,19 +118,23 @@ src/
 ### ✅ Backend API (spec.md §7)
 
 #### Convex Functions
+
 All required functions implemented with proper authorization:
 
 **Users:**
+
 - ✅ `users.upsertMe()` - Ensure user row exists/updated
 - ✅ `users.getMe()` - Return current user
 
 **Projects:**
+
 - ✅ `projects.list(includeArchived?)`
 - ✅ `projects.create({ name })`
 - ✅ `projects.update({ projectId, name })`
 - ✅ `projects.archive({ projectId })`
 
 **Tasks:**
+
 - ✅ `tasks.list({ projectId?, status?, search?, includeArchived? })`
 - ✅ `tasks.create({ projectId?, title, description?, priority?, dueAt? })`
 - ✅ `tasks.update({ taskId, patch })`
@@ -129,13 +143,16 @@ All required functions implemented with proper authorization:
 - ✅ `tasks.archive({ taskId })`
 
 #### Validation Rules
+
 - ✅ Title required, trimmed, max length (200 for tasks, 100 for projects)
 - ✅ Patch updates whitelisted
 - ✅ Ownership checks on every query/mutation
 - ✅ Server-side validation (never trust client input)
 
 #### tRPC Procedures (spec.md §7.2)
+
 Example service endpoints implemented:
+
 - ✅ `integrations.github.importIssues({ repo, projectId })` (placeholder)
 - ✅ `tasks.batchArchive({ taskIds })` (placeholder)
 - ✅ `projects.seedDefaults({ projectId })` (placeholder)
@@ -146,6 +163,7 @@ All tRPC procedures use `protectedProcedure` by default for user data.
 ### ✅ Frontend (spec.md §8)
 
 #### Routes Implemented
+
 - ✅ `/` - Home page (redirects to dashboard or sign-in)
 - ✅ `/dashboard` - Overview with stats, projects, and tasks
 - ✅ `/projects/[projectId]` - Project detail with kanban view
@@ -154,6 +172,7 @@ All tRPC procedures use `protectedProcedure` by default for user data.
 - ✅ `/sign-up` - Clerk sign-up page
 
 #### UI Components
+
 - ✅ `CreateProjectButton` - Create new projects
 - ✅ `CreateTaskButton` - Create new tasks with full form
 - ✅ `TaskItem` - Display task with status update and archive
@@ -161,6 +180,7 @@ All tRPC procedures use `protectedProcedure` by default for user data.
 - Kanban-style project view (todo/doing/done)
 
 #### State Policy
+
 - ✅ Convex queries are source of truth (realtime subscriptions)
 - ✅ Local React state only for transient UI (forms, modals)
 - ✅ No duplication of server data in client state
@@ -168,9 +188,10 @@ All tRPC procedures use `protectedProcedure` by default for user data.
 ## Features Implemented
 
 ### Core Functionality
+
 1. **Authentication**
    - ✅ Sign up/sign in via Clerk
-   - ✅ Protected routes via middleware
+   - ✅ Protected routes via proxy
    - ✅ Automatic user creation in Convex on first auth
 
 2. **Projects**
@@ -200,6 +221,7 @@ All tRPC procedures use `protectedProcedure` by default for user data.
 ## Code Quality
 
 ### Linting & Formatting
+
 - ✅ ESLint configured with strict rules
 - ✅ Prettier configured for consistent formatting
 - ✅ All code passes `npm run lint`
@@ -207,12 +229,14 @@ All tRPC procedures use `protectedProcedure` by default for user data.
 - ✅ Husky pre-commit hooks for lint-staged
 
 ### TypeScript
+
 - ✅ Strict mode enabled
 - ✅ No `any` types (except placeholder generated files)
 - ✅ Proper type imports (`import type`)
 - ✅ Full type safety across stack
 
 ### Accessibility
+
 - ✅ Proper `htmlFor`/`id` associations in forms
 - ✅ Semantic HTML elements
 - ✅ ARIA labels where needed
@@ -221,6 +245,7 @@ All tRPC procedures use `protectedProcedure` by default for user data.
 ## Documentation
 
 ### Files Created/Updated
+
 - ✅ `README.md` - Updated with Clerk/tRPC instructions
 - ✅ `SETUP.md` - Quick start guide
 - ✅ `IMPLEMENTATION.md` - This document
@@ -230,28 +255,33 @@ All tRPC procedures use `protectedProcedure` by default for user data.
 ## Testing Strategy (Planned)
 
 ### Unit Tests
+
 - Convex functions with `convex-test`
 - React components with Testing Library
 - Validation logic
 
 ### Integration Tests
+
 - Auth flow end-to-end
 - CRUD operations
 - Realtime subscriptions
 
 ### E2E Tests
+
 - User workflows (create project → add tasks → complete)
 - Multi-user scenarios (separate data)
 
 ## Deployment
 
 ### Local Development
+
 1. `npm install`
 2. Setup Clerk account and JWT template
 3. `npx convex dev` (Terminal 1)
 4. `npm run dev` (Terminal 2)
 
 ### Production (Vercel)
+
 1. Import repo in Vercel
 2. Add environment variables (Clerk keys, Convex deploy key)
 3. Set build command: `npx convex deploy --cmd 'npm run build' --cmd-url-env-var-name NEXT_PUBLIC_CONVEX_URL`
@@ -260,6 +290,7 @@ All tRPC procedures use `protectedProcedure` by default for user data.
 ## Remaining Work
 
 ### Nice-to-Have Features
+
 - [ ] Search functionality in dashboard
 - [ ] Advanced filters (priority, due date)
 - [ ] Labels/tags system
@@ -271,12 +302,14 @@ All tRPC procedures use `protectedProcedure` by default for user data.
 - [ ] Export/import features
 
 ### Testing
+
 - [ ] Write unit tests for Convex functions
 - [ ] Add integration tests
 - [ ] Add E2E tests with Playwright
 - [ ] Test error scenarios
 
 ### Polish
+
 - [ ] Loading states and skeletons
 - [ ] Error boundaries and error messages
 - [ ] Empty states with illustrations
