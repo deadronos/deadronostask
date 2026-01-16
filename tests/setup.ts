@@ -6,11 +6,22 @@ process.env.CONVEX_AUTH_ADAPTER_SECRET = process.env.CONVEX_AUTH_ADAPTER_SECRET 
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
 import { vi, afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
 
 vi.mock('lucide-react', () => ({
   Search: () => React.createElement('span', { 'data-icon': 'Search' }),
   Plus: () => React.createElement('span', { 'data-icon': 'Plus' }),
   Sparkles: () => React.createElement('span', { 'data-icon': 'Sparkles' }),
+  Pencil: () => React.createElement('span', { 'data-icon': 'Pencil' }),
+  X: () => React.createElement('span', { 'data-icon': 'X' }),
+  CheckCircle2: () => React.createElement('span', { 'data-icon': 'CheckCircle2' }),
+  CalendarDays: () => React.createElement('span', { 'data-icon': 'CalendarDays' }),
+  Inbox: () => React.createElement('span', { 'data-icon': 'Inbox' }),
+  Settings: () => React.createElement('span', { 'data-icon': 'Settings' }),
+  ChevronDown: () => React.createElement('span', { 'data-icon': 'ChevronDown' }),
+  ChevronUp: () => React.createElement('span', { 'data-icon': 'ChevronUp' }),
+  Trash2: () => React.createElement('span', { 'data-icon': 'Trash2' }),
+  Check: () => React.createElement('span', { 'data-icon': 'Check' }),
 }));
 
 vi.mock('sonner', () => ({
@@ -87,4 +98,9 @@ beforeEach(() => {
   // Re-stub fetch default so per-test overrides are predictable
   // @ts-ignore
   (globalThis.fetch as unknown) = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) });
+});
+
+// Clean up DOM after each test to avoid cross-test leakage
+afterEach(() => {
+  cleanup();
 });

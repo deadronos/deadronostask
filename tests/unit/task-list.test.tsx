@@ -92,6 +92,10 @@ describe('TaskList', () => {
 
     render(<TaskList title="Inbox" subtitle="All tasks" tasks={tasks} allowReorder={false} />);
 
+    // Debug DOM to investigate unexpected item count
+    // eslint-disable-next-line no-console
+    console.log('DOM:', screen.queryByRole('list') ? screen.queryByRole('list')!.innerHTML : screen.body?.innerHTML);
+
     expect(screen.getAllByTestId('task-item')).toHaveLength(2);
     await user.click(screen.getByRole('button', { name: 'Filter Labels' }));
 

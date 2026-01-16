@@ -4,30 +4,43 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { TaskEditorDialog } from '@/components/TaskEditorDialog';
 import type { Doc, Id } from '@/convex/_generated/dataModel';
-import { useMutation, useQuery } from 'convex/react';
 import { toast } from 'sonner';
+import { mockUseQueryReturnOnce, mockUseMutationReturnOnce, useQueryMock, useMutationMock } from '../utils/mocks/convex';
 
-vi.mock('convex/react', () => ({
-  useQuery: vi.fn(),
-  useMutation: vi.fn(),
-}));
+// Helpers: use `useQueryMock` and `useMutationMock` provided by `tests/utils/mocks/convex` for per-test control.
+function mockMutations(createMock: any, updateMock: any) {
+  useMutationMock.mockReturnValueOnce(createMock).mockReturnValueOnce(updateMock);
+}
 
-const useQueryMock = vi.mocked(useQuery);
-const useMutationMock = vi.mocked(useMutation);
+function mockQueries(projects: any[], labels: any[]) {
+  useQueryMock.mockReturnValueOnce(projects).mockReturnValueOnce(labels);
+}
 
 describe('TaskEditorDialog', () => {
   it('prefills fields and updates an existing task', async () => {
     const user = userEvent.setup();
     const createMock = vi.fn();
     const updateMock = vi.fn();
-    useMutationMock.mockReturnValueOnce(createMock).mockReturnValueOnce(updateMock);
+    // Ensure the correct mutation handler is returned depending on the path
+    useMutationMock.mockImplementation((m: any) => {
+      if (m === 'tasks.create') return createMock;
+      if (m === 'tasks.update') return updateMock;
+      return vi.fn();
+    });
 
     const projectId = 'project-1' as Id<'projects'>;
     const labelId = 'label-1' as Id<'labels'>;
 
-    useQueryMock
-      .mockReturnValueOnce([{ _id: projectId, name: 'Marketing' } as Doc<'projects'>])
-      .mockReturnValueOnce([{ _id: labelId, name: 'Design', color: '#0EA5E9' } as Doc<'labels'>]);
+    // Debug: show useQueryMock state
+    // eslint-disable-next-line no-console
+    console.log('useQueryMock exists:', !!useQueryMock, 'mockName:', useQueryMock.getMockName?.());
+
+    // Ensure correct values based on the query arg (more robust than ordered mockReturnValueOnce)
+    useQueryMock.mockImplementation((q: any) => {
+      if (q === 'projects.list') return [{ _id: projectId, name: 'Marketing' } as Doc<'projects'>];
+      if (q === 'labels.list') return [{ _id: labelId, name: 'Design', color: '#0EA5E9' } as Doc<'labels'>];
+      return undefined;
+    });
 
     const dueLocal = new Date(2026, 1, 1, 12, 0, 0).getTime();
     const initialTask = {
@@ -54,6 +67,9 @@ describe('TaskEditorDialog', () => {
     expect(screen.getByLabelText('Title')).toHaveValue('Review brief');
     expect(screen.getByLabelText('Description')).toHaveValue('Check scope and goals');
     expect(screen.getByLabelText('Priority')).toHaveValue('high');
+    // Debug: dump project select state
+    // eslint-disable-next-line no-console
+    console.log('PROJECT SELECT:', screen.getByLabelText('Project').outerHTML);
     expect(screen.getByLabelText('Project')).toHaveValue(projectId);
     expect(screen.getByLabelText('Due date')).toHaveValue('2026-02-01');
 
