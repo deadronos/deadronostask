@@ -8,20 +8,28 @@ import type { Session } from '@/auth/types';
 
 function useConvexAuth() {
   const { data: session, status, update } = useSession();
+  const hasUserId = Boolean(session?.userId);
+  const hasToken = Boolean(session?.convexToken);
   const fetchAccessToken = React.useCallback(
     async ({ forceRefreshToken }: { forceRefreshToken?: boolean } = {}) => {
-      if (forceRefreshToken || (session?.userId && !session?.convexToken)) {
+      if (!hasUserId) {
+        return null;
+      }
+      if (forceRefreshToken || !hasToken) {
         const refreshed = await update();
+        if (!refreshed?.convexToken) {
+          console.error('Missing convexToken in session. Check auth callbacks and env config.');
+        }
         return refreshed?.convexToken ?? null;
       }
       return session?.convexToken ?? null;
     },
-    [session, update],
+    [hasToken, hasUserId, session?.convexToken, update],
   );
 
   return {
-    isLoading: status === 'loading',
-    isAuthenticated: Boolean(session?.userId),
+    isLoading: status === 'loading' && !hasUserId,
+    isAuthenticated: hasUserId && hasToken,
     fetchAccessToken,
   };
 }

@@ -37,3 +37,4 @@
 - Added normalization helper and tests for Convex auth private key formatting.
 - Documented Vercel env formatting guidance for auth private key.
 - Refreshed Convex access token when missing to prevent hanging mutations.
+- Tightened Convex auth state to avoid stuck loading when token is missing.

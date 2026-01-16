@@ -4,13 +4,14 @@
 
 ## Current Focus
 
-- Validate Convex mutations succeed after session token refresh fix
+- Validate Convex mutations succeed after auth state adjustments
 
 ## Recent Changes
 
 - Added normalization helper for `CONVEX_AUTH_PRIVATE_KEY` and tests.
 - Updated README guidance for Vercel env formatting.
 - Refresh Convex access token when missing in `AppProviders`.
+- Require Convex token before marking user authenticated.
 
 ## Next Steps
 

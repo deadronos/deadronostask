@@ -16,3 +16,4 @@
 - [TASK003] Fix Vercel Convex codegen build - Completed on 2026-01-16
 - [TASK004] Fix Vercel auth PKCS#8 key parsing - Completed on 2026-01-16
 - [TASK005] Fix Convex token refresh hang - Completed on 2026-01-16
+- [TASK006] Fix Convex auth state hang - Completed on 2026-01-16
