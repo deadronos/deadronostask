@@ -8,6 +8,7 @@ import { ConvexProviderWithAuth, ConvexReactClient } from '@/lib/convex-client';
 
 function useConvexAuth() {
   const { data: session, status } = useSession();
+  const hasConvexToken = Boolean(session?.convexToken);
   const fetchAccessToken = React.useCallback(
     async ({ forceRefreshToken }: { forceRefreshToken?: boolean } = {}) => {
       if (status === 'loading') return null;
@@ -24,8 +25,12 @@ function useConvexAuth() {
   );
 
   return {
-    isLoading: status === 'loading',
-    isAuthenticated: Boolean(session?.userId),
+    // Treat "logged in but missing convexToken" as still loading.
+    // This avoids sending unauthenticated requests in the brief window before the session is refreshed,
+    // and makes misconfiguration (e.g. missing/wrong JWKS) easier to diagnose.
+    isLoading: status === 'loading' || (Boolean(session?.userId) && !hasConvexToken),
+    // Convex authentication is based on the access token, not just a NextAuth userId.
+    isAuthenticated: hasConvexToken,
     fetchAccessToken,
   };
 }
