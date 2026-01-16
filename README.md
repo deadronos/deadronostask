@@ -1,25 +1,26 @@
-# Taskflow – Next.js + Convex + Auth.js Task Manager
+# Task Manager – Next.js + Convex + Clerk + tRPC
 
-A modern, realtime task manager built with Next.js App Router, Convex, and Auth.js (NextAuth v5). It supports per-user data isolation, realtime updates, and is deployable on Vercel with Convex deployment during build.
+A modern, realtime task manager built with Next.js App Router, Convex, Clerk, and tRPC. It supports per-user data isolation, realtime updates, and is deployable on Vercel with Convex deployment during build.
 
 ## Features
 
-- OAuth sign-in with GitHub (Auth.js v5)
+- Authentication with Clerk (OAuth and email/password)
 - Convex realtime database + server functions
-- Convex-verified JWTs for authenticated access
+- tRPC for service endpoints and integrations
 - Per-user authorization on every query/mutation
-- Projects, labels, priorities, due dates, and ordering
-- Responsive sidebar + mobile drawer
-- Theme + default view settings
+- Projects, tasks, priorities, due dates, and ordering
+- Realtime updates across all clients
+- Clean, organized folder structure with all source in `/src`
 
 ## Tech Stack
 
-- Next.js App Router + TypeScript
-- Tailwind CSS
-- Convex (`convex`)
-- Auth.js / NextAuth v5
-- `jose` for JWT signing
-- `convex-helpers` for adapter endpoint protection
+- Next.js 16 App Router + TypeScript
+- Tailwind CSS v4
+- Convex for realtime backend
+- Clerk for authentication
+- tRPC for service endpoints
+- Zod for validation
+- convex-helpers for auth utilities
 
 ## Local Development
 
@@ -40,29 +41,19 @@ cp .env.example .env.local
 Required values:
 
 - `NEXT_PUBLIC_CONVEX_URL` (created by `npx convex dev`)
-- `AUTH_SECRET` (use `npx auth secret` or `openssl rand -base64 32`)
-- `AUTH_GITHUB_ID`
-- `AUTH_GITHUB_SECRET`
-- `CONVEX_AUTH_PRIVATE_KEY`
-- `CONVEX_AUTH_ADAPTER_SECRET`
+- `CONVEX_DEPLOYMENT` (optional, for production)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (from Clerk dashboard)
+- `CLERK_SECRET_KEY` (from Clerk dashboard)
 
-### 3) Generate keys (JWKS + private key)
+### 3) Configure Clerk
 
-```bash
-node src/generateKeys.mjs
-```
+1. Create a Clerk application at https://clerk.com
+2. Enable authentication providers (Email, Google, GitHub, etc.)
+3. In Clerk dashboard, go to JWT Templates
+4. Create a new template named **`convex`** (this is required for Convex integration)
+5. Copy your publishable and secret keys to `.env.local`
 
-- Paste `CONVEX_AUTH_PRIVATE_KEY` into `.env.local`
-- Paste `JWKS` into your Convex dashboard environment variables
-
-### 4) Configure GitHub OAuth
-
-Create a GitHub OAuth app and set:
-
-- Callback URL (local): `http://localhost:3000/api/auth/callback/github`
-- Callback URL (prod): `https://<project>.vercel.app/api/auth/callback/github`
-
-### 5) Run locally (two terminals)
+### 4) Run locally (two terminals)
 
 Terminal 1:
 
@@ -80,34 +71,20 @@ Open `http://localhost:3000`.
 
 ## Convex Environment Variables
 
-Set these in the Convex dashboard (both Development and Production environments):
+Convex will automatically sync with Clerk when you have the JWT template configured.
 
-- `JWKS` (from `generateKeys.mjs`)
-- `CONVEX_AUTH_ADAPTER_SECRET` (same value as `.env.local`)
-
-`CONVEX_SITE_URL` is provided by Convex automatically and is used by `src/convex/auth.config.ts`.
+Optional: Set `CLERK_JWT_ISSUER_DOMAIN` in Convex dashboard if using a custom domain.
 
 ## Vercel Deployment
 
 1. Push the repo to GitHub and import it in Vercel.
 2. Add these **Vercel** environment variables (Production):
 
-- `AUTH_SECRET`
-- `AUTH_GITHUB_ID`
-- `AUTH_GITHUB_SECRET`
-- `CONVEX_AUTH_PRIVATE_KEY` (paste the raw multi-line PEM, or replace line breaks with `\n` and remove surrounding quotes)
-- `CONVEX_AUTH_ADAPTER_SECRET`
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `CLERK_SECRET_KEY`
+- `CONVEX_DEPLOY_KEY` (create in Convex dashboard)
 
-3. Create a Convex deploy key and set in Vercel:
-
-- `CONVEX_DEPLOY_KEY`
-
-4. In the Convex dashboard (Production), set:
-
-- `JWKS`
-- `CONVEX_AUTH_ADAPTER_SECRET`
-
-5. Set the Vercel **Build Command**:
+3. Set the Vercel **Build Command**:
 
 ```bash
 npx convex deploy --cmd 'npm run build' --cmd-url-env-var-name NEXT_PUBLIC_CONVEX_URL
@@ -117,39 +94,51 @@ npx convex deploy --cmd 'npm run build' --cmd-url-env-var-name NEXT_PUBLIC_CONVE
 
 ```
 src/
-  generateKeys.mjs
-  auth.ts
   app/
-    layout.tsx
-    page.tsx
-    api/auth/[...nextauth]/route.ts
-    app/
-      layout.tsx
-      today/page.tsx
-      inbox/page.tsx
-      projects/page.tsx
-      projects/[projectId]/page.tsx
-      completed/page.tsx
-      settings/page.tsx
-  components/
-    AppShell.tsx
-    Sidebar.tsx
-    Topbar.tsx
-    TaskList.tsx
-    TaskItem.tsx
-    TaskEditorDialog.tsx
-    ProjectList.tsx
-    LabelChips.tsx
-    SearchBox.tsx
-    Toaster.tsx
+    layout.tsx                    # Root layout with Clerk and Convex providers
+    page.tsx                      # Home page (redirects to dashboard or sign-in)
+    (auth)/
+      sign-in/[[...sign-in]]/
+        page.tsx                  # Clerk sign-in page
+      sign-up/[[...sign-up]]/
+        page.tsx                  # Clerk sign-up page
+    (app)/
+      layout.tsx                  # Protected app layout with tRPC
+      dashboard/
+        page.tsx                  # Dashboard with overview
+      projects/
+        [projectId]/
+          page.tsx                # Project detail page
+      settings/
+        page.tsx                  # Settings page
+    api/
+      trpc/
+        [trpc]/
+          route.ts                # tRPC route handler
   convex/
-    schema.ts
-    http.ts
-    auth.config.ts
-    authAdapter.ts
-    tasks.ts
-    projects.ts
-    labels.ts
-    lib/auth.ts
-  middleware.ts
+    schema.ts                     # Convex database schema
+    auth.config.ts                # Clerk integration config
+    users.ts                      # User functions
+    projects.ts                   # Project functions
+    tasks.ts                      # Task functions
+    lib/
+      auth.ts                     # Auth helper functions
+  lib/
+    convex/
+      ConvexClientProvider.tsx    # Convex client setup
+    trpc/
+      client.tsx                  # tRPC client setup
+    utils/
+      cn.ts                       # Utility functions
+  server/
+    trpc/
+      context.ts                  # tRPC context with Clerk auth
+      procedures.ts               # Public and protected procedures
+      router.ts                   # tRPC router with example endpoints
+  styles/
+    globals.css                   # Global styles
+  proxy.ts                       # Clerk proxy for auth
+convex.json                       # Convex config pointing to src/convex
+tsconfig.json                     # TypeScript config with @/* alias
+package.json                      # Dependencies
 ```
