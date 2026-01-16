@@ -2,12 +2,20 @@
 
 import { useUser } from '@clerk/nextjs';
 import { useQuery, useMutation } from 'convex/react';
+import {
+  ListTodo,
+  CheckCircle2,
+  Clock,
+  LayoutGrid,
+  TrendingUp,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';
 
 import { CreateProjectButton } from '@/components/CreateProjectButton';
 import { CreateTaskButton } from '@/components/CreateTaskButton';
 import { TaskItem } from '@/components/TaskItem';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/convex/_generated/api';
 
 export default function DashboardPage() {
@@ -36,13 +44,20 @@ export default function DashboardPage() {
     );
   }
 
+  const completedTasks = tasks?.filter((t) => t.status === 'done').length ?? 0;
+  const pendingTasks = tasks?.filter((t) => t.status !== 'done').length ?? 0;
+  const activeProjects = projects?.length ?? 0;
+
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-8 flex items-center justify-between">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto p-6 space-y-8">
+        {/* Header */}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="mb-2 text-4xl font-bold">Dashboard</h1>
-            <p className="text-gray-600">Welcome back, {user.firstName || 'there'}!</p>
+            <h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-muted-foreground mt-1">
+              Welcome back, {user.firstName || 'there'}! Here&apos;s what&apos;s happening today.
+            </p>
           </div>
           <div className="flex gap-3">
             <CreateProjectButton />
@@ -50,65 +65,122 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="mb-8 rounded-lg bg-blue-50 p-6">
-          <h3 className="mb-4 text-lg font-semibold">Quick Stats</h3>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div>
-              <div className="text-3xl font-bold text-blue-600">{projects?.length ?? 0}</div>
-              <div className="text-sm text-gray-600">Active Projects</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-green-600">
-                {tasks?.filter(t => t.status === 'done').length ?? 0}
-              </div>
-              <div className="text-sm text-gray-600">Completed Tasks</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-yellow-600">
-                {tasks?.filter(t => t.status !== 'done').length ?? 0}
-              </div>
-              <div className="text-sm text-gray-600">Pending Tasks</div>
-            </div>
-          </div>
+        {/* Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
+              <LayoutGrid className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{activeProjects}</div>
+              <p className="text-xs text-muted-foreground">
+                {activeProjects === 1 ? 'project' : 'projects'} in progress
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Completed Tasks</CardTitle>
+              <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{completedTasks}</div>
+              <p className="text-xs text-muted-foreground">
+                {tasks?.length ? `${Math.round((completedTasks / tasks.length) * 100)}%` : '0%'} completion rate
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending Tasks</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{pendingTasks}</div>
+              <p className="text-xs text-muted-foreground">
+                {pendingTasks === 1 ? 'task' : 'tasks'} to complete
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
+        {/* Main Content */}
         <div className="grid gap-6 md:grid-cols-2">
-          <div className="rounded-lg bg-white p-6 shadow">
-            <h3 className="mb-4 text-xl font-semibold">Projects</h3>
-            {projects === undefined ? (
-              <p>Loading projects...</p>
-            ) : projects.length === 0 ? (
-              <p className="text-gray-500">No projects yet. Create your first project!</p>
-            ) : (
-              <ul className="space-y-2">
-                {projects.map(project => (
-                  <li key={project._id} className="border-b py-2 last:border-b-0">
-                    <Link
-                      href={`/projects/${project._id}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      {project.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="rounded-lg bg-white p-6 shadow">
-            <h3 className="mb-4 text-xl font-semibold">Recent Tasks</h3>
-            {tasks === undefined ? (
-              <p>Loading tasks...</p>
-            ) : tasks.length === 0 ? (
-              <p className="text-gray-500">No tasks yet. Create your first task!</p>
-            ) : (
-              <div className="space-y-3">
-                {tasks.slice(0, 5).map(task => (
-                  <TaskItem key={task._id} task={task} />
-                ))}
+          {/* Projects Card */}
+          <Card className="col-span-1">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Projects</CardTitle>
+                  <CardDescription>Your active projects</CardDescription>
+                </div>
+                <LayoutGrid className="h-5 w-5 text-muted-foreground" />
               </div>
-            )}
-          </div>
+            </CardHeader>
+            <CardContent>
+              {projects === undefined ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-sm text-muted-foreground">Loading projects...</div>
+                </div>
+              ) : projects.length === 0 ? (
+                <div className="flex flex-col items-center justify-center space-y-3 py-8">
+                  <LayoutGrid className="h-12 w-12 text-muted-foreground/50" />
+                  <p className="text-sm text-muted-foreground">
+                    No projects yet. Create your first project!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {projects.map((project) => (
+                    <Link
+                      key={project._id}
+                      href={`/projects/${project._id}`}
+                      className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-accent"
+                    >
+                      <div className="font-medium">{project.name}</div>
+                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Recent Tasks Card */}
+          <Card className="col-span-1">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Recent Tasks</CardTitle>
+                  <CardDescription>Your latest tasks</CardDescription>
+                </div>
+                <ListTodo className="h-5 w-5 text-muted-foreground" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {tasks === undefined ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-sm text-muted-foreground">Loading tasks...</div>
+                </div>
+              ) : tasks.length === 0 ? (
+                <div className="flex flex-col items-center justify-center space-y-3 py-8">
+                  <ListTodo className="h-12 w-12 text-muted-foreground/50" />
+                  <p className="text-sm text-muted-foreground">
+                    No tasks yet. Create your first task!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {tasks.slice(0, 5).map((task) => (
+                    <TaskItem key={task._id} task={task} />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
