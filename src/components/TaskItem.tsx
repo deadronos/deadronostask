@@ -1,9 +1,14 @@
 'use client';
 
 import { useMutation } from 'convex/react';
+import { CheckCircle2, Circle, Clock, AlertCircle, Archive } from 'lucide-react';
 
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
+import { cn } from '@/lib/utils/cn';
 
 interface TaskItemProps {
   task: {
@@ -20,65 +25,78 @@ export function TaskItem({ task }: TaskItemProps) {
   const setStatus = useMutation(api.tasks.setStatus);
   const archiveTask = useMutation(api.tasks.archive);
 
-  const priorityColors = {
-    0: 'bg-gray-100 text-gray-700',
-    1: 'bg-blue-100 text-blue-700',
-    2: 'bg-orange-100 text-orange-700',
-    3: 'bg-red-100 text-red-700',
+  const priorityConfig = {
+    0: { label: 'Low', variant: 'secondary' as const, icon: Circle },
+    1: { label: 'Medium', variant: 'default' as const, icon: Clock },
+    2: { label: 'High', variant: 'default' as const, icon: AlertCircle },
+    3: { label: 'Urgent', variant: 'destructive' as const, icon: AlertCircle },
   };
 
-  const priorityLabels = {
-    0: 'Low',
-    1: 'Medium',
-    2: 'High',
-    3: 'Urgent',
+  const statusConfig = {
+    todo: { label: 'To Do', icon: Circle, color: 'text-muted-foreground' },
+    doing: { label: 'In Progress', icon: Clock, color: 'text-blue-600' },
+    done: { label: 'Done', icon: CheckCircle2, color: 'text-green-600' },
   };
 
-  const statusColors = {
-    todo: 'border-l-gray-400',
-    doing: 'border-l-blue-500',
-    done: 'border-l-green-500',
-  };
+  const priority = priorityConfig[task.priority];
+  const status = statusConfig[task.status];
+  const StatusIcon = status.icon;
 
   return (
     <div
-      className={`rounded border-l-4 bg-white p-4 shadow hover:shadow-md ${statusColors[task.status]}`}
-    >
-      <div className="mb-2 flex items-start justify-between">
-        <h4 className="font-semibold">{task.title}</h4>
-        <span
-          className={`rounded px-2 py-1 text-xs ${priorityColors[task.priority]}`}
-        >
-          {priorityLabels[task.priority]}
-        </span>
-      </div>
-
-      {task.description && (
-        <p className="mb-3 text-sm text-gray-600">{task.description}</p>
+      className={cn(
+        'group rounded-lg border bg-card p-4 transition-all hover:shadow-md',
+        task.status === 'done' && 'opacity-60',
       )}
+    >
+      <div className="flex items-start gap-3">
+        <StatusIcon className={cn('mt-0.5 h-5 w-5 flex-shrink-0', status.color)} />
+        <div className="flex-1 space-y-2">
+          <div className="flex items-start justify-between gap-2">
+            <h4
+              className={cn(
+                'font-medium leading-snug',
+                task.status === 'done' && 'line-through',
+              )}
+            >
+              {task.title}
+            </h4>
+            <Badge variant={priority.variant} className="flex-shrink-0">
+              {priority.label}
+            </Badge>
+          </div>
 
-      <div className="flex items-center gap-2">
-        <select
-          value={task.status}
-          onChange={(e) =>
-            setStatus({
-              taskId: task._id,
-              status: e.target.value as 'todo' | 'doing' | 'done',
-            })
-          }
-          className="rounded border px-2 py-1 text-sm"
-        >
-          <option value="todo">To Do</option>
-          <option value="doing">In Progress</option>
-          <option value="done">Done</option>
-        </select>
+          {task.description && (
+            <p className="text-sm text-muted-foreground">{task.description}</p>
+          )}
 
-        <button
-          onClick={() => archiveTask({ taskId: task._id })}
-          className="ml-auto text-sm text-red-600 hover:text-red-800"
-        >
-          Archive
-        </button>
+          <div className="flex items-center gap-2 pt-1">
+            <Select
+              value={task.status}
+              onChange={(e) =>
+                setStatus({
+                  taskId: task._id,
+                  status: e.target.value as 'todo' | 'doing' | 'done',
+                })
+              }
+              className="h-8 text-xs"
+            >
+              <option value="todo">To Do</option>
+              <option value="doing">In Progress</option>
+              <option value="done">Done</option>
+            </Select>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => archiveTask({ taskId: task._id })}
+              className="ml-auto h-8 text-xs opacity-0 transition-opacity group-hover:opacity-100"
+            >
+              <Archive className="mr-1 h-3 w-3" />
+              Archive
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
