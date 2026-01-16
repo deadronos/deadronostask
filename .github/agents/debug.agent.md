@@ -2,15 +2,17 @@
 description: 'Debug your application to find and fix a bug'
 tools:
   [
+    'execute/testFailure',
+    'execute/getTerminalOutput',
+    'execute/runInTerminal',
+    'execute/runTests',
+    'read/problems',
+    'read/readFile',
+    'read/terminalSelection',
+    'read/terminalLastCommand',
     'edit/editFiles',
     'search',
-    'runCommands',
-    'usages',
-    'problems',
-    'testFailure',
-    'fetch',
-    'githubRepo',
-    'runTests',
+    'web',
   ]
 ---
 
