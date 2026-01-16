@@ -1,135 +1,85 @@
 'use client';
 
-import { ArrowDown, ArrowUp, Pencil, Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
-
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Checkbox } from './ui/checkbox';
+import { useMutation } from 'convex/react';
 
 import { api } from '@/convex/_generated/api';
-import type { Doc, Id } from '@/convex/_generated/dataModel';
-import { useMutation } from '@/lib/convex-client';
-import { cn } from '@/lib/utils';
+import type { Id } from '@/convex/_generated/dataModel';
 
-const labelColorClasses: Record<string, string> = {
-  '#0EA5E9': 'bg-sky-500',
-  '#F97316': 'bg-orange-500',
-  '#10B981': 'bg-emerald-500',
-  '#E11D48': 'bg-rose-600',
-  '#6366F1': 'bg-indigo-500',
-};
+interface TaskItemProps {
+  task: {
+    _id: Id<'tasks'>;
+    title: string;
+    description?: string;
+    status: 'todo' | 'doing' | 'done';
+    priority: 0 | 1 | 2 | 3;
+    dueAt?: number;
+  };
+}
 
-export function TaskItem({
-  task,
-  labelById,
-  onEdit,
-  onMoveUp,
-  onMoveDown,
-}: {
-  task: Doc<'tasks'>;
-  labelById: Map<Id<'labels'>, Doc<'labels'>>;
-  onEdit: (task: Doc<'tasks'>) => void;
-  onMoveUp?: () => void;
-  onMoveDown?: () => void;
-}) {
-  const toggle = useMutation(api.tasks.toggleComplete);
-  const remove = useMutation(api.tasks.remove);
+export function TaskItem({ task }: TaskItemProps) {
+  const setStatus = useMutation(api.tasks.setStatus);
+  const archiveTask = useMutation(api.tasks.archive);
 
-  const dueLabel = formatDueDate(task.dueDate);
-  // eslint-disable-next-line react-hooks/purity -- Date.now is used for a display-only overdue badge; acceptable here
-  const overdue = task.dueDate !== null && task.dueDate < Date.now();
+  const priorityColors = {
+    0: 'bg-gray-100 text-gray-700',
+    1: 'bg-blue-100 text-blue-700',
+    2: 'bg-orange-100 text-orange-700',
+    3: 'bg-red-100 text-red-700',
+  };
+
+  const priorityLabels = {
+    0: 'Low',
+    1: 'Medium',
+    2: 'High',
+    3: 'Urgent',
+  };
+
+  const statusColors = {
+    todo: 'border-l-gray-400',
+    doing: 'border-l-blue-500',
+    done: 'border-l-green-500',
+  };
 
   return (
-    <div className="group flex items-start gap-3 rounded-xl border border-border bg-white/80 p-4 shadow-xs transition hover:shadow-md dark:bg-slate-950/60">
-      <Checkbox
-        checked={task.isCompleted}
-        onCheckedChange={async () => {
-          try {
-            await toggle({ id: task._id });
-          } catch (error) {
-            console.error(error);
-            toast.error('Could not update task');
-          }
-        }}
-        aria-label={task.isCompleted ? 'Mark incomplete' : 'Mark complete'}
-      />
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h3
-            className={cn(
-              'text-sm font-semibold',
-              task.isCompleted && 'line-through text-muted-foreground',
-            )}
-          >
-            {task.title}
-          </h3>
-          {task.priority !== 'med' && (
-            <Badge variant="outline">{task.priority.toUpperCase()}</Badge>
-          )}
-          {dueLabel && <Badge className={cn(overdue && 'bg-danger text-white')}>{dueLabel}</Badge>}
-        </div>
-        {task.description && (
-          <p className="mt-2 text-sm text-muted-foreground">{task.description}</p>
-        )}
-        {task.labelIds.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {task.labelIds.map(labelId => {
-              const label = labelById.get(labelId);
-              if (!label) return null;
-              return (
-                <span
-                  key={labelId}
-                  className="inline-flex items-center gap-2 rounded-full border border-border px-2.5 py-1 text-xs"
-                >
-                  <span
-                    className={cn(
-                      'h-2 w-2 rounded-full',
-                      labelColorClasses[label.color] ?? 'bg-muted',
-                    )}
-                  />
-                  {label.name}
-                </span>
-              );
-            })}
-          </div>
-        )}
-      </div>
-      <div className="flex flex-col gap-2 opacity-0 transition group-hover:opacity-100">
-        <Button size="sm" variant="ghost" onClick={() => onEdit(task)}>
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={async () => {
-            try {
-              await remove({ id: task._id });
-            } catch (error) {
-              console.error(error);
-              toast.error('Could not delete task');
-            }
-          }}
+    <div
+      className={`rounded border-l-4 bg-white p-4 shadow hover:shadow-md ${statusColors[task.status]}`}
+    >
+      <div className="mb-2 flex items-start justify-between">
+        <h4 className="font-semibold">{task.title}</h4>
+        <span
+          className={`rounded px-2 py-1 text-xs ${priorityColors[task.priority]}`}
         >
-          <Trash2 className="h-4 w-4 text-danger" />
-        </Button>
-        {onMoveUp && (
-          <Button size="sm" variant="ghost" onClick={onMoveUp}>
-            <ArrowUp className="h-4 w-4" />
-          </Button>
-        )}
-        {onMoveDown && (
-          <Button size="sm" variant="ghost" onClick={onMoveDown}>
-            <ArrowDown className="h-4 w-4" />
-          </Button>
-        )}
+          {priorityLabels[task.priority]}
+        </span>
+      </div>
+
+      {task.description && (
+        <p className="mb-3 text-sm text-gray-600">{task.description}</p>
+      )}
+
+      <div className="flex items-center gap-2">
+        <select
+          value={task.status}
+          onChange={(e) =>
+            setStatus({
+              taskId: task._id,
+              status: e.target.value as 'todo' | 'doing' | 'done',
+            })
+          }
+          className="rounded border px-2 py-1 text-sm"
+        >
+          <option value="todo">To Do</option>
+          <option value="doing">In Progress</option>
+          <option value="done">Done</option>
+        </select>
+
+        <button
+          onClick={() => archiveTask({ taskId: task._id })}
+          className="ml-auto text-sm text-red-600 hover:text-red-800"
+        >
+          Archive
+        </button>
       </div>
     </div>
   );
-}
-
-function formatDueDate(value: number | null) {
-  if (!value) return '';
-  const date = new Date(value);
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }

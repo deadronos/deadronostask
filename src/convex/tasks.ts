@@ -1,205 +1,267 @@
 import { v } from 'convex/values';
 
-import type { Id } from './_generated/dataModel';
 import { mutation, query } from './_generated/server';
-import { assertOwned, requireUserId } from './lib/auth';
+import { requireUserId } from './lib/auth';
 
-const priorityValidator = v.union(v.literal('low'), v.literal('med'), v.literal('high'));
-
-export const listInbox = query({
-  args: {},
-  handler: async ctx => {
-    const ownerId = await requireUserId(ctx);
-    return ctx.db
-      .query('tasks')
-      .withIndex('by_owner_project_order', q => q.eq('ownerId', ownerId).eq('projectId', null))
-      .order('asc')
-      .filter(q => q.eq(q.field('isCompleted'), false))
-      .collect();
-  },
-});
-
-export const listByProject = query({
+/**
+ * List tasks with optional filters
+ */
+export const list = query({
   args: {
-    projectId: v.id('projects'),
+    projectId: v.optional(v.union(v.id('projects'), v.null())),
+    status: v.optional(v.union(v.literal('todo'), v.literal('doing'), v.literal('done'))),
+    search: v.optional(v.string()),
+    includeArchived: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const ownerId = await requireUserId(ctx);
-    return ctx.db
-      .query('tasks')
-      .withIndex('by_owner_project_order', q =>
-        q.eq('ownerId', ownerId).eq('projectId', args.projectId),
-      )
-      .order('asc')
-      .filter(q => q.eq(q.field('isCompleted'), false))
-      .collect();
-  },
-});
+    const clerkUserId = await requireUserId(ctx);
+    const includeArchived = args.includeArchived ?? false;
 
-export const listToday = query({
-  args: {},
-  handler: async ctx => {
-    const ownerId = await requireUserId(ctx);
-    const now = new Date();
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const end = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000 - 1);
+    let tasks;
 
-    const tasks = await ctx.db
-      .query('tasks')
-      .withIndex('by_owner_dueDate', q => q.eq('ownerId', ownerId).lte('dueDate', end.getTime()))
-      .collect();
+    // Use appropriate index based on filters
+    if (args.projectId !== undefined) {
+      tasks = await ctx.db
+        .query('tasks')
+        .withIndex('by_owner_project', q =>
+          q.eq('ownerClerkUserId', clerkUserId).eq('projectId', args.projectId),
+        )
+        .collect();
+    } else if (args.status !== undefined) {
+      const status = args.status as 'todo' | 'doing' | 'done';
+      tasks = await ctx.db
+        .query('tasks')
+        .withIndex('by_owner_status', q =>
+          q.eq('ownerClerkUserId', clerkUserId).eq('status', status),
+        )
+        .collect();
+    } else {
+      tasks = await ctx.db
+        .query('tasks')
+        .withIndex('by_owner', q => q.eq('ownerClerkUserId', clerkUserId))
+        .collect();
+    }
 
-    return tasks.filter(task => !task.isCompleted && task.dueDate !== null);
-  },
-});
+    // Filter archived
+    if (!includeArchived) {
+      tasks = tasks.filter(task => !task.archived);
+    }
 
-export const listCompleted = query({
-  args: {},
-  handler: async ctx => {
-    const ownerId = await requireUserId(ctx);
-    return ctx.db
-      .query('tasks')
-      .withIndex('by_owner_updatedAt', q => q.eq('ownerId', ownerId))
-      .order('desc')
-      .filter(q => q.eq(q.field('isCompleted'), true))
-      .collect();
-  },
-});
+    // Filter by search
+    if (args.search) {
+      const searchLower = args.search.toLowerCase();
+      tasks = tasks.filter(
+        task =>
+          task.title.toLowerCase().includes(searchLower) ||
+          task.description?.toLowerCase().includes(searchLower),
+      );
+    }
 
-export const search = query({
-  args: {
-    query: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const ownerId = await requireUserId(ctx);
-    const all = await ctx.db
-      .query('tasks')
-      .withIndex('by_owner_updatedAt', q => q.eq('ownerId', ownerId))
-      .collect();
-    const needle = args.query.trim().toLowerCase();
-    if (!needle) return [];
-    return all.filter(task => {
-      const haystack = `${task.title} ${task.description}`.toLowerCase();
-      return haystack.includes(needle);
+    // Sort by order, then creation time
+    return tasks.sort((a, b) => {
+      if (a.order !== b.order) return a.order - b.order;
+      return b.createdAt - a.createdAt;
     });
   },
 });
 
+/**
+ * Create a new task
+ */
 export const create = mutation({
   args: {
+    projectId: v.optional(v.union(v.id('projects'), v.null())),
     title: v.string(),
     description: v.optional(v.string()),
-    dueDate: v.optional(v.union(v.null(), v.number())),
-    priority: priorityValidator,
-    projectId: v.optional(v.union(v.null(), v.id('projects'))),
-    labelIds: v.optional(v.array(v.id('labels'))),
+    priority: v.optional(v.union(v.literal(0), v.literal(1), v.literal(2), v.literal(3))),
+    dueAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const ownerId = await requireUserId(ctx);
+    const clerkUserId = await requireUserId(ctx);
+
+    const title = args.title.trim();
+    if (!title) {
+      throw new Error('Task title is required');
+    }
+    if (title.length > 200) {
+      throw new Error('Task title must be 200 characters or less');
+    }
+
+    // Validate project ownership if projectId provided
+    if (args.projectId) {
+      const project = await ctx.db.get(args.projectId);
+      if (!project) {
+        throw new Error('Project not found');
+      }
+      if (project.ownerClerkUserId !== clerkUserId) {
+        throw new Error('Unauthorized');
+      }
+    }
+
+    // Get max order for new task
+    const allTasks = await ctx.db
+      .query('tasks')
+      .withIndex('by_owner', q => q.eq('ownerClerkUserId', clerkUserId))
+      .collect();
+    const maxOrder = allTasks.reduce((max, task) => Math.max(max, task.order), 0);
+
     const now = Date.now();
-    const order = now;
-    const id = await ctx.db.insert('tasks', {
-      ownerId,
-      title: args.title,
-      description: args.description ?? '',
-      isCompleted: false,
-      priority: args.priority,
-      dueDate: args.dueDate ?? null,
-      projectId: args.projectId ?? null,
-      labelIds: args.labelIds ?? [],
-      order,
+
+    return await ctx.db.insert('tasks', {
+      ownerClerkUserId: clerkUserId,
+      projectId: args.projectId,
+      title,
+      description: args.description?.trim(),
+      status: 'todo',
+      priority: args.priority ?? 0,
+      dueAt: args.dueAt,
+      order: maxOrder + 1,
+      archived: false,
       createdAt: now,
       updatedAt: now,
     });
-    return ctx.db.get(id);
   },
 });
 
+/**
+ * Update a task
+ */
 export const update = mutation({
   args: {
-    id: v.id('tasks'),
-    patch: v.object({
-      title: v.optional(v.string()),
-      description: v.optional(v.string()),
-      priority: v.optional(priorityValidator),
-      dueDate: v.optional(v.union(v.null(), v.number())),
-      projectId: v.optional(v.union(v.null(), v.id('projects'))),
-      labelIds: v.optional(v.array(v.id('labels'))),
-      isCompleted: v.optional(v.boolean()),
-    }),
+    taskId: v.id('tasks'),
+    title: v.optional(v.string()),
+    description: v.optional(v.string()),
+    priority: v.optional(v.union(v.literal(0), v.literal(1), v.literal(2), v.literal(3))),
+    dueAt: v.optional(v.union(v.number(), v.null())),
+    projectId: v.optional(v.union(v.id('projects'), v.null())),
   },
   handler: async (ctx, args) => {
-    const ownerId = await requireUserId(ctx);
-    const task = await ctx.db.get(args.id);
-    assertOwned(task, ownerId);
-    await ctx.db.patch(args.id, {
-      ...args.patch,
-      updatedAt: Date.now(),
-    });
-    return args.id;
-  },
-});
+    const clerkUserId = await requireUserId(ctx);
 
-export const toggleComplete = mutation({
-  args: {
-    id: v.id('tasks'),
-  },
-  handler: async (ctx, args) => {
-    const ownerId = await requireUserId(ctx);
-    const task = await ctx.db.get(args.id);
-    assertOwned(task, ownerId);
-    await ctx.db.patch(args.id, {
-      isCompleted: !task.isCompleted,
-      updatedAt: Date.now(),
-    });
-    return args.id;
-  },
-});
+    const task = await ctx.db.get(args.taskId);
+    if (!task) {
+      throw new Error('Task not found');
+    }
+    if (task.ownerClerkUserId !== clerkUserId) {
+      throw new Error('Unauthorized');
+    }
 
-export const reorderInProject = mutation({
-  args: {
-    projectId: v.union(v.null(), v.id('projects')),
-    orderedIds: v.array(v.id('tasks')),
-  },
-  handler: async (ctx, args) => {
-    const ownerId = await requireUserId(ctx);
-    const updates = args.orderedIds.map(async (id, index) => {
-      const task = await ctx.db.get(id);
-      assertOwned(task, ownerId);
-      if (task.projectId !== args.projectId) {
-        throw new Error('Task project mismatch');
+    const patch: Record<string, unknown> = { updatedAt: Date.now() };
+
+    if (args.title !== undefined) {
+      const title = args.title.trim();
+      if (!title) {
+        throw new Error('Task title is required');
       }
-      await ctx.db.patch(id, { order: index, updatedAt: Date.now() });
+      if (title.length > 200) {
+        throw new Error('Task title must be 200 characters or less');
+      }
+      patch.title = title;
+    }
+
+    if (args.description !== undefined) {
+      patch.description = args.description?.trim();
+    }
+
+    if (args.priority !== undefined) {
+      patch.priority = args.priority;
+    }
+
+    if (args.dueAt !== undefined) {
+      patch.dueAt = args.dueAt;
+    }
+
+    if (args.projectId !== undefined) {
+      // Validate project ownership if projectId provided
+      if (args.projectId) {
+        const project = await ctx.db.get(args.projectId);
+        if (!project) {
+          throw new Error('Project not found');
+        }
+        if (project.ownerClerkUserId !== clerkUserId) {
+          throw new Error('Unauthorized');
+        }
+      }
+      patch.projectId = args.projectId;
+    }
+
+    await ctx.db.patch(args.taskId, patch);
+  },
+});
+
+/**
+ * Set task status
+ */
+export const setStatus = mutation({
+  args: {
+    taskId: v.id('tasks'),
+    status: v.union(v.literal('todo'), v.literal('doing'), v.literal('done')),
+  },
+  handler: async (ctx, args) => {
+    const clerkUserId = await requireUserId(ctx);
+
+    const task = await ctx.db.get(args.taskId);
+    if (!task) {
+      throw new Error('Task not found');
+    }
+    if (task.ownerClerkUserId !== clerkUserId) {
+      throw new Error('Unauthorized');
+    }
+
+    await ctx.db.patch(args.taskId, {
+      status: args.status,
+      updatedAt: Date.now(),
     });
-    await Promise.all(updates);
-    return true;
   },
 });
 
-export const remove = mutation({
+/**
+ * Reorder a task
+ */
+export const reorder = mutation({
   args: {
-    id: v.id('tasks'),
+    taskId: v.id('tasks'),
+    order: v.number(),
   },
   handler: async (ctx, args) => {
-    const ownerId = await requireUserId(ctx);
-    const task = await ctx.db.get(args.id);
-    assertOwned(task, ownerId);
-    await ctx.db.delete(args.id);
-    return true;
+    const clerkUserId = await requireUserId(ctx);
+
+    const task = await ctx.db.get(args.taskId);
+    if (!task) {
+      throw new Error('Task not found');
+    }
+    if (task.ownerClerkUserId !== clerkUserId) {
+      throw new Error('Unauthorized');
+    }
+
+    await ctx.db.patch(args.taskId, {
+      order: args.order,
+      updatedAt: Date.now(),
+    });
   },
 });
 
-export const listForProjectIds = query({
+/**
+ * Archive a task
+ */
+export const archive = mutation({
   args: {
-    projectIds: v.array(v.id('projects')),
+    taskId: v.id('tasks'),
   },
   handler: async (ctx, args) => {
-    const ownerId = await requireUserId(ctx);
-    const tasks = await ctx.db
-      .query('tasks')
-      .withIndex('by_owner_updatedAt', q => q.eq('ownerId', ownerId))
-      .collect();
-    const set = new Set<Id<'projects'>>(args.projectIds);
-    return tasks.filter(task => task.projectId && set.has(task.projectId));
+    const clerkUserId = await requireUserId(ctx);
+
+    const task = await ctx.db.get(args.taskId);
+    if (!task) {
+      throw new Error('Task not found');
+    }
+    if (task.ownerClerkUserId !== clerkUserId) {
+      throw new Error('Unauthorized');
+    }
+
+    await ctx.db.patch(args.taskId, {
+      archived: true,
+      updatedAt: Date.now(),
+    });
   },
 });
