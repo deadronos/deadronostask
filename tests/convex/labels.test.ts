@@ -1,6 +1,8 @@
 import { convexTest } from 'convex-test';
 import { expect, describe, it, beforeEach } from 'vitest';
+
 import { convexModules } from '../utils/convexModules';
+
 import { api } from '@/convex/_generated/api';
 import schema from '@/convex/schema';
 
@@ -69,7 +71,7 @@ describe('labels', () => {
       const labelId = await user.mutation(api.labels.create, { name: 'L1', color: '#f00' });
       const taskId = await user.mutation(api.tasks.create, {
         title: 'Task',
-        labelIds: [labelId]
+        labelIds: [labelId],
       });
 
       // Verify association exists

@@ -62,9 +62,9 @@ export default function ProjectPage() {
   const projectId = params.projectId as Id<'projects'>;
 
   // Local state for tasks to support optimistic UI updates during drag
-  const [orderedTasks, setOrderedTasks] = useState<(Doc<'tasks'> & { labelIds?: Id<'labels'>[] })[]>(
-    [],
-  );
+  const [orderedTasks, setOrderedTasks] = useState<
+    (Doc<'tasks'> & { labelIds?: Id<'labels'>[] })[]
+  >([]);
   const [activeId, setActiveId] = useState<Id<'tasks'> | null>(null);
 
   // Filtering state

@@ -1,9 +1,10 @@
 import { v } from 'convex/values';
+
 import { mutationWithUser, queryWithUser } from './lib/auth';
 
 export const list = queryWithUser({
   args: {},
-  handler: async (ctx) => {
+  handler: async ctx => {
     return await ctx.db
       .query('labels')
       .withIndex('by_owner', q => q.eq('ownerClerkUserId', ctx.clerkUserId))
@@ -34,7 +35,7 @@ export const deleteLabel = mutationWithUser({
     if (!label) return;
 
     if (label.ownerClerkUserId !== clerkUserId) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     // Delete associations in taskLabels

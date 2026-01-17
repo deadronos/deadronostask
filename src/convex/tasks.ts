@@ -1,9 +1,9 @@
 import { v } from 'convex/values';
 
+import { type Doc, type Id } from './_generated/dataModel';
 import { mutationWithUser, queryWithUser } from './lib/auth';
 import { archiveWithCheck, getNextOrder } from './lib/utils';
 import { checkOwnership, validateString } from './lib/validations';
-import { Doc, Id } from './_generated/dataModel';
 
 // Helper to validate that labels belong to the user
 async function validateLabels(ctx: any, labelIds: Id<'labels'>[], clerkUserId: string) {
@@ -110,7 +110,7 @@ export const list = queryWithUser({
           .withIndex('by_label', (q: any) => q.eq('labelId', labelId))
           .collect();
         for (const entry of entries) {
-           taskIdsWithLabels.add(entry.taskId);
+          taskIdsWithLabels.add(entry.taskId);
         }
       }
 
@@ -118,17 +118,19 @@ export const list = queryWithUser({
     }
 
     // Attach labelIds to tasks
-    const tasksWithLabels = await Promise.all(tasks.map(async (task) => {
-      const taskLabels = await ctx.db
-        .query('taskLabels')
-        .withIndex('by_task', (q: any) => q.eq('taskId', task._id))
-        .collect();
+    const tasksWithLabels = await Promise.all(
+      tasks.map(async task => {
+        const taskLabels = await ctx.db
+          .query('taskLabels')
+          .withIndex('by_task', (q: any) => q.eq('taskId', task._id))
+          .collect();
 
-      return {
-        ...task,
-        labelIds: taskLabels.map((tl: any) => tl.labelId),
-      };
-    }));
+        return {
+          ...task,
+          labelIds: taskLabels.map((tl: any) => tl.labelId),
+        };
+      }),
+    );
 
     // Sort by order, then creation time
     return tasksWithLabels.sort((a, b) => {
