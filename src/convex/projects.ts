@@ -1,17 +1,17 @@
 import { v } from 'convex/values';
 
-import { mutation, query } from './_generated/server';
-import { requireUserId } from './lib/auth';
+import { mutationWithUser, queryWithUser } from './lib/auth';
+import { checkOwnership, validateString } from './lib/validations';
 
 /**
  * List all projects for the current user
  */
-export const list = query({
+export const list = queryWithUser({
   args: {
     includeArchived: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const clerkUserId = await requireUserId(ctx);
+    const { clerkUserId } = ctx;
     const includeArchived = args.includeArchived ?? false;
 
     if (includeArchived) {
@@ -35,20 +35,14 @@ export const list = query({
 /**
  * Create a new project
  */
-export const create = mutation({
+export const create = mutationWithUser({
   args: {
     name: v.string(),
   },
   handler: async (ctx, args) => {
-    const clerkUserId = await requireUserId(ctx);
+    const { clerkUserId } = ctx;
 
-    const name = args.name.trim();
-    if (!name) {
-      throw new Error('Project name is required');
-    }
-    if (name.length > 100) {
-      throw new Error('Project name must be 100 characters or less');
-    }
+    const name = validateString(args.name, 'Project name', 100);
 
     const now = Date.now();
 
@@ -65,33 +59,20 @@ export const create = mutation({
 /**
  * Update a project
  */
-export const update = mutation({
+export const update = mutationWithUser({
   args: {
     projectId: v.id('projects'),
     name: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const clerkUserId = await requireUserId(ctx);
+    const { clerkUserId } = ctx;
 
-    const project = await ctx.db.get(args.projectId);
-    if (!project) {
-      throw new Error('Project not found');
-    }
-    if (project.ownerClerkUserId !== clerkUserId) {
-      throw new Error('Unauthorized');
-    }
+    await checkOwnership(ctx, args.projectId, clerkUserId, 'Project not found');
 
     const patch: Record<string, unknown> = { updatedAt: Date.now() };
 
     if (args.name !== undefined) {
-      const name = args.name.trim();
-      if (!name) {
-        throw new Error('Project name is required');
-      }
-      if (name.length > 100) {
-        throw new Error('Project name must be 100 characters or less');
-      }
-      patch.name = name;
+      patch.name = validateString(args.name, 'Project name', 100);
     }
 
     await ctx.db.patch(args.projectId, patch);
@@ -101,20 +82,14 @@ export const update = mutation({
 /**
  * Archive a project
  */
-export const archive = mutation({
+export const archive = mutationWithUser({
   args: {
     projectId: v.id('projects'),
   },
   handler: async (ctx, args) => {
-    const clerkUserId = await requireUserId(ctx);
+    const { clerkUserId } = ctx;
 
-    const project = await ctx.db.get(args.projectId);
-    if (!project) {
-      throw new Error('Project not found');
-    }
-    if (project.ownerClerkUserId !== clerkUserId) {
-      throw new Error('Unauthorized');
-    }
+    await checkOwnership(ctx, args.projectId, clerkUserId, 'Project not found');
 
     await ctx.db.patch(args.projectId, {
       archived: true,
