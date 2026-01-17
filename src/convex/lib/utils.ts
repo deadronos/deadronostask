@@ -1,4 +1,4 @@
-import { type Id, type TableNames } from '../_generated/dataModel';
+import { type Id } from '../_generated/dataModel';
 import { type MutationCtx } from '../_generated/server';
 
 import { checkOwnership } from './validations';
@@ -15,11 +15,14 @@ export function getNextOrder(items: { order: number }[], defaultStart = 1): numb
   return Math.max(...items.map(i => i.order)) + 1;
 }
 
+// Tables that definitely have 'archived' and 'updatedAt' fields
+type ArchivableTable = 'tasks' | 'projects';
+
 /**
  * Archives a document after verifying ownership.
- * Requires the table to have an 'archived' boolean field and 'updatedAt' number field.
+ * Restricted to tables that have 'archived' and 'updatedAt' fields.
  */
-export async function archiveWithCheck<T extends TableNames>(
+export async function archiveWithCheck<T extends ArchivableTable>(
   ctx: MutationCtx,
   id: Id<T>,
   clerkUserId: string,
@@ -27,10 +30,8 @@ export async function archiveWithCheck<T extends TableNames>(
 ) {
   await checkOwnership(ctx, id, clerkUserId, notFoundMessage);
 
-  // We cast to any here because we can't easily prove T has 'archived' and 'updatedAt'
-  // without defining a stricter type for T, but we know tasks and projects have them.
   await ctx.db.patch(id, {
     archived: true,
     updatedAt: Date.now(),
-  } as any);
+  });
 }
