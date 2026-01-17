@@ -11,8 +11,7 @@ const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
     const variantClasses = {
       default: 'bg-primary text-primary-foreground shadow hover:bg-primary/80',
       secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-      destructive:
-        'bg-destructive text-destructive-foreground shadow hover:bg-destructive/80',
+      destructive: 'bg-destructive text-destructive-foreground shadow hover:bg-destructive/80',
       outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
     };
 

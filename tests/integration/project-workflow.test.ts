@@ -2,7 +2,7 @@ import { describe, it } from 'vitest';
 
 /**
  * Integration tests for project workflows
- * 
+ *
  * These tests verify project management features including
  * creation, updates, task associations, and archival.
  */

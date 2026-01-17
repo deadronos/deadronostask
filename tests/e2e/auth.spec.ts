@@ -2,7 +2,7 @@ import { test } from '@playwright/test';
 
 /**
  * E2E tests for authentication flows
- * 
+ *
  * These tests verify the complete authentication experience
  * from the user's perspective, including sign up, sign in,
  * and sign out flows.

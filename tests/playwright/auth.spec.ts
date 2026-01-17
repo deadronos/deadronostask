@@ -2,7 +2,9 @@ import { setupClerkTestingToken } from '@clerk/testing/playwright';
 import { test, expect } from '@playwright/test';
 
 test.describe('Authentication', () => {
-  test('unauthenticated user is redirected to sign-in when accessing dashboard', async ({ page }) => {
+  test('unauthenticated user is redirected to sign-in when accessing dashboard', async ({
+    page,
+  }) => {
     await page.goto('/dashboard');
     await expect(page).toHaveURL(/.*sign-in.*/);
   });
@@ -28,8 +30,8 @@ test.describe('Authentication', () => {
     // Note: The specific accessible name might vary, but "Open user button" is common.
     // If that fails, checking for the absence of "Sign In" combined with presence of Dashboard links is a strong signal.
     const userButton = page.getByRole('button', { name: /Open user button|User menu/i });
-    if (await userButton.count() > 0) {
-        await expect(userButton).toBeVisible();
+    if ((await userButton.count()) > 0) {
+      await expect(userButton).toBeVisible();
     }
   });
 });

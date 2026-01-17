@@ -69,9 +69,7 @@ export function CreateTaskButton({ projectId }: CreateTaskButtonProps) {
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Create New Task</DialogTitle>
-            <DialogDescription>
-              Add a new task to your project or personal list.
-            </DialogDescription>
+            <DialogDescription>Add a new task to your project or personal list.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -80,7 +78,7 @@ export function CreateTaskButton({ projectId }: CreateTaskButtonProps) {
                 id="task-title"
                 placeholder="e.g., Design landing page"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={e => setTitle(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
@@ -89,7 +87,7 @@ export function CreateTaskButton({ projectId }: CreateTaskButtonProps) {
                 id="task-description"
                 placeholder="Add more details about this task (optional)"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={e => setDescription(e.target.value)}
                 rows={3}
               />
             </div>
@@ -98,7 +96,7 @@ export function CreateTaskButton({ projectId }: CreateTaskButtonProps) {
               <Select
                 id="task-priority"
                 value={priority}
-                onChange={(e) => setPriority(Number(e.target.value) as 0 | 1 | 2 | 3)}
+                onChange={e => setPriority(Number(e.target.value) as 0 | 1 | 2 | 3)}
               >
                 <option value={0}>Low</option>
                 <option value={1}>Medium</option>
