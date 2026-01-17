@@ -1,0 +1,28 @@
+{
+  "uiUx": {
+    "score": 0,
+    "findings": [
+      "✗ Navigation error: page.goto: net::ERR_NAME_NOT_RESOLVED at http://127.0.0.1:3000/\nCall log:\n  - navigating to \"http://127.0.0.1:3000/\", waiting until \"networkidle\"\n"
+    ],
+    "screenshots": []
+  },
+  "performance": {
+    "score": 0,
+    "metrics": {},
+    "findings": []
+  },
+  "codeQuality": {
+    "score": 0,
+    "findings": []
+  },
+  "security": {
+    "score": 0,
+    "findings": []
+  },
+  "features": {
+    "score": 0,
+    "findings": [],
+    "availableFeatures": []
+  },
+  "overallScore": 0
+}
