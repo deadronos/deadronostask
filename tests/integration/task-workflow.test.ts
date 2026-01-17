@@ -2,7 +2,7 @@ import { describe, it } from 'vitest';
 
 /**
  * Integration tests for task workflows
- * 
+ *
  * These tests verify the complete task lifecycle including
  * creation, updates, status changes, and interactions with projects.
  */

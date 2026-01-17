@@ -133,6 +133,7 @@ export const update = mutation({
     description: v.optional(v.string()),
     priority: v.optional(v.union(v.literal(0), v.literal(1), v.literal(2), v.literal(3))),
     dueAt: v.optional(v.union(v.number(), v.null())),
+    labelIds: v.optional(v.array(v.id('labels'))),
     projectId: v.optional(v.union(v.id('projects'), v.null())),
   },
   handler: async (ctx, args) => {
@@ -169,6 +170,10 @@ export const update = mutation({
 
     if (args.dueAt !== undefined) {
       patch.dueAt = args.dueAt;
+    }
+
+    if (args.labelIds !== undefined) {
+      patch.labelIds = args.labelIds;
     }
 
     if (args.projectId !== undefined) {

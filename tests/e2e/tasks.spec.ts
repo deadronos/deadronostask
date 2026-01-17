@@ -2,7 +2,7 @@ import { test } from '@playwright/test';
 
 /**
  * E2E tests for task management features
- * 
+ *
  * These tests verify the complete task management experience
  * from the user's perspective, including creation, updates,
  * status changes, and filtering.

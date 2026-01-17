@@ -21,6 +21,7 @@ tests/e2e/
 E2E tests require additional setup:
 
 1. Install Playwright browsers:
+
    ```bash
    npx playwright install
    ```
