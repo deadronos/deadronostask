@@ -38,6 +38,9 @@ export default [
     'plugin:jsx-a11y/recommended',
     'plugin:import/recommended',
     'plugin:import/typescript',
+    'plugin:unicorn/recommended',
+    'plugin:sonarjs/recommended',
+    'plugin:promise/recommended',
     'prettier',
   ),
   {
@@ -91,7 +94,20 @@ export default [
         'warn',
         { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
       ],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/strict-boolean-expressions': 'warn',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+      'no-implicit-coercion': 'warn',
+      'unicorn/consistent-function-scoping': 'warn',
+      // Warn when DB write helpers are used — Convex handlers should prefer MutationCtx for writes.
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector: "CallExpression[callee.property.name=/insert|delete|patch/][callee.object.property.name='db'][callee.object.object.name='ctx']",
+          message:
+            'Detected ctx.db.<write>. Prefer using a mutation (MutationCtx) for DB writes; add a code comment if this is intentional.',
+        },
+      ],
       // Generated Convex files may include project-agnostic eslint-disable comments; allow them
       'eslint-comments/no-unused-disable': 'off',
     },
@@ -127,6 +143,31 @@ export default [
         project: './tsconfig.json',
         tsconfigRootDir: __dirname,
       },
+    },
+  },
+  // Stronger Convex-specific constraints (narrow scope)
+  {
+    files: ['src/convex/**'],
+    rules: {
+      // Require explicit parameter types for exported Convex handlers to avoid ctx-type mistakes
+      '@typescript-eslint/typedef': [
+        'warn',
+        {
+          parameter: true,
+          arrowParameter: true,
+          memberVariableDeclaration: false,
+          variableDeclaration: false,
+        },
+      ],
+      // Make accidental DB-write detection in Convex files more visible
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector: "CallExpression[callee.property.name=/insert|delete|patch/][callee.object.property.name='db'][callee.object.object.name='ctx']",
+          message:
+            'Detected ctx.db.<write> — confirm this is inside a mutation handler (MutationCtx).',
+        },
+      ],
     },
   },
   // Node-specific files (configs, scripts) should use Node environment

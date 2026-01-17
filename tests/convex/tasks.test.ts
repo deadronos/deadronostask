@@ -721,4 +721,52 @@ describe('tasks', () => {
       await expect(user2.mutation(api.tasks.archive, { taskId })).rejects.toThrow('Unauthorized');
     });
   });
+
+  describe('labels', () => {
+    it('should create task with labels', async () => {
+      const user = t.withIdentity({ subject: 'u1' });
+      const labelId = await user.mutation(api.labels.create, { name: 'Bug', color: '#f00' });
+
+      const _taskId = await user.mutation(api.tasks.create, {
+        title: 'Task',
+        labelIds: [labelId],
+      });
+
+      const task = await user.query(api.tasks.list, {});
+      expect(task[0].labelIds).toEqual([labelId]);
+    });
+
+    it('should filter tasks by labels', async () => {
+      const user = t.withIdentity({ subject: 'u1' });
+      const l1 = await user.mutation(api.labels.create, { name: 'L1', color: '#f00' });
+      const l2 = await user.mutation(api.labels.create, { name: 'L2', color: '#0f0' });
+
+      await user.mutation(api.tasks.create, { title: 'T1', labelIds: [l1] });
+      await user.mutation(api.tasks.create, { title: 'T2', labelIds: [l2] });
+      await user.mutation(api.tasks.create, { title: 'T3', labelIds: [l1, l2] });
+      await user.mutation(api.tasks.create, { title: 'T4' }); // No labels
+
+      const res1 = await user.query(api.tasks.list, { labelIds: [l1] });
+      expect(res1).toHaveLength(2); // T1, T3
+
+      const res2 = await user.query(api.tasks.list, { labelIds: [l1, l2] });
+      expect(res2).toHaveLength(3); // T1, T2, T3 (OR logic)
+    });
+
+    it('should update task labels', async () => {
+      const user = t.withIdentity({ subject: 'u1' });
+      const l1 = await user.mutation(api.labels.create, { name: 'L1', color: '#f00' });
+      const l2 = await user.mutation(api.labels.create, { name: 'L2', color: '#0f0' });
+
+      const taskId = await user.mutation(api.tasks.create, { title: 'Task', labelIds: [l1] });
+
+      await user.mutation(api.tasks.update, {
+        taskId,
+        labelIds: [l2],
+      });
+
+      const tasks = await user.query(api.tasks.list, {});
+      expect(tasks[0].labelIds).toEqual([l2]);
+    });
+  });
 });

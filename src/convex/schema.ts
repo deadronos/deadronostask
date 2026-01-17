@@ -29,7 +29,6 @@ export default defineSchema({
     status: v.union(v.literal('todo'), v.literal('doing'), v.literal('done')),
     priority: v.union(v.literal(0), v.literal(1), v.literal(2), v.literal(3)),
     dueAt: v.optional(v.union(v.number(), v.null())),
-    labelIds: v.optional(v.array(v.id('labels'))),
     order: v.number(),
     archived: v.boolean(),
     createdAt: v.number(),
@@ -42,10 +41,18 @@ export default defineSchema({
     .index('by_owner_archived', ['ownerClerkUserId', 'archived']),
 
   labels: defineTable({
-    projectId: v.id('projects'),
+    ownerClerkUserId: v.string(),
     name: v.string(),
     color: v.string(), // hex or tailwind class
-  }).index('by_project', ['projectId']),
+  }).index('by_owner', ['ownerClerkUserId']),
+
+  taskLabels: defineTable({
+    taskId: v.id('tasks'),
+    labelId: v.id('labels'),
+  })
+    .index('by_task', ['taskId'])
+    .index('by_label', ['labelId'])
+    .index('by_task_label', ['taskId', 'labelId']),
 
   subtasks: defineTable({
     taskId: v.id('tasks'),
