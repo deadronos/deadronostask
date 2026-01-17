@@ -1,6 +1,7 @@
 import { v } from 'convex/values';
 
 import { mutation, query } from './_generated/server';
+import { getNextOrder } from './lib/utils';
 
 export const list = query({
   args: { taskId: v.id('tasks') },
@@ -24,7 +25,7 @@ export const create = mutation({
       .collect();
 
     // Simple order: append to end
-    const order = existing.length > 0 ? Math.max(...existing.map(s => s.order)) + 1 : 0;
+    const order = getNextOrder(existing, 0);
 
     return await ctx.db.insert('subtasks', {
       taskId: args.taskId,

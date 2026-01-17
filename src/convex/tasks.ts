@@ -1,6 +1,7 @@
 import { v } from 'convex/values';
 
 import { mutationWithUser, queryWithUser } from './lib/auth';
+import { archiveWithCheck, getNextOrder } from './lib/utils';
 import { checkOwnership, validateString } from './lib/validations';
 
 /**
@@ -91,7 +92,7 @@ export const create = mutationWithUser({
       .query('tasks')
       .withIndex('by_owner', q => q.eq('ownerClerkUserId', clerkUserId))
       .collect();
-    const maxOrder = allTasks.reduce((max, task) => Math.max(max, task.order), 0);
+    const order = getNextOrder(allTasks, 1);
 
     const now = Date.now();
 
@@ -103,7 +104,7 @@ export const create = mutationWithUser({
       status: 'todo',
       priority: args.priority ?? 0,
       dueAt: args.dueAt,
-      order: maxOrder + 1,
+      order,
       archived: false,
       createdAt: now,
       updatedAt: now,
@@ -220,11 +221,6 @@ export const archive = mutationWithUser({
   handler: async (ctx, args) => {
     const { clerkUserId } = ctx;
 
-    await checkOwnership(ctx, args.taskId, clerkUserId, 'Task not found');
-
-    await ctx.db.patch(args.taskId, {
-      archived: true,
-      updatedAt: Date.now(),
-    });
+    await archiveWithCheck(ctx, args.taskId, clerkUserId, 'Task not found');
   },
 });
