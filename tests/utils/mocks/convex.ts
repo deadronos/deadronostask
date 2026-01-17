@@ -1,16 +1,17 @@
-import { vi } from 'vitest';
-import type { Mock } from 'vitest';
-
-// Import the mocked module surfaces (these modules are mocked in tests/setup.ts)
-import * as convexClient from '@/lib/convex-client';
 import * as convexBrowser from 'convex/browser';
+import { vi, type Mock } from 'vitest';
+
+import * as convexClient from '@/lib/convex-client';
 
 // Helpers to access mocked functions safely
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const useQueryMock = vi.mocked((convexClient as any).useQuery as unknown as Mock);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const useMutationMock = vi.mocked((convexClient as any).useMutation as unknown as Mock);
 
 // For the HTTP client class, the mock is a constructor function. We provide helpers
 // to get the prototype mocked methods for assertions.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ConvexHttpClientMock = (convexBrowser as any).ConvexHttpClient as any;
 
 export function mockUseQueryReturn(value: unknown) {

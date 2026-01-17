@@ -222,6 +222,7 @@ export const reorder = mutation({
   args: {
     taskId: v.id('tasks'),
     order: v.number(),
+    status: v.optional(v.union(v.literal('todo'), v.literal('doing'), v.literal('done'))),
   },
   handler: async (ctx, args) => {
     const clerkUserId = await requireUserId(ctx);
@@ -234,10 +235,16 @@ export const reorder = mutation({
       throw new Error('Unauthorized');
     }
 
-    await ctx.db.patch(args.taskId, {
+    const patch: Record<string, unknown> = {
       order: args.order,
       updatedAt: Date.now(),
-    });
+    };
+
+    if (args.status !== undefined) {
+      patch.status = args.status;
+    }
+
+    await ctx.db.patch(args.taskId, patch);
   },
 });
 
