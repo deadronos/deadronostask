@@ -1,0 +1,31 @@
+{
+  "uiUx": {
+    "score": 0,
+    "findings": [],
+    "screenshots": []
+  },
+  "performance": {
+    "score": 0,
+    "metrics": {
+      "pageLoadTime": 0,
+      "timeToInteractive": 0,
+      "firstContentfulPaint": 0,
+      "largestContentfulPaint": 0
+    },
+    "findings": []
+  },
+  "codeQuality": {
+    "score": 0,
+    "findings": []
+  },
+  "security": {
+    "score": 0,
+    "findings": []
+  },
+  "features": {
+    "score": 0,
+    "findings": [],
+    "availableFeatures": []
+  },
+  "overallScore": 0
+}
