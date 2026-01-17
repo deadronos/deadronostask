@@ -132,7 +132,7 @@ export default function DashboardPage() {
                 Dashboard
               </h1>
               <p className="max-w-xl text-base text-muted-foreground">
-                Welcome back, {user.firstName || 'there'}! Here&apos;s your live snapshot for today.
+                Welcome back, {user.firstName ?? 'there'}! Here&apos;s your live snapshot for today.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -163,7 +163,9 @@ export default function DashboardPage() {
               <div className="mt-4 flex items-baseline gap-2">
                 <span className="text-3xl font-semibold text-foreground">{completedTasks}</span>
                 <span className="text-xs text-muted-foreground">
-                  {tasks?.length ? `${Math.round((completedTasks / tasks.length) * 100)}%` : '0%'}{' '}
+                  {tasks && tasks.length > 0
+                    ? `${Math.round((completedTasks / tasks.length) * 100)}%`
+                    : '0%'}{' '}
                   completion
                 </span>
               </div>

@@ -42,7 +42,7 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProper
 
   const labels = useQuery(api.labels.list, {});
 
-  const [desc, setDesc] = useState(task.description || '');
+  const [desc, setDesc] = useState(task.description ?? '');
   const [isEditingDesc, setIsEditingDesc] = useState(false);
 
   // Create Label State
@@ -148,7 +148,7 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProper
                   role="button"
                   tabIndex={0}
                 >
-                  {task.description || (
+                  {task.description ?? (
                     <span className="text-muted-foreground italic">Add a description...</span>
                   )}
                 </div>
@@ -261,7 +261,7 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProper
                               >
                                 <div className={cn('h-4 w-4 rounded-full', label.color)} />
                                 {label.name}
-                                {task.labelIds?.includes(label._id) && (
+                                {task.labelIds?.includes(label._id) === true && (
                                   <Check className="ml-auto h-4 w-4" />
                                 )}
                               </CommandItem>

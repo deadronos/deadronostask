@@ -1,6 +1,12 @@
 import { v } from 'convex/values';
 
-import { mutationWithUser, queryWithUser } from './lib/auth';
+import { type Id } from './_generated/dataModel';
+import {
+  type UserMutationContext,
+  type UserQueryContext,
+  mutationWithUser,
+  queryWithUser,
+} from './lib/auth';
 import { archiveWithCheck } from './lib/utilities';
 import { checkOwnership, validateString } from './lib/validations';
 
@@ -11,19 +17,21 @@ export const list = queryWithUser({
   args: {
     includeArchived: v.optional(v.boolean()),
   },
-  handler: async (context, arguments_) => {
+  handler: async (context: UserQueryContext, arguments_: { includeArchived?: boolean }) => {
     const { clerkUserId } = context;
     const includeArchived = arguments_.includeArchived ?? false;
 
     return await (includeArchived
       ? context.db
           .query('projects')
-          .withIndex('by_owner', q => q.eq('ownerClerkUserId', clerkUserId))
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- complex type
+          .withIndex('by_owner', (q: any) => q.eq('ownerClerkUserId', clerkUserId))
           .order('desc')
           .collect()
       : context.db
           .query('projects')
-          .withIndex('by_owner_archived', q =>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- complex type
+          .withIndex('by_owner_archived', (q: any) =>
             q.eq('ownerClerkUserId', clerkUserId).eq('archived', false),
           )
           .order('desc')
@@ -38,7 +46,7 @@ export const create = mutationWithUser({
   args: {
     name: v.string(),
   },
-  handler: async (context, arguments_) => {
+  handler: async (context: UserMutationContext, arguments_: { name: string }) => {
     const { clerkUserId } = context;
 
     const name = validateString(arguments_.name, 'Project name', 100);
@@ -63,7 +71,10 @@ export const update = mutationWithUser({
     projectId: v.id('projects'),
     name: v.optional(v.string()),
   },
-  handler: async (context, arguments_) => {
+  handler: async (
+    context: UserMutationContext,
+    arguments_: { projectId: Id<'projects'>; name?: string },
+  ) => {
     const { clerkUserId } = context;
 
     await checkOwnership(context, arguments_.projectId, clerkUserId, 'Project not found');
@@ -85,7 +96,7 @@ export const archive = mutationWithUser({
   args: {
     projectId: v.id('projects'),
   },
-  handler: async (context, arguments_) => {
+  handler: async (context: UserMutationContext, arguments_: { projectId: Id<'projects'> }) => {
     const { clerkUserId } = context;
 
     await archiveWithCheck(context, arguments_.projectId, clerkUserId, 'Project not found');

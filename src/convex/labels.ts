@@ -1,13 +1,20 @@
 import { v } from 'convex/values';
 
-import { mutationWithUser, queryWithUser } from './lib/auth';
+import { type Doc as Document_, type Id } from './_generated/dataModel';
+import {
+  type UserMutationContext,
+  type UserQueryContext,
+  mutationWithUser,
+  queryWithUser,
+} from './lib/auth';
 
 export const list = queryWithUser({
   args: {},
-  handler: async context => {
+  handler: async (context: UserQueryContext) => {
     return await context.db
       .query('labels')
-      .withIndex('by_owner', q => q.eq('ownerClerkUserId', context.clerkUserId))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FilterBuilder type complex to import
+      .withIndex('by_owner', (q: any) => q.eq('ownerClerkUserId', context.clerkUserId))
       .collect();
   },
 });
@@ -17,7 +24,7 @@ export const create = mutationWithUser({
     name: v.string(),
     color: v.string(),
   },
-  handler: async (context, arguments_) => {
+  handler: async (context: UserMutationContext, arguments_: { name: string; color: string }) => {
     return await context.db.insert('labels', {
       ownerClerkUserId: context.clerkUserId,
       name: arguments_.name,
@@ -28,9 +35,9 @@ export const create = mutationWithUser({
 
 export const deleteLabel = mutationWithUser({
   args: { labelId: v.id('labels') },
-  handler: async (context, arguments_) => {
+  handler: async (context: UserMutationContext, arguments_: { labelId: Id<'labels'> }) => {
     const { clerkUserId } = context;
-    const label = await context.db.get(arguments_.labelId);
+    const label: Document_<'labels'> | null = await context.db.get(arguments_.labelId);
 
     if (!label) return;
 
@@ -41,7 +48,8 @@ export const deleteLabel = mutationWithUser({
     // Delete associations in taskLabels
     const associations = await context.db
       .query('taskLabels')
-      .withIndex('by_label', q => q.eq('labelId', arguments_.labelId))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FilterBuilder type complex to import
+      .withIndex('by_label', (q: any) => q.eq('labelId', arguments_.labelId))
       .collect();
 
     for (const assoc of associations) {

@@ -12,7 +12,7 @@ export const trpc = createTRPCReact<AppRouter>();
 function getBaseUrl() {
   // eslint-disable-next-line sonarjs/different-types-comparison -- window check
   if (globalThis.window !== undefined) return '';
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  if (process.env.VERCEL_URL !== undefined) return `https://${process.env.VERCEL_URL}`;
   return `http://localhost:${process.env.PORT ?? 3000}`;
 }
 

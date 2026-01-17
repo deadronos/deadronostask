@@ -211,7 +211,7 @@ export default function ProjectPage() {
   const filteredTasks = orderedTasks.filter(t => {
     if (selectedLabels.length === 0) return true;
     if (!t.labelIds) return false;
-    return selectedLabels.some(labelId => t.labelIds?.includes(labelId));
+    return selectedLabels.some(labelId => t.labelIds?.includes(labelId) === true);
   });
 
   const todoTasks = filteredTasks.filter(t => t.status === 'todo');

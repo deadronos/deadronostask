@@ -12,7 +12,7 @@ export async function checkOwnership<T extends TableNames>(
   context: QueryContext | MutationContext,
   id: Id<T>,
   clerkUserId: string,
-  notFoundMessage = 'Document not found',
+  notFoundMessage: string = 'Document not found',
 ) {
   const document = await context.db.get(id);
   if (!document) {

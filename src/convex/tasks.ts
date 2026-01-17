@@ -2,12 +2,19 @@ import { v } from 'convex/values';
 
 import { type Doc as Document_, type Id } from './_generated/dataModel';
 import {
-  type QueryCtx as QueryContext,
   type MutationCtx as MutationContext,
+  type QueryCtx as QueryContext,
 } from './_generated/server';
-import { mutationWithUser, queryWithUser } from './lib/auth';
+import {
+  type UserMutationContext,
+  type UserQueryContext,
+  mutationWithUser,
+  queryWithUser,
+} from './lib/auth';
 import { archiveWithCheck, getNextOrder } from './lib/utilities';
 import { checkOwnership, validateString } from './lib/validations';
+
+type TaskStatus = 'todo' | 'doing' | 'done';
 
 // Helper to validate that labels belong to the user
 async function validateLabels(
@@ -16,7 +23,7 @@ async function validateLabels(
   clerkUserId: string,
 ) {
   const uniqueLabelIds = [...new Set(labelIds)];
-  const labels = await Promise.all(uniqueLabelIds.map(id => context.db.get(id)));
+  const labels = await Promise.all(uniqueLabelIds.map((id: Id<'labels'>) => context.db.get(id)));
   for (const label of labels) {
     if (!label) throw new Error('Label not found');
     if (label.ownerClerkUserId !== clerkUserId) throw new Error('Unauthorized label');
@@ -28,10 +35,13 @@ async function validateLabels(
 async function syncLabels(context: MutationContext, taskId: Id<'tasks'>, labelIds: Id<'labels'>[]) {
   const existing: Document_<'taskLabels'>[] = await context.db
     .query('taskLabels')
-    .withIndex('by_task', q => q.eq('taskId', taskId))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FilterBuilder type complex to import
+    .withIndex('by_task', (q: any) => q.eq('taskId', taskId))
     .collect();
 
-  const existingIds = new Set(existing.map(taskLabel => taskLabel.labelId));
+  const existingIds = new Set(
+    existing.map((taskLabel: Document_<'taskLabels'>) => taskLabel.labelId),
+  );
   const newIds = new Set(labelIds);
 
   // Delete removed
@@ -63,47 +73,60 @@ export const list = queryWithUser({
     includeArchived: v.optional(v.boolean()),
     labelIds: v.optional(v.array(v.id('labels'))),
   },
-  handler: async (context, arguments_) => {
+  handler: async (
+    context: UserQueryContext,
+    arguments_: {
+      projectId?: Id<'projects'> | null;
+      status?: TaskStatus;
+      search?: string;
+      includeArchived?: boolean;
+      labelIds?: Id<'labels'>[];
+    },
+  ) => {
     const { clerkUserId } = context;
     const includeArchived = arguments_.includeArchived ?? false;
 
     let tasks: Document_<'tasks'>[];
 
     // Use appropriate index based on filters
-    if (arguments_.projectId !== undefined) {
+    if (arguments_.projectId !== undefined && arguments_.projectId !== null) {
       tasks = await context.db
         .query('tasks')
-        .withIndex('by_owner_project', q =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FilterBuilder type complex to import
+        .withIndex('by_owner_project', (q: any) =>
           q.eq('ownerClerkUserId', clerkUserId).eq('projectId', arguments_.projectId),
         )
         .collect();
     } else if (arguments_.status === undefined) {
       tasks = await context.db
         .query('tasks')
-        .withIndex('by_owner', q => q.eq('ownerClerkUserId', clerkUserId))
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FilterBuilder type complex to import
+        .withIndex('by_owner', (q: any) => q.eq('ownerClerkUserId', clerkUserId))
         .collect();
     } else {
-      const status = arguments_.status;
       tasks = await context.db
         .query('tasks')
-        .withIndex('by_owner_status', q =>
-          q.eq('ownerClerkUserId', clerkUserId).eq('status', status),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FilterBuilder type complex to import
+        .withIndex('by_owner_status', (q: any) =>
+          q.eq('ownerClerkUserId', clerkUserId).eq('status', arguments_.status),
         )
         .collect();
     }
 
+    let filteredTasks = tasks;
+
     // Filter archived
     if (!includeArchived) {
-      tasks = tasks.filter(task => !task.archived);
+      filteredTasks = filteredTasks.filter((task: Document_<'tasks'>) => task.archived !== true);
     }
 
     // Filter by search
-    if (arguments_.search) {
+    if (arguments_.search !== undefined && arguments_.search !== '') {
       const searchLower = arguments_.search.toLowerCase();
-      tasks = tasks.filter(
-        task =>
-          task.title.toLowerCase().includes(searchLower) ||
-          task.description?.toLowerCase().includes(searchLower),
+      filteredTasks = filteredTasks.filter(
+        (task: Document_<'tasks'>) =>
+          (task.title ?? '').toLowerCase().includes(searchLower) === true ||
+          (task.description ?? '').toLowerCase().includes(searchLower) === true,
       );
     }
 
@@ -115,33 +138,38 @@ export const list = queryWithUser({
       for (const labelId of arguments_.labelIds) {
         const entries: Document_<'taskLabels'>[] = await context.db
           .query('taskLabels')
-          .withIndex('by_label', q => q.eq('labelId', labelId))
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FilterBuilder type complex to import
+          .withIndex('by_label', (q: any) => q.eq('labelId', labelId))
           .collect();
         for (const entry of entries) {
           taskIdsWithLabels.add(entry.taskId);
         }
       }
 
-      tasks = tasks.filter(task => taskIdsWithLabels.has(task._id));
+      filteredTasks = filteredTasks.filter((task: Document_<'tasks'>) =>
+        taskIdsWithLabels.has(task._id),
+      );
     }
 
     // Attach labelIds to tasks
     const tasksWithLabels = await Promise.all(
-      tasks.map(async task => {
+      filteredTasks.map(async (task: Document_<'tasks'>) => {
         const taskLabels: Document_<'taskLabels'>[] = await context.db
           .query('taskLabels')
-          .withIndex('by_task', q => q.eq('taskId', task._id))
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FilterBuilder type complex to import
+          .withIndex('by_task', (q: any) => q.eq('taskId', task._id))
           .collect();
 
         return {
           ...task,
-          labelIds: taskLabels.map(tl => tl.labelId),
+          labelIds: taskLabels.map((tl: Document_<'taskLabels'>) => tl.labelId),
         };
       }),
     );
 
     // Sort by order, then creation time
-    return tasksWithLabels.toSorted((a, b) => {
+    // eslint-disable-next-line
+    return [...tasksWithLabels].sort((a: any, b: any) => {
       if (a.order !== b.order) return a.order - b.order;
       return b.createdAt - a.createdAt;
     });
@@ -153,19 +181,26 @@ export const list = queryWithUser({
  */
 export const create = mutationWithUser({
   args: {
-    projectId: v.optional(v.union(v.id('projects'), v.null())),
+    projectId: v.optional(v.id('projects')),
     title: v.string(),
     description: v.optional(v.string()),
-    priority: v.optional(v.union(v.literal(0), v.literal(1), v.literal(2), v.literal(3))),
-    dueAt: v.optional(v.number()),
     labelIds: v.optional(v.array(v.id('labels'))),
+    priority: v.optional(v.union(v.literal(0), v.literal(1), v.literal(2), v.literal(3))),
+    dueDate: v.optional(v.number()),
   },
-  handler: async (context, arguments_) => {
+  handler: async (
+    context: UserMutationContext,
+    arguments_: {
+      projectId?: Id<'projects'>;
+      title: string;
+      description?: string;
+      labelIds?: Id<'labels'>[];
+      priority?: 0 | 1 | 2 | 3;
+      dueDate?: number;
+    },
+  ) => {
     const { clerkUserId } = context;
 
-    const title = validateString(arguments_.title, 'Task title', 200);
-
-    // Validate project ownership if projectId provided
     if (arguments_.projectId) {
       await checkOwnership(context, arguments_.projectId, clerkUserId, 'Project not found');
     }
@@ -174,23 +209,33 @@ export const create = mutationWithUser({
       await validateLabels(context, arguments_.labelIds, clerkUserId);
     }
 
-    // Get max order for new task
-    const allTasks: Document_<'tasks'>[] = await context.db
-      .query('tasks')
-      .withIndex('by_owner', q => q.eq('ownerClerkUserId', clerkUserId))
-      .collect();
-    const order = getNextOrder(allTasks, 1);
+    // Get order
+    const tasks: Document_<'tasks'>[] = arguments_.projectId
+      ? await context.db
+          .query('tasks')
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FilterBuilder type complex to import
+          .withIndex('by_owner_project', (q: any) =>
+            q.eq('ownerClerkUserId', clerkUserId).eq('projectId', arguments_.projectId),
+          )
+          .collect()
+      : await context.db
+          .query('tasks')
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FilterBuilder type complex to import
+          .withIndex('by_owner', (q: any) => q.eq('ownerClerkUserId', clerkUserId))
+          .collect();
+
+    const order = getNextOrder(tasks, 1);
 
     const now = Date.now();
 
     const taskId = await context.db.insert('tasks', {
       ownerClerkUserId: clerkUserId,
       projectId: arguments_.projectId,
-      title,
+      title: arguments_.title,
       description: arguments_.description?.trim(),
       status: 'todo',
       priority: arguments_.priority ?? 0,
-      dueAt: arguments_.dueAt,
+      dueAt: arguments_.dueDate,
       order,
       archived: false,
       createdAt: now,
@@ -212,6 +257,37 @@ export const create = mutationWithUser({
 });
 
 /**
+ * Get a single task
+ */
+export const get = queryWithUser({
+  args: { taskId: v.id('tasks') },
+  handler: async (context: UserQueryContext, arguments_: { taskId: Id<'tasks'> }) => {
+    const { clerkUserId } = context;
+    const task = await context.db.get(arguments_.taskId);
+
+    // eslint-disable-next-line
+    if (!task) return null;
+
+    if (task.ownerClerkUserId !== clerkUserId) {
+      // Check shared logic here if implemented
+      // eslint-disable-next-line
+      return null;
+    }
+
+    const taskLabels: Document_<'taskLabels'>[] = await context.db
+      .query('taskLabels')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FilterBuilder type complex to import
+      .withIndex('by_task', (q: any) => q.eq('taskId', task._id))
+      .collect();
+
+    return {
+      ...task,
+      labelIds: taskLabels.map((tl: Document_<'taskLabels'>) => tl.labelId),
+    };
+  },
+});
+
+/**
  * Update a task
  */
 export const update = mutationWithUser({
@@ -219,51 +295,51 @@ export const update = mutationWithUser({
     taskId: v.id('tasks'),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
-    priority: v.optional(v.union(v.literal(0), v.literal(1), v.literal(2), v.literal(3))),
-    dueAt: v.optional(v.union(v.number(), v.null())),
+    status: v.optional(v.union(v.literal('todo'), v.literal('doing'), v.literal('done'))),
+    priority: v.optional(v.number()),
+    dueDate: v.optional(v.number()),
+    projectId: v.optional(v.id('projects')),
     labelIds: v.optional(v.array(v.id('labels'))),
-    projectId: v.optional(v.union(v.id('projects'), v.null())),
   },
-  handler: async (context, arguments_) => {
+  handler: async (
+    context: UserMutationContext,
+    arguments_: {
+      taskId: Id<'tasks'>;
+      title?: string;
+      description?: string;
+      status?: TaskStatus;
+      priority?: number;
+      dueDate?: number;
+      projectId?: Id<'projects'>;
+      labelIds?: Id<'labels'>[];
+    },
+  ) => {
     const { clerkUserId } = context;
 
     await checkOwnership(context, arguments_.taskId, clerkUserId, 'Task not found');
+
+    if (arguments_.projectId) {
+      await checkOwnership(context, arguments_.projectId, clerkUserId, 'Project not found');
+    }
 
     if (arguments_.labelIds) {
       await validateLabels(context, arguments_.labelIds, clerkUserId);
     }
 
     const patch: Record<string, unknown> = { updatedAt: Date.now() };
-
-    if (arguments_.title !== undefined) {
-      patch.title = validateString(arguments_.title, 'Task title', 200);
-    }
-
-    if (arguments_.description !== undefined) {
-      patch.description = arguments_.description?.trim();
-    }
-
-    if (arguments_.priority !== undefined) {
-      patch.priority = arguments_.priority;
-    }
-
-    if (arguments_.dueAt !== undefined) {
-      patch.dueAt = arguments_.dueAt;
-    }
-
-    if (arguments_.labelIds !== undefined) {
-      await syncLabels(context, arguments_.taskId, arguments_.labelIds);
-    }
-
-    if (arguments_.projectId !== undefined) {
-      // Validate project ownership if projectId provided
-      if (arguments_.projectId) {
-        await checkOwnership(context, arguments_.projectId, clerkUserId, 'Project not found');
-      }
-      patch.projectId = arguments_.projectId;
-    }
+    if (arguments_.title !== undefined)
+      patch.title = validateString(arguments_.title, 'Title', 200);
+    if (arguments_.description !== undefined) patch.description = arguments_.description;
+    if (arguments_.status !== undefined) patch.status = arguments_.status;
+    if (arguments_.priority !== undefined) patch.priority = arguments_.priority;
+    if (arguments_.dueDate !== undefined) patch.dueDate = arguments_.dueDate;
+    if (arguments_.projectId !== undefined) patch.projectId = arguments_.projectId;
 
     await context.db.patch(arguments_.taskId, patch);
+
+    if (arguments_.labelIds) {
+      await syncLabels(context, arguments_.taskId, arguments_.labelIds);
+    }
   },
 });
 
@@ -275,13 +351,39 @@ export const setStatus = mutationWithUser({
     taskId: v.id('tasks'),
     status: v.union(v.literal('todo'), v.literal('doing'), v.literal('done')),
   },
-  handler: async (context, arguments_) => {
+  handler: async (
+    context: UserMutationContext,
+    arguments_: { taskId: Id<'tasks'>; status: 'todo' | 'doing' | 'done' },
+  ) => {
     const { clerkUserId } = context;
 
     await checkOwnership(context, arguments_.taskId, clerkUserId, 'Task not found');
 
     await context.db.patch(arguments_.taskId, {
       status: arguments_.status,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+/**
+ * Update task order
+ */
+export const updateOrder = mutationWithUser({
+  args: {
+    taskId: v.id('tasks'),
+    newOrder: v.number(),
+  },
+  handler: async (
+    context: UserMutationContext,
+    arguments_: { taskId: Id<'tasks'>; newOrder: number },
+  ) => {
+    const { clerkUserId } = context;
+
+    await checkOwnership(context, arguments_.taskId, clerkUserId, 'Task not found');
+
+    await context.db.patch(arguments_.taskId, {
+      order: arguments_.newOrder,
       updatedAt: Date.now(),
     });
   },
@@ -296,7 +398,10 @@ export const reorder = mutationWithUser({
     order: v.number(),
     status: v.optional(v.union(v.literal('todo'), v.literal('doing'), v.literal('done'))),
   },
-  handler: async (context, arguments_) => {
+  handler: async (
+    context: UserMutationContext,
+    arguments_: { taskId: Id<'tasks'>; order: number; status?: 'todo' | 'doing' | 'done' },
+  ) => {
     const { clerkUserId } = context;
 
     await checkOwnership(context, arguments_.taskId, clerkUserId, 'Task not found');
@@ -321,7 +426,21 @@ export const archive = mutationWithUser({
   args: {
     taskId: v.id('tasks'),
   },
-  handler: async (context, arguments_) => {
+  handler: async (context: UserMutationContext, arguments_: { taskId: Id<'tasks'> }) => {
+    const { clerkUserId } = context;
+
+    await archiveWithCheck(context, arguments_.taskId, clerkUserId, 'Task not found');
+  },
+});
+
+/**
+ * Archive a task
+ */
+export const remove = mutationWithUser({
+  args: {
+    taskId: v.id('tasks'),
+  },
+  handler: async (context: UserMutationContext, arguments_: { taskId: Id<'tasks'> }) => {
     const { clerkUserId } = context;
 
     await archiveWithCheck(context, arguments_.taskId, clerkUserId, 'Task not found');

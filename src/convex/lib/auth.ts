@@ -7,6 +7,9 @@ import {
   type MutationCtx as MutationContext,
 } from '../_generated/server';
 
+export type UserQueryContext = QueryContext & { clerkUserId: string };
+export type UserMutationContext = MutationContext & { clerkUserId: string };
+
 export async function getUserIdentity(context: QueryContext | MutationContext) {
   const identity = await context.auth.getUserIdentity();
   if (!identity) {
@@ -22,7 +25,7 @@ export async function requireUserId(context: QueryContext | MutationContext) {
 
 export const queryWithUser = customQuery(
   query,
-  customCtx(async context => {
+  customCtx(async (context: QueryContext) => {
     const clerkUserId = await requireUserId(context);
     return { clerkUserId };
   }),
@@ -30,7 +33,7 @@ export const queryWithUser = customQuery(
 
 export const mutationWithUser = customMutation(
   mutation,
-  customCtx(async context => {
+  customCtx(async (context: MutationContext) => {
     const clerkUserId = await requireUserId(context);
     return { clerkUserId };
   }),

@@ -94,7 +94,7 @@ export function TaskItem({ task }: TaskItemProperties) {
               </div>
             )}
 
-            {task.description && (
+            {task.description !== undefined && task.description !== '' && (
               <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
             )}
 
