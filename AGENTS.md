@@ -10,6 +10,8 @@ This repository is maintained with a specification-driven workflow and explicit 
 
 > **Why:** The `copilot-instructions.md` file contains project-specific rules (Next.js App Router patterns, Convex conventions, testing and linting expectations, security reminders). Following it prevents breaking changes, style drift, and CI failures.
 
+Read eslint.config.mjs and tsconfig.json. Try to create code with lint and typescript rules in mind to reduce errors later.
+
 ---
 
 ### 🚀 Development Server Setup
@@ -84,8 +86,6 @@ Before making changes or committing anything, do the following:
 ### 🔁 When blocked or uncertain
 
 - If a rule or behavior is ambiguous, open a short issue titled `agent-question: <one-line>` and include the minimal reproduction and proposed options.
-
-- Avoid unilateral changes to broad configurations (eslint, CI, infra) without approval from a project maintainer.
 
 ---
 
