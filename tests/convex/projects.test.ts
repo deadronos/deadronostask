@@ -211,7 +211,9 @@ describe('projects', () => {
       const userId = 'user123';
       const user = t.withIdentity({ subject: userId });
 
-      const missingProjectId = await user.mutation(api.projects.create, { name: 'Missing Project' });
+      const missingProjectId = await user.mutation(api.projects.create, {
+        name: 'Missing Project',
+      });
       await t.run(ctx => ctx.db.delete(missingProjectId));
 
       await expect(
@@ -304,7 +306,9 @@ describe('projects', () => {
       const userId = 'user123';
       const user = t.withIdentity({ subject: userId });
 
-      const missingProjectId = await user.mutation(api.projects.create, { name: 'Missing Project' });
+      const missingProjectId = await user.mutation(api.projects.create, {
+        name: 'Missing Project',
+      });
       await t.run(ctx => ctx.db.delete(missingProjectId));
 
       await expect(

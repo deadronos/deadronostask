@@ -21,7 +21,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { useQuery, useMutation } from 'convex/react';
-import { ArrowLeft, CheckCircle2, Clock, ListTodo } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock, ListTodo, Tag, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -30,10 +30,22 @@ import { createPortal } from 'react-dom';
 import { CreateTaskButton } from '@/components/CreateTaskButton';
 import { SortableTaskItem } from '@/components/SortableTaskItem';
 import { TaskItem } from '@/components/TaskItem';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { api } from '@/convex/_generated/api';
 import { type Id, type Doc } from '@/convex/_generated/dataModel';
+import { cn } from '@/lib/utils/cn';
 
 function DroppableColumn({ id, children }: { id: string; children: React.ReactNode }) {
   const { setNodeRef } = useDroppable({ id });
@@ -52,6 +64,9 @@ export default function ProjectPage() {
   // Local state for tasks to support optimistic UI updates during drag
   const [orderedTasks, setOrderedTasks] = useState<Doc<'tasks'>[]>([]);
   const [activeId, setActiveId] = useState<Id<'tasks'> | null>(null);
+
+  // Filtering state
+  const [selectedLabels, setSelectedLabels] = useState<Id<'labels'>[]>([]);
 
   const reorderTask = useMutation(api.tasks.reorder).withOptimisticUpdate((localStore, args) => {
     const { taskId, order, status } = args;
@@ -88,6 +103,8 @@ export default function ProjectPage() {
     !isLoaded || !user ? 'skip' : { projectId, includeArchived: false },
   );
 
+  const labels = useQuery(api.labels.list, { projectId });
+
   // Sync tasks from Convex to local state when they change
   useEffect(() => {
     if (tasks) {
@@ -123,9 +140,16 @@ export default function ProjectPage() {
     );
   }
 
-  const todoTasks = orderedTasks.filter(t => t.status === 'todo');
-  const doingTasks = orderedTasks.filter(t => t.status === 'doing');
-  const doneTasks = orderedTasks.filter(t => t.status === 'done');
+  // Filter tasks locally based on selectedLabels
+  const filteredTasks = orderedTasks.filter(t => {
+    if (selectedLabels.length === 0) return true;
+    if (!t.labelIds) return false;
+    return selectedLabels.some(labelId => t.labelIds?.includes(labelId));
+  });
+
+  const todoTasks = filteredTasks.filter(t => t.status === 'todo');
+  const doingTasks = filteredTasks.filter(t => t.status === 'doing');
+  const doneTasks = filteredTasks.filter(t => t.status === 'done');
 
   const activeTask = activeId ? orderedTasks.find(t => t._id === activeId) : null;
 
@@ -282,7 +306,95 @@ export default function ProjectPage() {
               {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'} • {doneTasks.length} completed
             </p>
           </div>
-          <CreateTaskButton projectId={projectId} />
+          <div className="flex items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 border-dashed">
+                  <Tag className="mr-2 h-4 w-4" />
+                  Labels
+                  {selectedLabels.length > 0 && (
+                    <>
+                      <div className="mx-2 h-4 w-[1px] bg-border" />
+                      <Badge variant="secondary" className="rounded-sm px-1 font-normal lg:hidden">
+                        {selectedLabels.length}
+                      </Badge>
+                      <div className="hidden space-x-1 lg:flex">
+                        {selectedLabels.length > 2 ? (
+                          <Badge variant="secondary" className="rounded-sm px-1 font-normal">
+                            {selectedLabels.length} selected
+                          </Badge>
+                        ) : (
+                          labels
+                            ?.filter(l => selectedLabels.includes(l._id))
+                            .map(label => (
+                              <Badge
+                                key={label._id}
+                                variant="secondary"
+                                className="rounded-sm px-1 font-normal"
+                              >
+                                {label.name}
+                              </Badge>
+                            ))
+                        )}
+                      </div>
+                    </>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[200px] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Filter label..." />
+                  <CommandList>
+                    <CommandEmpty>No results found.</CommandEmpty>
+                    <CommandGroup>
+                      {labels?.map(label => {
+                        const isSelected = selectedLabels.includes(label._id);
+                        return (
+                          <CommandItem
+                            key={label._id}
+                            onSelect={() => {
+                              if (isSelected) {
+                                setSelectedLabels(prev => prev.filter(id => id !== label._id));
+                              } else {
+                                setSelectedLabels(prev => [...prev, label._id]);
+                              }
+                            }}
+                          >
+                            <div
+                              className={cn(
+                                'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
+                                isSelected
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'opacity-50 [&_svg]:invisible',
+                              )}
+                            >
+                              <Check className="h-4 w-4" />
+                            </div>
+                            <div className={cn('h-3 w-3 rounded-full mr-2', label.color)} />
+                            <span>{label.name}</span>
+                          </CommandItem>
+                        );
+                      })}
+                    </CommandGroup>
+                    {selectedLabels.length > 0 && (
+                      <>
+                        <CommandSeparator />
+                        <CommandGroup>
+                          <CommandItem
+                            onSelect={() => setSelectedLabels([])}
+                            className="justify-center text-center"
+                          >
+                            Clear filters
+                          </CommandItem>
+                        </CommandGroup>
+                      </>
+                    )}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <CreateTaskButton projectId={projectId} />
+          </div>
         </div>
 
         {/* Task Board */}

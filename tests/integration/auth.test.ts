@@ -2,7 +2,7 @@ import { describe, it } from 'vitest';
 
 /**
  * Integration tests for authentication workflows
- * 
+ *
  * These tests verify that authentication works correctly across
  * the application including Clerk integration, session management,
  * and user data synchronization.

@@ -17,22 +17,27 @@ This repository is maintained with a specification-driven workflow and explicit 
 To run the application locally for development, testing, or evaluation, you need to start **both** services in separate background terminals:
 
 1. **Start Convex dev server** (real-time database backend):
+
    ```bash
    npx convex dev
    ```
+
    - This starts the Convex backend which handles real-time data synchronization
    - Must be running before the Next.js dev server
    - Keep this terminal running in the background
 
 2. **Start Next.js dev server** (frontend application):
+
    ```bash
    npm run dev
    ```
+
    - This starts the Next.js application on `http://localhost:3000` (default)
    - Requires Convex dev server to be running first
    - Keep this terminal running in the background
 
 **Important Notes:**
+
 - Both servers must be running simultaneously for the application to work properly
 - The Convex dev server should be started first to ensure the backend is ready
 - For automated testing (e.g., Playwright), ensure both servers are running before executing tests

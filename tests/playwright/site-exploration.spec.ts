@@ -111,7 +111,9 @@ test.describe('Site Exploration and Evaluation', () => {
       });
       report.uiUx.screenshots.push(screenshotName);
 
-      uiFindings.push(`✓ Responsive design verified on ${viewport.name} (${viewport.width}x${viewport.height})`);
+      uiFindings.push(
+        `✓ Responsive design verified on ${viewport.name} (${viewport.width}x${viewport.height})`,
+      );
     }
 
     // Reset to desktop view
@@ -150,14 +152,15 @@ test.describe('Site Exploration and Evaluation', () => {
     uiFindings.push(`Body background color: ${bodyBg}`);
 
     // Check for loading states
-    const hasLoadingIndicator = (await page.locator('[role="status"], [aria-live="polite"]').count()) > 0;
+    const hasLoadingIndicator =
+      (await page.locator('[role="status"], [aria-live="polite"]').count()) > 0;
     if (hasLoadingIndicator) uiFindings.push('✓ Loading indicators present');
 
     report.uiUx.findings = uiFindings;
 
     // Calculate UI/UX score
-    const positiveFindings = uiFindings.filter((f) => f.startsWith('✓')).length;
-    const totalChecks = uiFindings.filter((f) => f.startsWith('✓') || f.startsWith('✗')).length;
+    const positiveFindings = uiFindings.filter(f => f.startsWith('✓')).length;
+    const totalChecks = uiFindings.filter(f => f.startsWith('✓') || f.startsWith('✗')).length;
     report.uiUx.score = totalChecks > 0 ? Math.round((positiveFindings / totalChecks) * 100) : 50;
 
     // eslint-disable-next-line no-console
@@ -175,7 +178,7 @@ test.describe('Site Exploration and Evaluation', () => {
       const perfData = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
       const paintMetrics = performance.getEntriesByType('paint');
 
-      const fcp = paintMetrics.find((entry) => entry.name === 'first-contentful-paint');
+      const fcp = paintMetrics.find(entry => entry.name === 'first-contentful-paint');
 
       return {
         domContentLoaded: perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart,
@@ -200,13 +203,19 @@ test.describe('Site Exploration and Evaluation', () => {
     }
 
     if (performanceMetrics.firstContentfulPaint < 1800) {
-      findings.push(`✓ Fast First Contentful Paint: ${performanceMetrics.firstContentfulPaint.toFixed(0)}ms`);
+      findings.push(
+        `✓ Fast First Contentful Paint: ${performanceMetrics.firstContentfulPaint.toFixed(0)}ms`,
+      );
     } else {
-      findings.push(`⚠ First Contentful Paint: ${performanceMetrics.firstContentfulPaint.toFixed(0)}ms`);
+      findings.push(
+        `⚠ First Contentful Paint: ${performanceMetrics.firstContentfulPaint.toFixed(0)}ms`,
+      );
     }
 
     if (performanceMetrics.domInteractive < 2500) {
-      findings.push(`✓ Quick Time to Interactive: ${performanceMetrics.domInteractive.toFixed(0)}ms`);
+      findings.push(
+        `✓ Quick Time to Interactive: ${performanceMetrics.domInteractive.toFixed(0)}ms`,
+      );
     } else {
       findings.push(`⚠ Time to Interactive: ${performanceMetrics.domInteractive.toFixed(0)}ms`);
     }
@@ -216,14 +225,16 @@ test.describe('Site Exploration and Evaluation', () => {
       const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
       return {
         total: resources.length,
-        scripts: resources.filter((r) => r.initiatorType === 'script').length,
-        stylesheets: resources.filter((r) => r.initiatorType === 'css').length,
-        images: resources.filter((r) => r.initiatorType === 'img').length,
+        scripts: resources.filter(r => r.initiatorType === 'script').length,
+        stylesheets: resources.filter(r => r.initiatorType === 'css').length,
+        images: resources.filter(r => r.initiatorType === 'img').length,
       };
     });
 
     findings.push(`Total resources loaded: ${resourceStats.total}`);
-    findings.push(`Scripts: ${resourceStats.scripts}, Stylesheets: ${resourceStats.stylesheets}, Images: ${resourceStats.images}`);
+    findings.push(
+      `Scripts: ${resourceStats.scripts}, Stylesheets: ${resourceStats.stylesheets}, Images: ${resourceStats.images}`,
+    );
 
     if (resourceStats.total < 50) {
       findings.push('✓ Reasonable number of resources');
@@ -302,13 +313,15 @@ test.describe('Site Exploration and Evaluation', () => {
     const externalScripts = await page.evaluate(() => {
       const scripts = Array.from(document.querySelectorAll('script[src]'));
       return scripts
-        .map((s) => (s as HTMLScriptElement).src)
-        .filter((src) => !src.includes(window.location.hostname));
+        .map(s => (s as HTMLScriptElement).src)
+        .filter(src => !src.includes(window.location.hostname));
     });
 
     if (externalScripts.length > 0) {
       findings.push(`⚠ ${externalScripts.length} external script(s) loaded`);
-      findings.push(`  External sources: ${[...new Set(externalScripts.map((s) => new URL(s).hostname))].join(', ')}`);
+      findings.push(
+        `  External sources: ${[...new Set(externalScripts.map(s => new URL(s).hostname))].join(', ')}`,
+      );
     } else {
       findings.push('✓ No external scripts detected');
     }
@@ -316,8 +329,9 @@ test.describe('Site Exploration and Evaluation', () => {
     // Check for mixed content
     const mixedContent = await page.evaluate(() => {
       const resources = Array.from(document.querySelectorAll('[src], [href]'));
-      return resources.some((el) => {
-        const url = (el as HTMLElement).getAttribute('src') || (el as HTMLElement).getAttribute('href');
+      return resources.some(el => {
+        const url =
+          (el as HTMLElement).getAttribute('src') || (el as HTMLElement).getAttribute('href');
         return url && url.startsWith('http://') && !url.includes('localhost');
       });
     });
@@ -331,9 +345,9 @@ test.describe('Site Exploration and Evaluation', () => {
     report.security.findings = findings;
 
     // Calculate security score
-    const positiveFindings = findings.filter((f) => f.startsWith('✓')).length;
-    const negativeFindings = findings.filter((f) => f.startsWith('✗')).length;
-    const warningFindings = findings.filter((f) => f.startsWith('⚠')).length;
+    const positiveFindings = findings.filter(f => f.startsWith('✓')).length;
+    const negativeFindings = findings.filter(f => f.startsWith('✗')).length;
+    const warningFindings = findings.filter(f => f.startsWith('⚠')).length;
 
     let score = 70; // Base score
     score += positiveFindings * 10;
@@ -352,8 +366,14 @@ test.describe('Site Exploration and Evaluation', () => {
     const features: string[] = [];
 
     // Check for authentication
-    const hasSignIn = (await page.locator('a[href*="sign-in"], button:has-text("Sign In"), button:has-text("Login")').count()) > 0;
-    const hasSignUp = (await page.locator('a[href*="sign-up"], button:has-text("Sign Up"), button:has-text("Register")').count()) > 0;
+    const hasSignIn =
+      (await page
+        .locator('a[href*="sign-in"], button:has-text("Sign In"), button:has-text("Login")')
+        .count()) > 0;
+    const hasSignUp =
+      (await page
+        .locator('a[href*="sign-up"], button:has-text("Sign Up"), button:has-text("Register")')
+        .count()) > 0;
 
     if (hasSignIn) {
       features.push('Authentication - Sign In');
@@ -368,46 +388,55 @@ test.describe('Site Exploration and Evaluation', () => {
     const navLinks = await page.locator('nav a, header a').allTextContents();
     if (navLinks.length > 0) {
       features.push('Navigation');
-      findings.push(`✓ Navigation with ${navLinks.length} link(s): ${navLinks.slice(0, 5).join(', ')}${navLinks.length > 5 ? '...' : ''}`);
+      findings.push(
+        `✓ Navigation with ${navLinks.length} link(s): ${navLinks.slice(0, 5).join(', ')}${navLinks.length > 5 ? '...' : ''}`,
+      );
     }
 
     // Check for dashboard/main content
-    const hasDashboard = (await page.locator('[href*="dashboard"], [class*="dashboard"]').count()) > 0;
+    const hasDashboard =
+      (await page.locator('[href*="dashboard"], [class*="dashboard"]').count()) > 0;
     if (hasDashboard) {
       features.push('Dashboard');
       findings.push('✓ Dashboard interface detected');
     }
 
     // Check for projects
-    const hasProjects = (await page.locator('[href*="project"], [class*="project"], :has-text("Project")').count()) > 0;
+    const hasProjects =
+      (await page.locator('[href*="project"], [class*="project"], :has-text("Project")').count()) >
+      0;
     if (hasProjects) {
       features.push('Projects');
       findings.push('✓ Project management features detected');
     }
 
     // Check for tasks
-    const hasTasks = (await page.locator('[href*="task"], [class*="task"], :has-text("Task")').count()) > 0;
+    const hasTasks =
+      (await page.locator('[href*="task"], [class*="task"], :has-text("Task")').count()) > 0;
     if (hasTasks) {
       features.push('Tasks');
       findings.push('✓ Task management features detected');
     }
 
     // Check for search
-    const hasSearch = (await page.locator('input[type="search"], input[placeholder*="Search" i]').count()) > 0;
+    const hasSearch =
+      (await page.locator('input[type="search"], input[placeholder*="Search" i]').count()) > 0;
     if (hasSearch) {
       features.push('Search');
       findings.push('✓ Search functionality available');
     }
 
     // Check for settings
-    const hasSettings = (await page.locator('[href*="settings"], [aria-label*="Settings" i]').count()) > 0;
+    const hasSettings =
+      (await page.locator('[href*="settings"], [aria-label*="Settings" i]').count()) > 0;
     if (hasSettings) {
       features.push('Settings');
       findings.push('✓ Settings page available');
     }
 
     // Check for theme toggle
-    const hasThemeToggle = (await page.locator('[aria-label*="theme" i], [class*="theme"]').count()) > 0;
+    const hasThemeToggle =
+      (await page.locator('[aria-label*="theme" i], [class*="theme"]').count()) > 0;
     if (hasThemeToggle) {
       features.push('Theme Switcher');
       findings.push('✓ Theme switching capability');
@@ -423,8 +452,14 @@ test.describe('Site Exploration and Evaluation', () => {
     report.features.findings = findings;
 
     // Calculate features score based on available features
-    const expectedFeatures = ['Authentication - Sign In', 'Navigation', 'Dashboard', 'Projects', 'Tasks'];
-    const foundExpectedFeatures = expectedFeatures.filter((ef) => features.includes(ef)).length;
+    const expectedFeatures = [
+      'Authentication - Sign In',
+      'Navigation',
+      'Dashboard',
+      'Projects',
+      'Tasks',
+    ];
+    const foundExpectedFeatures = expectedFeatures.filter(ef => features.includes(ef)).length;
 
     let score = (foundExpectedFeatures / expectedFeatures.length) * 70; // 70% for core features
     score += Math.min(features.length, 10) * 3; // Bonus for additional features
@@ -441,7 +476,7 @@ test.describe('Site Exploration and Evaluation', () => {
 
     // Check for console errors
     const consoleErrors: string[] = [];
-    page.on('console', (msg) => {
+    page.on('console', msg => {
       if (msg.type() === 'error') {
         consoleErrors.push(msg.text());
       }
@@ -453,7 +488,7 @@ test.describe('Site Exploration and Evaluation', () => {
       findings.push('✓ No console errors detected');
     } else {
       findings.push(`✗ ${consoleErrors.length} console error(s) detected:`);
-      consoleErrors.slice(0, 3).forEach((err) => findings.push(`  - ${err}`));
+      consoleErrors.slice(0, 3).forEach(err => findings.push(`  - ${err}`));
     }
 
     // Check for proper error boundaries
@@ -468,7 +503,7 @@ test.describe('Site Exploration and Evaluation', () => {
     // Check for proper HTML structure
     const htmlValidation = await page.evaluate(() => {
       const duplicateIds = (): number => {
-        const ids = Array.from(document.querySelectorAll('[id]')).map((el) => el.id);
+        const ids = Array.from(document.querySelectorAll('[id]')).map(el => el.id);
         return ids.length - new Set(ids).size;
       };
 
@@ -517,9 +552,9 @@ test.describe('Site Exploration and Evaluation', () => {
     report.codeQuality.findings = findings;
 
     // Calculate code quality score
-    const positiveFindings = findings.filter((f) => f.startsWith('✓')).length;
-    const negativeFindings = findings.filter((f) => f.startsWith('✗')).length;
-    const warningFindings = findings.filter((f) => f.startsWith('⚠')).length;
+    const positiveFindings = findings.filter(f => f.startsWith('✓')).length;
+    const negativeFindings = findings.filter(f => f.startsWith('✗')).length;
+    const warningFindings = findings.filter(f => f.startsWith('⚠')).length;
 
     let score = 80; // Base score
     score += positiveFindings * 5;
@@ -534,7 +569,12 @@ test.describe('Site Exploration and Evaluation', () => {
   test.afterAll(async () => {
     // Calculate overall score
     report.overallScore = Math.round(
-      (report.uiUx.score + report.performance.score + report.codeQuality.score + report.security.score + report.features.score) / 5,
+      (report.uiUx.score +
+        report.performance.score +
+        report.codeQuality.score +
+        report.security.score +
+        report.features.score) /
+        5,
     );
 
     // Generate report
@@ -589,12 +629,12 @@ function generateMarkdownReport(report: SiteEvaluationReport): string {
   md += `## 1. UI/UX ${getEmoji(report.uiUx.score)}\n\n`;
   md += `**Score:** ${report.uiUx.score}/100 - ${getGrade(report.uiUx.score)}\n\n`;
   md += '### Findings:\n';
-  report.uiUx.findings.forEach((f) => {
+  report.uiUx.findings.forEach(f => {
     md += `- ${f}\n`;
   });
   if (report.uiUx.screenshots.length > 0) {
     md += '\n### Screenshots:\n';
-    report.uiUx.screenshots.forEach((s) => {
+    report.uiUx.screenshots.forEach(s => {
       md += `- ${s}\n`;
     });
   }
@@ -608,7 +648,7 @@ function generateMarkdownReport(report: SiteEvaluationReport): string {
   md += `- Time to Interactive: ${report.performance.metrics.timeToInteractive.toFixed(0)}ms\n`;
   md += `- First Contentful Paint: ${report.performance.metrics.firstContentfulPaint.toFixed(0)}ms\n`;
   md += '\n### Findings:\n';
-  report.performance.findings.forEach((f) => {
+  report.performance.findings.forEach(f => {
     md += `- ${f}\n`;
   });
   md += '\n';
@@ -617,7 +657,7 @@ function generateMarkdownReport(report: SiteEvaluationReport): string {
   md += `## 3. Code Quality ${getEmoji(report.codeQuality.score)}\n\n`;
   md += `**Score:** ${report.codeQuality.score}/100 - ${getGrade(report.codeQuality.score)}\n\n`;
   md += '### Findings:\n';
-  report.codeQuality.findings.forEach((f) => {
+  report.codeQuality.findings.forEach(f => {
     md += `- ${f}\n`;
   });
   md += '\n';
@@ -626,7 +666,7 @@ function generateMarkdownReport(report: SiteEvaluationReport): string {
   md += `## 4. Security ${getEmoji(report.security.score)}\n\n`;
   md += `**Score:** ${report.security.score}/100 - ${getGrade(report.security.score)}\n\n`;
   md += '### Findings:\n';
-  report.security.findings.forEach((f) => {
+  report.security.findings.forEach(f => {
     md += `- ${f}\n`;
   });
   md += '\n';
@@ -636,14 +676,14 @@ function generateMarkdownReport(report: SiteEvaluationReport): string {
   md += `**Score:** ${report.features.score}/100 - ${getGrade(report.features.score)}\n\n`;
   md += '### Available Features:\n';
   if (report.features.availableFeatures.length > 0) {
-    report.features.availableFeatures.forEach((f) => {
+    report.features.availableFeatures.forEach(f => {
       md += `- ${f}\n`;
     });
   } else {
     md += '- No features detected\n';
   }
   md += '\n### Findings:\n';
-  report.features.findings.forEach((f) => {
+  report.features.findings.forEach(f => {
     md += `- ${f}\n`;
   });
   md += '\n';

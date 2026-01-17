@@ -53,9 +53,7 @@ export function CreateProjectButton() {
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
-            <DialogDescription>
-              Add a new project to organize your tasks better.
-            </DialogDescription>
+            <DialogDescription>Add a new project to organize your tasks better.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -64,7 +62,7 @@ export function CreateProjectButton() {
                 id="project-name"
                 placeholder="e.g., Website Redesign"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={e => setName(e.target.value)}
               />
             </div>
           </div>

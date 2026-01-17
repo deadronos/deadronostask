@@ -2,7 +2,7 @@ import { test } from '@playwright/test';
 
 /**
  * E2E tests for project management features
- * 
+ *
  * These tests verify the complete project management experience
  * from the user's perspective, including creation, updates,
  * task associations, and archival.

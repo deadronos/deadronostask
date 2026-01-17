@@ -24,11 +24,11 @@ Convex unit tests are failing because convex-test cannot locate the generated mo
 
 ### Subtasks
 
-| ID  | Description                                       | Status      | Updated     | Notes                               |
-| --- | ------------------------------------------------- | ----------- | ----------- | ----------------------------------- |
-| 1.1 | Add failing test for clearing task projectId      | Complete    | 2025-02-14  | Added in tasks.test.ts              |
-| 1.2 | Fix convex-test module loading in unit tests      | Complete    | 2025-02-14  | Added import.meta.glob modules map  |
-| 1.3 | Run lint/format/tests and update status           | Complete    | 2025-02-14  | Lint/format warnings noted          |
+| ID  | Description                                  | Status   | Updated    | Notes                              |
+| --- | -------------------------------------------- | -------- | ---------- | ---------------------------------- |
+| 1.1 | Add failing test for clearing task projectId | Complete | 2025-02-14 | Added in tasks.test.ts             |
+| 1.2 | Fix convex-test module loading in unit tests | Complete | 2025-02-14 | Added import.meta.glob modules map |
+| 1.3 | Run lint/format/tests and update status      | Complete | 2025-02-14 | Lint/format warnings noted         |
 
 ## Progress Log
 
