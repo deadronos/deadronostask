@@ -7,7 +7,7 @@ export default defineConfig({
     // Run tests found under /tests with .test. or .spec. suffix
     include: ['tests/**/*.{test,spec}.{ts,tsx}'],
     // Exclude Playwright E2E specs from Vitest (they're run with Playwright)
-    exclude: ['tests/e2e/**'],
+    exclude: ['tests/e2e/**', 'tests/playwright/**'],
 
     // Use a browser-like environment for React testing
     environment: 'jsdom',
