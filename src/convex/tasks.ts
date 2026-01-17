@@ -7,11 +7,7 @@ import { archiveWithCheck, getNextOrder } from './lib/utils';
 import { checkOwnership, validateString } from './lib/validations';
 
 // Helper to validate that labels belong to the user
-async function validateLabels(
-  ctx: QueryCtx | MutationCtx,
-  labelIds: Id<'labels'>[],
-  clerkUserId: string,
-) {
+async function validateLabels(ctx: QueryCtx, labelIds: Id<'labels'>[], clerkUserId: string) {
   const uniqueLabelIds = [...new Set(labelIds)];
   const labels = await Promise.all(uniqueLabelIds.map(id => ctx.db.get(id)));
   for (const label of labels) {
@@ -22,11 +18,7 @@ async function validateLabels(
 }
 
 // Helper to sync labels for a task
-async function syncLabels(
-  ctx: QueryCtx | MutationCtx,
-  taskId: Id<'tasks'>,
-  labelIds: Id<'labels'>[],
-) {
+async function syncLabels(ctx: MutationCtx, taskId: Id<'tasks'>, labelIds: Id<'labels'>[]) {
   const existing: Doc<'taskLabels'>[] = await ctx.db
     .query('taskLabels')
     .withIndex('by_task', q => q.eq('taskId', taskId))
