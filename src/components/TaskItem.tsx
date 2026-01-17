@@ -10,11 +10,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { api } from '@/convex/_generated/api';
-import { type Doc } from '@/convex/_generated/dataModel';
+import { type Doc, type Id } from '@/convex/_generated/dataModel';
 import { cn } from '@/lib/utils/cn';
 
 interface TaskItemProps {
-  task: Doc<'tasks'>;
+  task: Doc<'tasks'> & { labelIds?: Id<'labels'>[] };
 }
 
 export function TaskItem({ task }: TaskItemProps) {
@@ -25,8 +25,7 @@ export function TaskItem({ task }: TaskItemProps) {
 
   // Fetch Labels - simplified, we might want to pass this down or use Query preloading
   // But for now, we'll fetch labels for the project to display correct colors
-  const projectId = task.projectId ?? undefined;
-  const labels = useQuery(api.labels.list, projectId ? { projectId } : 'skip');
+  const labels = useQuery(api.labels.list, {});
   const subtasks = useQuery(api.subtasks.list, { taskId: task._id });
 
   const priorityConfig = {

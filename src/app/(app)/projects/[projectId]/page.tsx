@@ -62,7 +62,9 @@ export default function ProjectPage() {
   const projectId = params.projectId as Id<'projects'>;
 
   // Local state for tasks to support optimistic UI updates during drag
-  const [orderedTasks, setOrderedTasks] = useState<Doc<'tasks'>[]>([]);
+  const [orderedTasks, setOrderedTasks] = useState<(Doc<'tasks'> & { labelIds?: Id<'labels'>[] })[]>(
+    [],
+  );
   const [activeId, setActiveId] = useState<Id<'tasks'> | null>(null);
 
   // Filtering state
@@ -103,7 +105,7 @@ export default function ProjectPage() {
     !isLoaded || !user ? 'skip' : { projectId, includeArchived: false },
   );
 
-  const labels = useQuery(api.labels.list, { projectId });
+  const labels = useQuery(api.labels.list, {});
 
   // Sync tasks from Convex to local state when they change
   useEffect(() => {

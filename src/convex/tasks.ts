@@ -20,10 +20,10 @@ async function validateLabels(ctx: any, labelIds: Id<'labels'>[], clerkUserId: s
 async function syncLabels(ctx: any, taskId: Id<'tasks'>, labelIds: Id<'labels'>[]) {
   const existing = await ctx.db
     .query('taskLabels')
-    .withIndex('by_task', q => q.eq('taskId', taskId))
+    .withIndex('by_task', (q: any) => q.eq('taskId', taskId))
     .collect();
 
-  const existingIds = new Set(existing.map(e => e.labelId));
+  const existingIds = new Set(existing.map((e: any) => e.labelId));
   const newIds = new Set(labelIds);
 
   // Delete removed
@@ -65,7 +65,7 @@ export const list = queryWithUser({
     if (args.projectId !== undefined) {
       tasks = await ctx.db
         .query('tasks')
-        .withIndex('by_owner_project', q =>
+        .withIndex('by_owner_project', (q: any) =>
           q.eq('ownerClerkUserId', clerkUserId).eq('projectId', args.projectId),
         )
         .collect();
@@ -73,14 +73,14 @@ export const list = queryWithUser({
       const status = args.status as 'todo' | 'doing' | 'done';
       tasks = await ctx.db
         .query('tasks')
-        .withIndex('by_owner_status', q =>
+        .withIndex('by_owner_status', (q: any) =>
           q.eq('ownerClerkUserId', clerkUserId).eq('status', status),
         )
         .collect();
     } else {
       tasks = await ctx.db
         .query('tasks')
-        .withIndex('by_owner', q => q.eq('ownerClerkUserId', clerkUserId))
+        .withIndex('by_owner', (q: any) => q.eq('ownerClerkUserId', clerkUserId))
         .collect();
     }
 
@@ -107,7 +107,7 @@ export const list = queryWithUser({
       for (const labelId of args.labelIds) {
         const entries = await ctx.db
           .query('taskLabels')
-          .withIndex('by_label', q => q.eq('labelId', labelId))
+          .withIndex('by_label', (q: any) => q.eq('labelId', labelId))
           .collect();
         for (const entry of entries) {
            taskIdsWithLabels.add(entry.taskId);
@@ -121,12 +121,12 @@ export const list = queryWithUser({
     const tasksWithLabels = await Promise.all(tasks.map(async (task) => {
       const taskLabels = await ctx.db
         .query('taskLabels')
-        .withIndex('by_task', q => q.eq('taskId', task._id))
+        .withIndex('by_task', (q: any) => q.eq('taskId', task._id))
         .collect();
 
       return {
         ...task,
-        labelIds: taskLabels.map(tl => tl.labelId),
+        labelIds: taskLabels.map((tl: any) => tl.labelId),
       };
     }));
 
@@ -167,7 +167,7 @@ export const create = mutationWithUser({
     // Get max order for new task
     const allTasks = await ctx.db
       .query('tasks')
-      .withIndex('by_owner', q => q.eq('ownerClerkUserId', clerkUserId))
+      .withIndex('by_owner', (q: any) => q.eq('ownerClerkUserId', clerkUserId))
       .collect();
     const order = getNextOrder(allTasks, 1);
 
