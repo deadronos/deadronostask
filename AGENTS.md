@@ -91,9 +91,13 @@ Before making changes or committing anything, do the following:
 
 ### 📝 Agent accountability
 
-- Document any non-obvious decisions in a short note in the PR and update the relevant file in `/memory` (e.g., `tasks/` or `designs/`).
+- Document any non-obvious decisions in a short note in the PR and update the relevant files in `/memory` (e.g., `tasks/` or `designs/`).
 
-- If you automated a change (fix, format, migration), attach a short log of commands you ran and their outputs.
+- Verify with:
+  npm run test
+  npm run lint
+  npm run build
+  before finalizing any changes.
 
 ---
 
