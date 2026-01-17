@@ -727,7 +727,7 @@ describe('tasks', () => {
       const user = t.withIdentity({ subject: 'u1' });
       const labelId = await user.mutation(api.labels.create, { name: 'Bug', color: '#f00' });
 
-      const taskId = await user.mutation(api.tasks.create, {
+      const _taskId = await user.mutation(api.tasks.create, {
         title: 'Task',
         labelIds: [labelId],
       });

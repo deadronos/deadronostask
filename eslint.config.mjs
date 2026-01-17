@@ -91,7 +91,7 @@ export default [
         'warn',
         { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
       ],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
       // Generated Convex files may include project-agnostic eslint-disable comments; allow them
       'eslint-comments/no-unused-disable': 'off',
     },
