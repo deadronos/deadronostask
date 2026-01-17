@@ -1,6 +1,7 @@
 import { v } from 'convex/values';
 
 import { mutationWithUser, queryWithUser } from './lib/auth';
+import { archiveWithCheck } from './lib/utils';
 import { checkOwnership, validateString } from './lib/validations';
 
 /**
@@ -89,11 +90,6 @@ export const archive = mutationWithUser({
   handler: async (ctx, args) => {
     const { clerkUserId } = ctx;
 
-    await checkOwnership(ctx, args.projectId, clerkUserId, 'Project not found');
-
-    await ctx.db.patch(args.projectId, {
-      archived: true,
-      updatedAt: Date.now(),
-    });
+    await archiveWithCheck(ctx, args.projectId, clerkUserId, 'Project not found');
   },
 });

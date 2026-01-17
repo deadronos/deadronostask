@@ -1,5 +1,5 @@
-import { MutationCtx, QueryCtx } from '../_generated/server';
-import { Id, TableNames } from '../_generated/dataModel';
+import { type Id, type TableNames } from '../_generated/dataModel';
+import { type MutationCtx, type QueryCtx } from '../_generated/server';
 
 /**
  * Checks if a document exists and belongs to the current user.
@@ -9,7 +9,7 @@ export async function checkOwnership<T extends TableNames>(
   ctx: QueryCtx | MutationCtx,
   id: Id<T>,
   clerkUserId: string,
-  notFoundMessage = 'Document not found'
+  notFoundMessage = 'Document not found',
 ) {
   const doc = await ctx.db.get(id);
   if (!doc) {
@@ -28,11 +28,7 @@ export async function checkOwnership<T extends TableNames>(
  * Validates a string input.
  * Checks if it is non-empty (after trim) and within max length.
  */
-export function validateString(
-  value: string,
-  fieldName: string,
-  maxLength: number
-) {
+export function validateString(value: string, fieldName: string, maxLength: number) {
   const trimmed = value.trim();
   if (!trimmed) {
     throw new Error(`${fieldName} is required`);
