@@ -6,7 +6,9 @@ import { expect, vi } from 'vitest';
 // `jest-dom` registers its matchers.
 // Use eval to avoid TypeScript trying to resolve the package as a module
 // during the Next build typecheck (some jest-dom typings are not ESM-friendly).
-await (eval('import("@testing-library/jest-dom")') as Promise<any>);
+// await (eval('import("@testing-library/jest-dom")') as Promise<any>);
+// @ts-ignore
+await import('@testing-library/jest-dom');
 
 // Mock convex client-side hooks used in components
 vi.mock('convex/react', () => {

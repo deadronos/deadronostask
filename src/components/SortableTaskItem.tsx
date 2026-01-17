@@ -12,14 +12,9 @@ interface SortableTaskItemProps {
 }
 
 export function SortableTaskItem({ task }: SortableTaskItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task._id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: task._id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),

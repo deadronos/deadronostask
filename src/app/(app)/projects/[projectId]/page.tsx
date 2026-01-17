@@ -55,7 +55,10 @@ export default function ProjectPage() {
 
   const reorderTask = useMutation(api.tasks.reorder).withOptimisticUpdate((localStore, args) => {
     const { taskId, order, status } = args;
-    const existingTasks = localStore.getQuery(api.tasks.list, { projectId, includeArchived: false });
+    const existingTasks = localStore.getQuery(api.tasks.list, {
+      projectId,
+      includeArchived: false,
+    });
 
     if (existingTasks) {
       const newTasks = existingTasks.map(t => {
@@ -101,7 +104,7 @@ export default function ProjectPage() {
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   if (!isLoaded || !user || tasks === undefined || project === undefined) {
@@ -156,9 +159,9 @@ export default function ProjectPage() {
 
     // If moving between columns
     if (activeStatus !== overStatus) {
-      setOrderedTasks((items) => {
-        const activeIndex = items.findIndex((t) => t._id === activeId);
-        const overIndex = items.findIndex((t) => t._id === overId);
+      setOrderedTasks(items => {
+        const activeIndex = items.findIndex(t => t._id === activeId);
+        const overIndex = items.findIndex(t => t._id === overId);
 
         if (activeIndex === -1) return items;
 
@@ -166,11 +169,14 @@ export default function ProjectPage() {
         const newItems = [...items];
 
         // Update the status of the active item
-        newItems[activeIndex] = { ...newItems[activeIndex], status: overStatus as 'todo' | 'doing' | 'done' };
+        newItems[activeIndex] = {
+          ...newItems[activeIndex],
+          status: overStatus as 'todo' | 'doing' | 'done',
+        };
 
         // If dropping on a container (empty or not), just update status
         if (overIndex === -1) {
-            return newItems;
+          return newItems;
         }
 
         return arrayMove(newItems, activeIndex, overIndex);
@@ -178,14 +184,14 @@ export default function ProjectPage() {
     } else {
       // Reordering within the same column
       if (activeId !== overId) {
-         setOrderedTasks((items) => {
-           const activeIndex = items.findIndex((t) => t._id === activeId);
-           const overIndex = items.findIndex((t) => t._id === overId);
+        setOrderedTasks(items => {
+          const activeIndex = items.findIndex(t => t._id === activeId);
+          const overIndex = items.findIndex(t => t._id === overId);
 
-           if (activeIndex === -1 || overIndex === -1) return items;
+          if (activeIndex === -1 || overIndex === -1) return items;
 
-           return arrayMove(items, activeIndex, overIndex);
-         });
+          return arrayMove(items, activeIndex, overIndex);
+        });
       }
     }
   }
@@ -214,39 +220,38 @@ export default function ProjectPage() {
     }
 
     if (activeId !== overId || activeTask.status !== newStatus) {
+      // Ensure activeTask is in the right status in our local state check
+      const finalColumnTasks = orderedTasks.filter(t => t.status === newStatus);
+      const finalIndex = finalColumnTasks.findIndex(t => t._id === activeId);
 
-         // Ensure activeTask is in the right status in our local state check
-         const finalColumnTasks = orderedTasks.filter(t => t.status === newStatus);
-         const finalIndex = finalColumnTasks.findIndex(t => t._id === activeId);
+      if (finalIndex !== -1) {
+        const prevItem = finalColumnTasks[finalIndex - 1];
+        const nextItem = finalColumnTasks[finalIndex + 1];
 
-         if (finalIndex !== -1) {
-             const prevItem = finalColumnTasks[finalIndex - 1];
-             const nextItem = finalColumnTasks[finalIndex + 1];
+        const prevOrder = prevItem ? prevItem.order : -Infinity;
+        const nextOrder = nextItem ? nextItem.order : Infinity;
 
-             const prevOrder = prevItem ? prevItem.order : -Infinity;
-             const nextOrder = nextItem ? nextItem.order : Infinity;
+        let newOrder = 0;
+        if (prevItem && nextItem) {
+          newOrder = (prevOrder + nextOrder) / 2;
+        } else if (prevItem) {
+          newOrder = prevOrder + 1;
+        } else if (nextItem) {
+          newOrder = nextOrder === Infinity ? Date.now() : nextOrder - 1;
+        } else {
+          newOrder = Date.now();
+        }
 
-             let newOrder = 0;
-             if (prevItem && nextItem) {
-                 newOrder = (prevOrder + nextOrder) / 2;
-             } else if (prevItem) {
-                 newOrder = prevOrder + 1;
-             } else if (nextItem) {
-                 newOrder = nextOrder === Infinity ? Date.now() : nextOrder - 1;
-             } else {
-                 newOrder = Date.now();
-             }
-
-             reorderTask({ taskId: activeId as Id<'tasks'>, order: newOrder, status: newStatus });
-             return;
-         }
+        reorderTask({ taskId: activeId as Id<'tasks'>, order: newOrder, status: newStatus });
+        return;
+      }
     }
 
     // Fallback if status changed but calculation failed (e.g. empty list logic)
     if (activeTask.status !== newStatus) {
-         const targetColumnTasks = tasks?.filter(t => t.status === newStatus) || [];
-         const maxOrder = targetColumnTasks.reduce((max, t) => Math.max(max, t.order), 0);
-         reorderTask({ taskId: activeId as Id<'tasks'>, order: maxOrder + 1, status: newStatus });
+      const targetColumnTasks = tasks?.filter(t => t.status === newStatus) || [];
+      const maxOrder = targetColumnTasks.reduce((max, t) => Math.max(max, t.order), 0);
+      reorderTask({ taskId: activeId as Id<'tasks'>, order: maxOrder + 1, status: newStatus });
     }
   }
 
@@ -324,9 +329,9 @@ export default function ProjectPage() {
                         <SortableTaskItem key={task._id} task={task} />
                       ))}
                       {todoTasks.length === 0 && (
-                         <div className="flex h-full flex-grow items-center justify-center text-sm text-muted-foreground/40">
-                             Drop items here
-                         </div>
+                        <div className="flex h-full flex-grow items-center justify-center text-sm text-muted-foreground/40">
+                          Drop items here
+                        </div>
                       )}
                     </SortableContext>
                   </DroppableColumn>
@@ -355,9 +360,9 @@ export default function ProjectPage() {
                         <SortableTaskItem key={task._id} task={task} />
                       ))}
                       {doingTasks.length === 0 && (
-                         <div className="flex h-full flex-grow items-center justify-center text-sm text-muted-foreground/40">
-                             Drop items here
-                         </div>
+                        <div className="flex h-full flex-grow items-center justify-center text-sm text-muted-foreground/40">
+                          Drop items here
+                        </div>
                       )}
                     </SortableContext>
                   </DroppableColumn>
@@ -386,9 +391,9 @@ export default function ProjectPage() {
                         <SortableTaskItem key={task._id} task={task} />
                       ))}
                       {doneTasks.length === 0 && (
-                         <div className="flex h-full flex-grow items-center justify-center text-sm text-muted-foreground/40">
-                             Drop items here
-                         </div>
+                        <div className="flex h-full flex-grow items-center justify-center text-sm text-muted-foreground/40">
+                          Drop items here
+                        </div>
                       )}
                     </SortableContext>
                   </DroppableColumn>
@@ -397,16 +402,17 @@ export default function ProjectPage() {
             </div>
           )}
 
-          {typeof document !== 'undefined' && createPortal(
-            <DragOverlay>
-              {activeTask ? (
-                <div className="rotate-2 cursor-grabbing opacity-90">
-                  <TaskItem task={activeTask} />
-                </div>
-              ) : null}
-            </DragOverlay>,
-            document.body
-          )}
+          {typeof document !== 'undefined' &&
+            createPortal(
+              <DragOverlay>
+                {activeTask ? (
+                  <div className="rotate-2 cursor-grabbing opacity-90">
+                    <TaskItem task={activeTask} />
+                  </div>
+                ) : null}
+              </DragOverlay>,
+              document.body,
+            )}
         </DndContext>
       </div>
     </div>
