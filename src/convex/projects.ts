@@ -1,7 +1,7 @@
 import { v } from 'convex/values';
 
 import { mutationWithUser, queryWithUser } from './lib/auth';
-import { archiveWithCheck } from './lib/utils';
+import { archiveWithCheck } from './lib/utilities';
 import { checkOwnership, validateString } from './lib/validations';
 
 /**
@@ -11,25 +11,23 @@ export const list = queryWithUser({
   args: {
     includeArchived: v.optional(v.boolean()),
   },
-  handler: async (ctx, args) => {
-    const { clerkUserId } = ctx;
-    const includeArchived = args.includeArchived ?? false;
+  handler: async (context, arguments_) => {
+    const { clerkUserId } = context;
+    const includeArchived = arguments_.includeArchived ?? false;
 
-    if (includeArchived) {
-      return await ctx.db
-        .query('projects')
-        .withIndex('by_owner', q => q.eq('ownerClerkUserId', clerkUserId))
-        .order('desc')
-        .collect();
-    } else {
-      return await ctx.db
-        .query('projects')
-        .withIndex('by_owner_archived', q =>
-          q.eq('ownerClerkUserId', clerkUserId).eq('archived', false),
-        )
-        .order('desc')
-        .collect();
-    }
+    return await (includeArchived
+      ? context.db
+          .query('projects')
+          .withIndex('by_owner', q => q.eq('ownerClerkUserId', clerkUserId))
+          .order('desc')
+          .collect()
+      : context.db
+          .query('projects')
+          .withIndex('by_owner_archived', q =>
+            q.eq('ownerClerkUserId', clerkUserId).eq('archived', false),
+          )
+          .order('desc')
+          .collect());
   },
 });
 
@@ -40,14 +38,14 @@ export const create = mutationWithUser({
   args: {
     name: v.string(),
   },
-  handler: async (ctx, args) => {
-    const { clerkUserId } = ctx;
+  handler: async (context, arguments_) => {
+    const { clerkUserId } = context;
 
-    const name = validateString(args.name, 'Project name', 100);
+    const name = validateString(arguments_.name, 'Project name', 100);
 
     const now = Date.now();
 
-    return await ctx.db.insert('projects', {
+    return await context.db.insert('projects', {
       ownerClerkUserId: clerkUserId,
       name,
       archived: false,
@@ -65,18 +63,18 @@ export const update = mutationWithUser({
     projectId: v.id('projects'),
     name: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
-    const { clerkUserId } = ctx;
+  handler: async (context, arguments_) => {
+    const { clerkUserId } = context;
 
-    await checkOwnership(ctx, args.projectId, clerkUserId, 'Project not found');
+    await checkOwnership(context, arguments_.projectId, clerkUserId, 'Project not found');
 
     const patch: Record<string, unknown> = { updatedAt: Date.now() };
 
-    if (args.name !== undefined) {
-      patch.name = validateString(args.name, 'Project name', 100);
+    if (arguments_.name !== undefined) {
+      patch.name = validateString(arguments_.name, 'Project name', 100);
     }
 
-    await ctx.db.patch(args.projectId, patch);
+    await context.db.patch(arguments_.projectId, patch);
   },
 });
 
@@ -87,9 +85,9 @@ export const archive = mutationWithUser({
   args: {
     projectId: v.id('projects'),
   },
-  handler: async (ctx, args) => {
-    const { clerkUserId } = ctx;
+  handler: async (context, arguments_) => {
+    const { clerkUserId } = context;
 
-    await archiveWithCheck(ctx, args.projectId, clerkUserId, 'Project not found');
+    await archiveWithCheck(context, arguments_.projectId, clerkUserId, 'Project not found');
   },
 });

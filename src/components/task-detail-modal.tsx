@@ -4,7 +4,7 @@ import { useMutation, useQuery } from 'convex/react';
 import { ArrowLeft, Check, Plus, Tag, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
-import { SubtaskList } from '@/components/SubtaskList';
+import { SubtaskList } from '@/components/subtask-list';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,13 +29,13 @@ import { api } from '@/convex/_generated/api';
 import type { Doc, Id } from '@/convex/_generated/dataModel';
 import { cn } from '@/lib/utils/cn';
 
-interface TaskDetailModalProps {
-  task: Doc<'tasks'> & { labelIds?: Id<'labels'>[] };
-  isOpen: boolean;
-  onClose: () => void;
+interface TaskDetailModalProperties {
+  readonly task: Doc<'tasks'> & { labelIds?: Id<'labels'>[] };
+  readonly isOpen: boolean;
+  readonly onClose: () => void;
 }
 
-export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps) {
+export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProperties) {
   const updateTask = useMutation(api.tasks.update);
   const deleteTask = useMutation(api.tasks.archive);
   const createLabel = useMutation(api.labels.create);
@@ -125,7 +125,7 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
                 <div className="space-y-2">
                   <Textarea
                     value={desc}
-                    onChange={e => setDesc(e.target.value)}
+                    onChange={event => setDesc(event.target.value)}
                     placeholder="Add more details..."
                     className="min-h-[100px]"
                   />
@@ -142,8 +142,8 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
                 <div
                   className="prose-sm min-h-[60px] cursor-pointer rounded-md border border-transparent p-2 hover:border-border/60 hover:bg-muted/30"
                   onClick={() => setIsEditingDesc(true)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' || e.key === ' ') setIsEditingDesc(true);
+                  onKeyDown={event => {
+                    if (event.key === 'Enter' || event.key === ' ') setIsEditingDesc(true);
                   }}
                   role="button"
                   tabIndex={0}
@@ -168,6 +168,7 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
               <div className="flex flex-wrap gap-2">
                 {task.labelIds?.map(labelId => {
                   const label = labels?.find(l => l._id === labelId);
+                  // eslint-disable-next-line unicorn/no-null -- React requires null for conditional rendering
                   if (!label) return null;
                   return (
                     <Badge
@@ -206,9 +207,9 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
                           placeholder="Label name"
                           className="h-8 text-xs"
                           value={newLabelName}
-                          onChange={e => setNewLabelName(e.target.value)}
-                          onKeyDown={e => {
-                            if (e.key === 'Enter') handleCreateLabel();
+                          onChange={event => setNewLabelName(event.target.value)}
+                          onKeyDown={event => {
+                            if (event.key === 'Enter') handleCreateLabel();
                           }}
                         />
                         <div className="flex flex-wrap gap-1.5">

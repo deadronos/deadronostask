@@ -10,12 +10,13 @@ import { type AppRouter } from '@/server/trpc/router';
 export const trpc = createTRPCReact<AppRouter>();
 
 function getBaseUrl() {
-  if (typeof window !== 'undefined') return '';
+  // eslint-disable-next-line sonarjs/different-types-comparison -- window check
+  if (globalThis.window !== undefined) return '';
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   return `http://localhost:${process.env.PORT ?? 3000}`;
 }
 
-export function TRPCProvider({ children }: { children: React.ReactNode }) {
+export function TRPCProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [queryClient] = useState(() => new QueryClient());
   const [trpcClient] = useState(() =>
     trpc.createClient({

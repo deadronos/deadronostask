@@ -4,10 +4,10 @@ import { mutationWithUser, queryWithUser } from './lib/auth';
 
 export const list = queryWithUser({
   args: {},
-  handler: async ctx => {
-    return await ctx.db
+  handler: async context => {
+    return await context.db
       .query('labels')
-      .withIndex('by_owner', q => q.eq('ownerClerkUserId', ctx.clerkUserId))
+      .withIndex('by_owner', q => q.eq('ownerClerkUserId', context.clerkUserId))
       .collect();
   },
 });
@@ -17,20 +17,20 @@ export const create = mutationWithUser({
     name: v.string(),
     color: v.string(),
   },
-  handler: async (ctx, args) => {
-    return await ctx.db.insert('labels', {
-      ownerClerkUserId: ctx.clerkUserId,
-      name: args.name,
-      color: args.color,
+  handler: async (context, arguments_) => {
+    return await context.db.insert('labels', {
+      ownerClerkUserId: context.clerkUserId,
+      name: arguments_.name,
+      color: arguments_.color,
     });
   },
 });
 
 export const deleteLabel = mutationWithUser({
   args: { labelId: v.id('labels') },
-  handler: async (ctx, args) => {
-    const { clerkUserId } = ctx;
-    const label = await ctx.db.get(args.labelId);
+  handler: async (context, arguments_) => {
+    const { clerkUserId } = context;
+    const label = await context.db.get(arguments_.labelId);
 
     if (!label) return;
 
@@ -39,15 +39,15 @@ export const deleteLabel = mutationWithUser({
     }
 
     // Delete associations in taskLabels
-    const associations = await ctx.db
+    const associations = await context.db
       .query('taskLabels')
-      .withIndex('by_label', q => q.eq('labelId', args.labelId))
+      .withIndex('by_label', q => q.eq('labelId', arguments_.labelId))
       .collect();
 
     for (const assoc of associations) {
-      await ctx.db.delete(assoc._id);
+      await context.db.delete(assoc._id);
     }
 
-    await ctx.db.delete(args.labelId);
+    await context.db.delete(arguments_.labelId);
   },
 });

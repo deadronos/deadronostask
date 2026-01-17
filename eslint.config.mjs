@@ -13,7 +13,78 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
+// Some environments (or older tooling) can fail to resolve legacy "plugin:.../recommended"
+// shareable-config strings. Import unicorn directly and inline its `recommended` flat
+// config when available — this avoids the "couldn't find the config \"plugin:unicorn/recommended\""
+// error while preserving the same rule set.
+const unicornExtend = await import('eslint-plugin-unicorn')
+  .then(m => m.default?.configs?.recommended)
+  .catch(() => {});
+
+// SonarJS ships both a flat-config and a legacy-style config. Prefer the
+// legacy variant when available; otherwise fall back to the flat config but
+// strip the top-level `name` property which ESLint's legacy loader rejects.
+const sonarjsExtend = await import('eslint-plugin-sonarjs')
+  .then(m => {
+    const cfg = m.default?.configs;
+    if (!cfg) return false;
+    if (cfg['recommended-legacy']) return cfg['recommended-legacy'];
+    if (cfg.recommended) {
+      const copy = { ...cfg.recommended };
+      delete copy.name;
+      return copy;
+    }
+    return false;
+  })
+  .catch(() => {});
+
+// Normalize legacy-style shareable configs into flat-config-compatible objects.
+// - convert `plugins: ['name']` into `plugins: { name: pluginObject }`
+// - strip `name` property (not allowed in legacy-style contexts)
+// eslint-disable-next-line sonarjs/cognitive-complexity -- helper function
+const _normalizePluginConfig = async cfg => {
+  if (!cfg) return;
+
+  const normalized = { ...cfg };
+  // convert plugin-array -> plugin-object
+  if (Array.isArray(normalized.plugins)) {
+    const object = {};
+    for (const name of normalized.plugins) {
+      try {
+        const module_ = await import(`eslint-plugin-${name}`);
+        object[name] = module_.default || module_;
+      } catch {
+        // if we can't import the plugin module, keep the string (ESLint may still try to resolve it)
+        object[name] = name;
+      }
+    }
+    normalized.plugins = object;
+  } else if (normalized.plugins && typeof normalized.plugins === 'object') {
+    const object = {};
+    for (const [k, v] of Object.entries(normalized.plugins)) {
+      if (typeof v === 'string') {
+        try {
+          const module_ = await import(v);
+          object[k] = module_.default || module_;
+        } catch {
+          object[k] = v;
+        }
+      } else {
+        object[k] = v;
+      }
+    }
+    normalized.plugins = object;
+  }
+
+  delete normalized.name;
+  return normalized;
+};
+
+const unicornExtension = await _normalizePluginConfig(unicornExtend);
+const sonarjsExtension = await _normalizePluginConfig(sonarjsExtend);
+
 export default [
+  // Global ignores for generated and build files
   {
     ignores: [
       '**/node_modules/**',
@@ -21,14 +92,13 @@ export default [
       'out/**',
       'dist/**',
       'coverage/**',
-      'convex/_generated/**',
-      'src/convex/_generated/**',
       '.github/**',
       '.codex/**',
+      // Convex auto-generated files - must use full glob patterns
+      'convex/_generated/**',
+      'src/convex/_generated/**',
+      '**/convex/_generated/**',
     ],
-    linterOptions: {
-      reportUnusedDisableDirectives: false,
-    },
   },
   js.configs.recommended,
   ...compat.extends(
@@ -38,11 +108,11 @@ export default [
     'plugin:jsx-a11y/recommended',
     'plugin:import/recommended',
     'plugin:import/typescript',
-    'plugin:unicorn/recommended',
-    'plugin:sonarjs/recommended',
     'plugin:promise/recommended',
     'prettier',
   ),
+  ...(unicornExtension ? [unicornExtension] : []),
+  ...(sonarjsExtension ? [sonarjsExtension] : []),
   {
     files: ['**/*.{js,jsx,ts,tsx}', '**/*.mjs', '**/*.cjs'],
     languageOptions: {
@@ -95,15 +165,15 @@ export default [
         { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
       ],
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/strict-boolean-expressions': 'warn',
-      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+
       'no-implicit-coercion': 'warn',
       'unicorn/consistent-function-scoping': 'warn',
       // Warn when DB write helpers are used — Convex handlers should prefer MutationCtx for writes.
       'no-restricted-syntax': [
         'warn',
         {
-          selector: "CallExpression[callee.property.name=/insert|delete|patch/][callee.object.property.name='db'][callee.object.object.name='ctx']",
+          selector:
+            "CallExpression[callee.property.name=/insert|delete|patch/][callee.object.property.name='db'][callee.object.object.name='ctx']",
           message:
             'Detected ctx.db.<write>. Prefer using a mutation (MutationCtx) for DB writes; add a code comment if this is intentional.',
         },
@@ -144,6 +214,11 @@ export default [
         tsconfigRootDir: __dirname,
       },
     },
+    rules: {
+      // Rules that require type information must only run in type-aware contexts.
+      '@typescript-eslint/strict-boolean-expressions': 'warn',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+    },
   },
   // Stronger Convex-specific constraints (narrow scope)
   {
@@ -163,7 +238,8 @@ export default [
       'no-restricted-syntax': [
         'warn',
         {
-          selector: "CallExpression[callee.property.name=/insert|delete|patch/][callee.object.property.name='db'][callee.object.object.name='ctx']",
+          selector:
+            "CallExpression[callee.property.name=/insert|delete|patch/][callee.object.property.name='db'][callee.object.object.name='ctx']",
           message:
             'Detected ctx.db.<write> — confirm this is inside a mutation handler (MutationCtx).',
         },

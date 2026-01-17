@@ -1,15 +1,22 @@
 import { v } from 'convex/values';
 
-import { type Doc, type Id } from './_generated/dataModel';
-import { type QueryCtx, type MutationCtx } from './_generated/server';
+import { type Doc as Document_, type Id } from './_generated/dataModel';
+import {
+  type QueryCtx as QueryContext,
+  type MutationCtx as MutationContext,
+} from './_generated/server';
 import { mutationWithUser, queryWithUser } from './lib/auth';
-import { archiveWithCheck, getNextOrder } from './lib/utils';
+import { archiveWithCheck, getNextOrder } from './lib/utilities';
 import { checkOwnership, validateString } from './lib/validations';
 
 // Helper to validate that labels belong to the user
-async function validateLabels(ctx: QueryCtx, labelIds: Id<'labels'>[], clerkUserId: string) {
+async function validateLabels(
+  context: QueryContext,
+  labelIds: Id<'labels'>[],
+  clerkUserId: string,
+) {
   const uniqueLabelIds = [...new Set(labelIds)];
-  const labels = await Promise.all(uniqueLabelIds.map(id => ctx.db.get(id)));
+  const labels = await Promise.all(uniqueLabelIds.map(id => context.db.get(id)));
   for (const label of labels) {
     if (!label) throw new Error('Label not found');
     if (label.ownerClerkUserId !== clerkUserId) throw new Error('Unauthorized label');
@@ -18,26 +25,26 @@ async function validateLabels(ctx: QueryCtx, labelIds: Id<'labels'>[], clerkUser
 }
 
 // Helper to sync labels for a task
-async function syncLabels(ctx: MutationCtx, taskId: Id<'tasks'>, labelIds: Id<'labels'>[]) {
-  const existing: Doc<'taskLabels'>[] = await ctx.db
+async function syncLabels(context: MutationContext, taskId: Id<'tasks'>, labelIds: Id<'labels'>[]) {
+  const existing: Document_<'taskLabels'>[] = await context.db
     .query('taskLabels')
     .withIndex('by_task', q => q.eq('taskId', taskId))
     .collect();
 
-  const existingIds = new Set(existing.map(e => e.labelId));
+  const existingIds = new Set(existing.map(taskLabel => taskLabel.labelId));
   const newIds = new Set(labelIds);
 
   // Delete removed
   for (const record of existing) {
     if (!newIds.has(record.labelId)) {
-      await ctx.db.delete(record._id);
+      await context.db.delete(record._id);
     }
   }
 
   // Add new
   for (const id of labelIds) {
     if (!existingIds.has(id)) {
-      await ctx.db.insert('taskLabels', {
+      await context.db.insert('taskLabels', {
         taskId,
         labelId: id,
       });
@@ -56,32 +63,32 @@ export const list = queryWithUser({
     includeArchived: v.optional(v.boolean()),
     labelIds: v.optional(v.array(v.id('labels'))),
   },
-  handler: async (ctx, args) => {
-    const { clerkUserId } = ctx;
-    const includeArchived = args.includeArchived ?? false;
+  handler: async (context, arguments_) => {
+    const { clerkUserId } = context;
+    const includeArchived = arguments_.includeArchived ?? false;
 
-    let tasks: Doc<'tasks'>[];
+    let tasks: Document_<'tasks'>[];
 
     // Use appropriate index based on filters
-    if (args.projectId !== undefined) {
-      tasks = await ctx.db
+    if (arguments_.projectId !== undefined) {
+      tasks = await context.db
         .query('tasks')
         .withIndex('by_owner_project', q =>
-          q.eq('ownerClerkUserId', clerkUserId).eq('projectId', args.projectId),
+          q.eq('ownerClerkUserId', clerkUserId).eq('projectId', arguments_.projectId),
         )
         .collect();
-    } else if (args.status !== undefined) {
-      const status = args.status as 'todo' | 'doing' | 'done';
-      tasks = await ctx.db
+    } else if (arguments_.status === undefined) {
+      tasks = await context.db
+        .query('tasks')
+        .withIndex('by_owner', q => q.eq('ownerClerkUserId', clerkUserId))
+        .collect();
+    } else {
+      const status = arguments_.status;
+      tasks = await context.db
         .query('tasks')
         .withIndex('by_owner_status', q =>
           q.eq('ownerClerkUserId', clerkUserId).eq('status', status),
         )
-        .collect();
-    } else {
-      tasks = await ctx.db
-        .query('tasks')
-        .withIndex('by_owner', q => q.eq('ownerClerkUserId', clerkUserId))
         .collect();
     }
 
@@ -91,8 +98,8 @@ export const list = queryWithUser({
     }
 
     // Filter by search
-    if (args.search) {
-      const searchLower = args.search.toLowerCase();
+    if (arguments_.search) {
+      const searchLower = arguments_.search.toLowerCase();
       tasks = tasks.filter(
         task =>
           task.title.toLowerCase().includes(searchLower) ||
@@ -101,12 +108,12 @@ export const list = queryWithUser({
     }
 
     // Filter by labels (OR logic: task must have at least one of the provided labels)
-    if (args.labelIds && args.labelIds.length > 0) {
+    if (arguments_.labelIds && arguments_.labelIds.length > 0) {
       const taskIdsWithLabels = new Set<Id<'tasks'>>();
 
       // Fetch taskLabels for each requested label
-      for (const labelId of args.labelIds) {
-        const entries: Doc<'taskLabels'>[] = await ctx.db
+      for (const labelId of arguments_.labelIds) {
+        const entries: Document_<'taskLabels'>[] = await context.db
           .query('taskLabels')
           .withIndex('by_label', q => q.eq('labelId', labelId))
           .collect();
@@ -121,7 +128,7 @@ export const list = queryWithUser({
     // Attach labelIds to tasks
     const tasksWithLabels = await Promise.all(
       tasks.map(async task => {
-        const taskLabels: Doc<'taskLabels'>[] = await ctx.db
+        const taskLabels: Document_<'taskLabels'>[] = await context.db
           .query('taskLabels')
           .withIndex('by_task', q => q.eq('taskId', task._id))
           .collect();
@@ -134,7 +141,7 @@ export const list = queryWithUser({
     );
 
     // Sort by order, then creation time
-    return tasksWithLabels.sort((a, b) => {
+    return tasksWithLabels.toSorted((a, b) => {
       if (a.order !== b.order) return a.order - b.order;
       return b.createdAt - a.createdAt;
     });
@@ -153,22 +160,22 @@ export const create = mutationWithUser({
     dueAt: v.optional(v.number()),
     labelIds: v.optional(v.array(v.id('labels'))),
   },
-  handler: async (ctx, args) => {
-    const { clerkUserId } = ctx;
+  handler: async (context, arguments_) => {
+    const { clerkUserId } = context;
 
-    const title = validateString(args.title, 'Task title', 200);
+    const title = validateString(arguments_.title, 'Task title', 200);
 
     // Validate project ownership if projectId provided
-    if (args.projectId) {
-      await checkOwnership(ctx, args.projectId, clerkUserId, 'Project not found');
+    if (arguments_.projectId) {
+      await checkOwnership(context, arguments_.projectId, clerkUserId, 'Project not found');
     }
 
-    if (args.labelIds) {
-      await validateLabels(ctx, args.labelIds, clerkUserId);
+    if (arguments_.labelIds) {
+      await validateLabels(context, arguments_.labelIds, clerkUserId);
     }
 
     // Get max order for new task
-    const allTasks: Doc<'tasks'>[] = await ctx.db
+    const allTasks: Document_<'tasks'>[] = await context.db
       .query('tasks')
       .withIndex('by_owner', q => q.eq('ownerClerkUserId', clerkUserId))
       .collect();
@@ -176,24 +183,24 @@ export const create = mutationWithUser({
 
     const now = Date.now();
 
-    const taskId = await ctx.db.insert('tasks', {
+    const taskId = await context.db.insert('tasks', {
       ownerClerkUserId: clerkUserId,
-      projectId: args.projectId,
+      projectId: arguments_.projectId,
       title,
-      description: args.description?.trim(),
+      description: arguments_.description?.trim(),
       status: 'todo',
-      priority: args.priority ?? 0,
-      dueAt: args.dueAt,
+      priority: arguments_.priority ?? 0,
+      dueAt: arguments_.dueAt,
       order,
       archived: false,
       createdAt: now,
       updatedAt: now,
     });
 
-    if (args.labelIds && args.labelIds.length > 0) {
-      const uniqueIds = [...new Set(args.labelIds)];
+    if (arguments_.labelIds && arguments_.labelIds.length > 0) {
+      const uniqueIds = [...new Set(arguments_.labelIds)];
       for (const labelId of uniqueIds) {
-        await ctx.db.insert('taskLabels', {
+        await context.db.insert('taskLabels', {
           taskId,
           labelId,
         });
@@ -217,46 +224,46 @@ export const update = mutationWithUser({
     labelIds: v.optional(v.array(v.id('labels'))),
     projectId: v.optional(v.union(v.id('projects'), v.null())),
   },
-  handler: async (ctx, args) => {
-    const { clerkUserId } = ctx;
+  handler: async (context, arguments_) => {
+    const { clerkUserId } = context;
 
-    await checkOwnership(ctx, args.taskId, clerkUserId, 'Task not found');
+    await checkOwnership(context, arguments_.taskId, clerkUserId, 'Task not found');
 
-    if (args.labelIds) {
-      await validateLabels(ctx, args.labelIds, clerkUserId);
+    if (arguments_.labelIds) {
+      await validateLabels(context, arguments_.labelIds, clerkUserId);
     }
 
     const patch: Record<string, unknown> = { updatedAt: Date.now() };
 
-    if (args.title !== undefined) {
-      patch.title = validateString(args.title, 'Task title', 200);
+    if (arguments_.title !== undefined) {
+      patch.title = validateString(arguments_.title, 'Task title', 200);
     }
 
-    if (args.description !== undefined) {
-      patch.description = args.description?.trim();
+    if (arguments_.description !== undefined) {
+      patch.description = arguments_.description?.trim();
     }
 
-    if (args.priority !== undefined) {
-      patch.priority = args.priority;
+    if (arguments_.priority !== undefined) {
+      patch.priority = arguments_.priority;
     }
 
-    if (args.dueAt !== undefined) {
-      patch.dueAt = args.dueAt;
+    if (arguments_.dueAt !== undefined) {
+      patch.dueAt = arguments_.dueAt;
     }
 
-    if (args.labelIds !== undefined) {
-      await syncLabels(ctx, args.taskId, args.labelIds);
+    if (arguments_.labelIds !== undefined) {
+      await syncLabels(context, arguments_.taskId, arguments_.labelIds);
     }
 
-    if (args.projectId !== undefined) {
+    if (arguments_.projectId !== undefined) {
       // Validate project ownership if projectId provided
-      if (args.projectId) {
-        await checkOwnership(ctx, args.projectId, clerkUserId, 'Project not found');
+      if (arguments_.projectId) {
+        await checkOwnership(context, arguments_.projectId, clerkUserId, 'Project not found');
       }
-      patch.projectId = args.projectId;
+      patch.projectId = arguments_.projectId;
     }
 
-    await ctx.db.patch(args.taskId, patch);
+    await context.db.patch(arguments_.taskId, patch);
   },
 });
 
@@ -268,13 +275,13 @@ export const setStatus = mutationWithUser({
     taskId: v.id('tasks'),
     status: v.union(v.literal('todo'), v.literal('doing'), v.literal('done')),
   },
-  handler: async (ctx, args) => {
-    const { clerkUserId } = ctx;
+  handler: async (context, arguments_) => {
+    const { clerkUserId } = context;
 
-    await checkOwnership(ctx, args.taskId, clerkUserId, 'Task not found');
+    await checkOwnership(context, arguments_.taskId, clerkUserId, 'Task not found');
 
-    await ctx.db.patch(args.taskId, {
-      status: args.status,
+    await context.db.patch(arguments_.taskId, {
+      status: arguments_.status,
       updatedAt: Date.now(),
     });
   },
@@ -289,21 +296,21 @@ export const reorder = mutationWithUser({
     order: v.number(),
     status: v.optional(v.union(v.literal('todo'), v.literal('doing'), v.literal('done'))),
   },
-  handler: async (ctx, args) => {
-    const { clerkUserId } = ctx;
+  handler: async (context, arguments_) => {
+    const { clerkUserId } = context;
 
-    await checkOwnership(ctx, args.taskId, clerkUserId, 'Task not found');
+    await checkOwnership(context, arguments_.taskId, clerkUserId, 'Task not found');
 
     const patch: Record<string, unknown> = {
-      order: args.order,
+      order: arguments_.order,
       updatedAt: Date.now(),
     };
 
-    if (args.status !== undefined) {
-      patch.status = args.status;
+    if (arguments_.status !== undefined) {
+      patch.status = arguments_.status;
     }
 
-    await ctx.db.patch(args.taskId, patch);
+    await context.db.patch(arguments_.taskId, patch);
   },
 });
 
@@ -314,9 +321,9 @@ export const archive = mutationWithUser({
   args: {
     taskId: v.id('tasks'),
   },
-  handler: async (ctx, args) => {
-    const { clerkUserId } = ctx;
+  handler: async (context, arguments_) => {
+    const { clerkUserId } = context;
 
-    await archiveWithCheck(ctx, args.taskId, clerkUserId, 'Task not found');
+    await archiveWithCheck(context, arguments_.taskId, clerkUserId, 'Task not found');
   },
 });

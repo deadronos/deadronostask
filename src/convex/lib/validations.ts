@@ -1,30 +1,33 @@
 import { type Id, type TableNames } from '../_generated/dataModel';
-import { type MutationCtx, type QueryCtx } from '../_generated/server';
+import {
+  type MutationCtx as MutationContext,
+  type QueryCtx as QueryContext,
+} from '../_generated/server';
 
 /**
  * Checks if a document exists and belongs to the current user.
  * Assumes the document has an 'ownerClerkUserId' field.
  */
 export async function checkOwnership<T extends TableNames>(
-  ctx: QueryCtx | MutationCtx,
+  context: QueryContext | MutationContext,
   id: Id<T>,
   clerkUserId: string,
   notFoundMessage = 'Document not found',
 ) {
-  const doc = await ctx.db.get(id);
-  if (!doc) {
+  const document = await context.db.get(id);
+  if (!document) {
     throw new Error(notFoundMessage);
   }
 
   // Check if the document has an owner field and if it matches
   if (
-    !('ownerClerkUserId' in doc) ||
-    (doc as unknown as { ownerClerkUserId: string }).ownerClerkUserId !== clerkUserId
+    !('ownerClerkUserId' in document) ||
+    (document as unknown as { ownerClerkUserId: string }).ownerClerkUserId !== clerkUserId
   ) {
     throw new Error('Unauthorized');
   }
 
-  return doc;
+  return document;
 }
 
 /**

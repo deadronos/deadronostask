@@ -6,9 +6,9 @@ import { ListTodo, CheckCircle2, Clock, LayoutGrid, TrendingUp } from 'lucide-re
 import Link from 'next/link';
 import { useEffect } from 'react';
 
-import { CreateProjectButton } from '@/components/CreateProjectButton';
-import { CreateTaskButton } from '@/components/CreateTaskButton';
-import { TaskItem } from '@/components/TaskItem';
+import { CreateProjectButton } from '@/components/create-project-button';
+import { CreateTaskButton } from '@/components/create-task-button';
+import { TaskItem } from '@/components/task-item';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/convex/_generated/api';
 
@@ -48,6 +48,68 @@ export default function DashboardPage() {
   const pendingTasks = tasks?.filter(t => t.status !== 'done').length ?? 0;
   const activeProjects = projects?.length ?? 0;
 
+  function renderProjectsContent() {
+    if (projects === undefined) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="text-sm text-muted-foreground">Loading projects...</div>
+        </div>
+      );
+    }
+    if (projects.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center space-y-3 py-8 text-center">
+          <LayoutGrid className="h-12 w-12 text-muted-foreground/50" />
+          <p className="text-sm text-muted-foreground">
+            No projects yet. Create your first project!
+          </p>
+        </div>
+      );
+    }
+    return (
+      <div className="space-y-3">
+        {projects.map(project => (
+          <Link
+            key={project._id}
+            href={`/projects/${project._id}`}
+            className="group flex items-center justify-between rounded-2xl border border-border/60 bg-background/70 p-4 transition hover:border-primary/40 hover:bg-card"
+          >
+            <div className="space-y-1">
+              <div className="font-medium text-foreground">{project.name}</div>
+              <div className="text-xs text-muted-foreground">Project hub</div>
+            </div>
+            <TrendingUp className="h-4 w-4 text-muted-foreground transition group-hover:text-primary" />
+          </Link>
+        ))}
+      </div>
+    );
+  }
+
+  function renderTasksContent() {
+    if (tasks === undefined) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="text-sm text-muted-foreground">Loading tasks...</div>
+        </div>
+      );
+    }
+    if (tasks.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center space-y-3 py-8 text-center">
+          <ListTodo className="h-12 w-12 text-muted-foreground/50" />
+          <p className="text-sm text-muted-foreground">No tasks yet. Create your first task!</p>
+        </div>
+      );
+    }
+    return (
+      <div className="space-y-3">
+        {tasks.slice(0, 5).map(task => (
+          <TaskItem key={task._id} task={task} />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(30,42,94,0.18),_transparent_55%),radial-gradient(circle_at_20%_20%,_rgba(244,220,194,0.5),_transparent_45%)]">
       <div
@@ -75,7 +137,7 @@ export default function DashboardPage() {
             </div>
             <div className="flex flex-wrap gap-3">
               <CreateProjectButton />
-              <CreateTaskButton projectId={null} />
+              <CreateTaskButton projectId={undefined} />
             </div>
           </div>
 
@@ -139,36 +201,7 @@ export default function DashboardPage() {
                 </Link>
               </div>
             </CardHeader>
-            <CardContent>
-              {projects === undefined ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-sm text-muted-foreground">Loading projects...</div>
-                </div>
-              ) : projects.length === 0 ? (
-                <div className="flex flex-col items-center justify-center space-y-3 py-8 text-center">
-                  <LayoutGrid className="h-12 w-12 text-muted-foreground/50" />
-                  <p className="text-sm text-muted-foreground">
-                    No projects yet. Create your first project!
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {projects.map(project => (
-                    <Link
-                      key={project._id}
-                      href={`/projects/${project._id}`}
-                      className="group flex items-center justify-between rounded-2xl border border-border/60 bg-background/70 p-4 transition hover:border-primary/40 hover:bg-card"
-                    >
-                      <div className="space-y-1">
-                        <div className="font-medium text-foreground">{project.name}</div>
-                        <div className="text-xs text-muted-foreground">Project hub</div>
-                      </div>
-                      <TrendingUp className="h-4 w-4 text-muted-foreground transition group-hover:text-primary" />
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </CardContent>
+            <CardContent>{renderProjectsContent()}</CardContent>
           </Card>
 
           {/* Recent Tasks Card */}
@@ -182,26 +215,7 @@ export default function DashboardPage() {
                 <ListTodo className="h-5 w-5 text-muted-foreground" />
               </div>
             </CardHeader>
-            <CardContent>
-              {tasks === undefined ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-sm text-muted-foreground">Loading tasks...</div>
-                </div>
-              ) : tasks.length === 0 ? (
-                <div className="flex flex-col items-center justify-center space-y-3 py-8 text-center">
-                  <ListTodo className="h-12 w-12 text-muted-foreground/50" />
-                  <p className="text-sm text-muted-foreground">
-                    No tasks yet. Create your first task!
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {tasks.slice(0, 5).map(task => (
-                    <TaskItem key={task._id} task={task} />
-                  ))}
-                </div>
-              )}
-            </CardContent>
+            <CardContent>{renderTasksContent()}</CardContent>
           </Card>
         </div>
       </div>

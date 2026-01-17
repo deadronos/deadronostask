@@ -1,7 +1,7 @@
 import { convexTest } from 'convex-test';
 import { expect, describe, it, beforeEach } from 'vitest';
 
-import { convexModules } from '../utils/convexModules';
+import { convexModules } from '../utils/convex-modules';
 
 import { api } from '@/convex/_generated/api';
 import schema from '@/convex/schema';
@@ -23,15 +23,15 @@ describe('users', () => {
 
       const user = t.withIdentity({ subject: userId });
 
-      const userDocId = await user.mutation(api.users.upsertMe, {
+      const userDocumentId = await user.mutation(api.users.upsertMe, {
         email,
         name,
         avatarUrl,
       });
 
-      expect(userDocId).toBeDefined();
+      expect(userDocumentId).toBeDefined();
 
-      const savedUser = await t.run(ctx => ctx.db.get(userDocId));
+      const savedUser = await t.run(context => context.db.get(userDocumentId));
       expect(savedUser).toBeDefined();
       expect(savedUser!.clerkUserId).toBe(userId);
       expect(savedUser!.email).toBe(email);
@@ -46,19 +46,19 @@ describe('users', () => {
 
       const user = t.withIdentity({ subject: userId });
 
-      const userDocId1 = await user.mutation(api.users.upsertMe, {
+      const userDocumentId1 = await user.mutation(api.users.upsertMe, {
         email: initialEmail,
         name: 'Old Name',
       });
 
-      const userDocId2 = await user.mutation(api.users.upsertMe, {
+      const userDocumentId2 = await user.mutation(api.users.upsertMe, {
         email: updatedEmail,
         name: 'New Name',
       });
 
-      expect(userDocId1).toBe(userDocId2);
+      expect(userDocumentId1).toBe(userDocumentId2);
 
-      const savedUser = await t.run(ctx => ctx.db.get(userDocId2));
+      const savedUser = await t.run(context => context.db.get(userDocumentId2));
       expect(savedUser!.email).toBe(updatedEmail);
       expect(savedUser!.name).toBe('New Name');
     });
@@ -68,9 +68,9 @@ describe('users', () => {
 
       const user = t.withIdentity({ subject: userId });
 
-      const userDocId = await user.mutation(api.users.upsertMe, {});
+      const userDocumentId = await user.mutation(api.users.upsertMe, {});
 
-      const savedUser = await t.run(ctx => ctx.db.get(userDocId));
+      const savedUser = await t.run(context => context.db.get(userDocumentId));
       expect(savedUser).toBeDefined();
       expect(savedUser!.clerkUserId).toBe(userId);
       expect(savedUser!.email).toBeUndefined();
@@ -84,12 +84,12 @@ describe('users', () => {
       const user = t.withIdentity({ subject: userId });
 
       const beforeCreate = Date.now();
-      const userDocId = await user.mutation(api.users.upsertMe, {
+      const userDocumentId = await user.mutation(api.users.upsertMe, {
         email: 'test@example.com',
       });
       const afterCreate = Date.now();
 
-      const savedUser = await t.run(ctx => ctx.db.get(userDocId));
+      const savedUser = await t.run(context => context.db.get(userDocumentId));
       expect(savedUser!.createdAt).toBeGreaterThanOrEqual(beforeCreate);
       expect(savedUser!.createdAt).toBeLessThanOrEqual(afterCreate);
       expect(savedUser!.updatedAt).toEqual(savedUser!.createdAt);
@@ -100,11 +100,11 @@ describe('users', () => {
 
       const user = t.withIdentity({ subject: userId });
 
-      const userDocId = await user.mutation(api.users.upsertMe, {
+      const userDocumentId = await user.mutation(api.users.upsertMe, {
         email: 'test@example.com',
       });
 
-      const savedUser = await t.run(ctx => ctx.db.get(userDocId));
+      const savedUser = await t.run(context => context.db.get(userDocumentId));
       const originalUpdatedAt = savedUser!.updatedAt;
 
       await new Promise(resolve => setTimeout(resolve, 10));
@@ -113,7 +113,7 @@ describe('users', () => {
         email: 'updated@example.com',
       });
 
-      const updatedUser = await t.run(ctx => ctx.db.get(userDocId));
+      const updatedUser = await t.run(context => context.db.get(userDocumentId));
       expect(updatedUser!.updatedAt).toBeGreaterThan(originalUpdatedAt);
       expect(updatedUser!.createdAt).toBe(savedUser!.createdAt);
     });
@@ -125,20 +125,20 @@ describe('users', () => {
       const user1Client = t.withIdentity({ subject: userId1 });
       const user2Client = t.withIdentity({ subject: userId2 });
 
-      const userDocId1 = await user1Client.mutation(api.users.upsertMe, {
+      const userDocumentId1 = await user1Client.mutation(api.users.upsertMe, {
         email: 'user1@example.com',
         name: 'User 1',
       });
 
-      const userDocId2 = await user2Client.mutation(api.users.upsertMe, {
+      const userDocumentId2 = await user2Client.mutation(api.users.upsertMe, {
         email: 'user2@example.com',
         name: 'User 2',
       });
 
-      expect(userDocId1).not.toBe(userDocId2);
+      expect(userDocumentId1).not.toBe(userDocumentId2);
 
-      const user1 = await t.run(ctx => ctx.db.get(userDocId1));
-      const user2 = await t.run(ctx => ctx.db.get(userDocId2));
+      const user1 = await t.run(context => context.db.get(userDocumentId1));
+      const user2 = await t.run(context => context.db.get(userDocumentId2));
 
       expect(user1!.clerkUserId).toBe(userId1);
       expect(user2!.clerkUserId).toBe(userId2);
@@ -157,7 +157,7 @@ describe('users', () => {
 
       const user = t.withIdentity({ subject: userId });
 
-      const userDocId = await user.mutation(api.users.upsertMe, {
+      const userDocumentId = await user.mutation(api.users.upsertMe, {
         email: 'test@example.com',
         name: 'Test User',
         avatarUrl: 'https://example.com/avatar.jpg',
@@ -167,7 +167,7 @@ describe('users', () => {
         name: 'Updated Name',
       });
 
-      const savedUser = await t.run(ctx => ctx.db.get(userDocId));
+      const savedUser = await t.run(context => context.db.get(userDocumentId));
       expect(savedUser!.name).toBe('Updated Name');
       expect(savedUser!.email).toBeUndefined();
       expect(savedUser!.avatarUrl).toBeUndefined();

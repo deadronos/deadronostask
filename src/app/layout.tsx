@@ -3,7 +3,7 @@ import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
 import { Fraunces, Manrope } from 'next/font/google';
 
-import { ConvexClientProvider } from '@/lib/convex/ConvexClientProvider';
+import { ConvexClientProvider } from '@/lib/convex/convex-client-provider';
 import '@/styles/globals.css';
 
 const displayFont = Fraunces({
@@ -23,9 +23,9 @@ export const metadata: Metadata = {
   description: 'A realtime task management application',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider afterSignOutUrl="/">
       <html lang="en">
         <body className={`${bodyFont.variable} ${displayFont.variable} antialiased`}>
           <ConvexClientProvider>

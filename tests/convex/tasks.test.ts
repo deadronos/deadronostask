@@ -1,7 +1,7 @@
 import { convexTest } from 'convex-test';
 import { expect, describe, it, beforeEach } from 'vitest';
 
-import { convexModules } from '../utils/convexModules';
+import { convexModules } from '../utils/convex-modules';
 
 import { api } from '@/convex/_generated/api';
 import schema from '@/convex/schema';
@@ -25,7 +25,7 @@ describe('tasks', () => {
 
       expect(taskId).toBeDefined();
 
-      const task = await t.run(ctx => ctx.db.get(taskId));
+      const task = await t.run(context => context.db.get(taskId));
       expect(task).toBeDefined();
       expect(task!.title).toBe('Test Task');
       expect(task!.ownerClerkUserId).toBe(userId);
@@ -39,8 +39,8 @@ describe('tasks', () => {
       const userId = 'user123';
       const user = t.withIdentity({ subject: userId });
 
-      const projectId = await t.run(ctx =>
-        ctx.db.insert('projects', {
+      const projectId = await t.run(context =>
+        context.db.insert('projects', {
           ownerClerkUserId: userId,
           name: 'Test Project',
           archived: false,
@@ -49,7 +49,7 @@ describe('tasks', () => {
         }),
       );
 
-      const dueAt = Date.now() + 86400000; // Tomorrow
+      const dueAt = Date.now() + 86_400_000; // Tomorrow
       const taskId = await user.mutation(api.tasks.create, {
         title: 'Complete Task',
         description: 'Task description',
@@ -58,7 +58,7 @@ describe('tasks', () => {
         projectId,
       });
 
-      const task = await t.run(ctx => ctx.db.get(taskId));
+      const task = await t.run(context => context.db.get(taskId));
       expect(task).toBeDefined();
       expect(task!.title).toBe('Complete Task');
       expect(task!.description).toBe('Task description');
@@ -75,7 +75,7 @@ describe('tasks', () => {
         title: '  Trimmed Task  ',
       });
 
-      const task = await t.run(ctx => ctx.db.get(taskId));
+      const task = await t.run(context => context.db.get(taskId));
       expect(task!.title).toBe('Trimmed Task');
     });
 
@@ -106,8 +106,8 @@ describe('tasks', () => {
       const userId = 'user123';
       const user = t.withIdentity({ subject: userId });
 
-      const missingProjectId = await t.run(ctx =>
-        ctx.db.insert('projects', {
+      const missingProjectId = await t.run(context =>
+        context.db.insert('projects', {
           ownerClerkUserId: userId,
           name: 'Missing Project',
           archived: false,
@@ -116,7 +116,7 @@ describe('tasks', () => {
         }),
       );
 
-      await t.run(ctx => ctx.db.delete(missingProjectId));
+      await t.run(context => context.db.delete(missingProjectId));
 
       await expect(
         user.mutation(api.tasks.create, {
@@ -131,8 +131,8 @@ describe('tasks', () => {
       const otherUserId = 'user456';
       const user = t.withIdentity({ subject: userId });
 
-      const projectId = await t.run(ctx =>
-        ctx.db.insert('projects', {
+      const projectId = await t.run(context =>
+        context.db.insert('projects', {
           ownerClerkUserId: otherUserId,
           name: 'Other User Project',
           archived: false,
@@ -163,9 +163,9 @@ describe('tasks', () => {
         title: 'Task 3',
       });
 
-      const task1 = await t.run(ctx => ctx.db.get(taskId1));
-      const task2 = await t.run(ctx => ctx.db.get(taskId2));
-      const task3 = await t.run(ctx => ctx.db.get(taskId3));
+      const task1 = await t.run(context => context.db.get(taskId1));
+      const task2 = await t.run(context => context.db.get(taskId2));
+      const task3 = await t.run(context => context.db.get(taskId3));
 
       expect(task1!.order).toBe(1);
       expect(task2!.order).toBe(2);
@@ -233,8 +233,8 @@ describe('tasks', () => {
       const userId = 'user123';
       const user = t.withIdentity({ subject: userId });
 
-      const projectId1 = await t.run(ctx =>
-        ctx.db.insert('projects', {
+      const projectId1 = await t.run(context =>
+        context.db.insert('projects', {
           ownerClerkUserId: userId,
           name: 'Project 1',
           archived: false,
@@ -243,8 +243,8 @@ describe('tasks', () => {
         }),
       );
 
-      const projectId2 = await t.run(ctx =>
-        ctx.db.insert('projects', {
+      const projectId2 = await t.run(context =>
+        context.db.insert('projects', {
           ownerClerkUserId: userId,
           name: 'Project 2',
           archived: false,
@@ -266,8 +266,8 @@ describe('tasks', () => {
       const userId = 'user123';
       const user = t.withIdentity({ subject: userId });
 
-      const projectId = await t.run(ctx =>
-        ctx.db.insert('projects', {
+      const projectId = await t.run(context =>
+        context.db.insert('projects', {
           ownerClerkUserId: userId,
           name: 'Project',
           archived: false,
@@ -276,9 +276,11 @@ describe('tasks', () => {
         }),
       );
 
+      // eslint-disable-next-line unicorn/no-null -- API contract requires null to clear projectId
       await user.mutation(api.tasks.create, { title: 'Task 1', projectId: null });
       await user.mutation(api.tasks.create, { title: 'Task 2', projectId });
 
+      // eslint-disable-next-line unicorn/no-null -- API contract requires null to filter by no project
       const tasks = await user.query(api.tasks.list, { projectId: null });
       expect(tasks).toHaveLength(1);
       expect(tasks[0].title).toBe('Task 1');
@@ -378,7 +380,7 @@ describe('tasks', () => {
         title: 'New Title',
       });
 
-      const task = await t.run(ctx => ctx.db.get(taskId));
+      const task = await t.run(context => context.db.get(taskId));
       expect(task!.title).toBe('New Title');
     });
 
@@ -393,7 +395,7 @@ describe('tasks', () => {
         description: 'New description',
       });
 
-      const task = await t.run(ctx => ctx.db.get(taskId));
+      const task = await t.run(context => context.db.get(taskId));
       expect(task!.description).toBe('New description');
     });
 
@@ -408,7 +410,7 @@ describe('tasks', () => {
         priority: 3,
       });
 
-      const task = await t.run(ctx => ctx.db.get(taskId));
+      const task = await t.run(context => context.db.get(taskId));
       expect(task!.priority).toBe(3);
     });
 
@@ -417,14 +419,14 @@ describe('tasks', () => {
       const user = t.withIdentity({ subject: userId });
 
       const taskId = await user.mutation(api.tasks.create, { title: 'Task' });
-      const newDueAt = Date.now() + 86400000;
+      const newDueAt = Date.now() + 86_400_000;
 
       await user.mutation(api.tasks.update, {
         taskId,
         dueAt: newDueAt,
       });
 
-      const task = await t.run(ctx => ctx.db.get(taskId));
+      const task = await t.run(context => context.db.get(taskId));
       expect(task!.dueAt).toBe(newDueAt);
     });
 
@@ -432,15 +434,16 @@ describe('tasks', () => {
       const userId = 'user123';
       const user = t.withIdentity({ subject: userId });
 
-      const dueAt = Date.now() + 86400000;
+      const dueAt = Date.now() + 86_400_000;
       const taskId = await user.mutation(api.tasks.create, { title: 'Task', dueAt });
 
       await user.mutation(api.tasks.update, {
         taskId,
+        // eslint-disable-next-line unicorn/no-null -- API contract requires null to clear dueAt
         dueAt: null,
       });
 
-      const task = await t.run(ctx => ctx.db.get(taskId));
+      const task = await t.run(context => context.db.get(taskId));
       expect(task!.dueAt).toBeNull();
     });
 
@@ -448,8 +451,8 @@ describe('tasks', () => {
       const userId = 'user123';
       const user = t.withIdentity({ subject: userId });
 
-      const projectId = await t.run(ctx =>
-        ctx.db.insert('projects', {
+      const projectId = await t.run(context =>
+        context.db.insert('projects', {
           ownerClerkUserId: userId,
           name: 'Project',
           archived: false,
@@ -465,7 +468,7 @@ describe('tasks', () => {
         projectId,
       });
 
-      const task = await t.run(ctx => ctx.db.get(taskId));
+      const task = await t.run(context => context.db.get(taskId));
       expect(task!.projectId).toBe(projectId);
     });
 
@@ -473,8 +476,8 @@ describe('tasks', () => {
       const userId = 'user123';
       const user = t.withIdentity({ subject: userId });
 
-      const projectId = await t.run(ctx =>
-        ctx.db.insert('projects', {
+      const projectId = await t.run(context =>
+        context.db.insert('projects', {
           ownerClerkUserId: userId,
           name: 'Project',
           archived: false,
@@ -487,10 +490,11 @@ describe('tasks', () => {
 
       await user.mutation(api.tasks.update, {
         taskId,
+        // eslint-disable-next-line unicorn/no-null -- API contract requires null to clear projectId
         projectId: null,
       });
 
-      const task = await t.run(ctx => ctx.db.get(taskId));
+      const task = await t.run(context => context.db.get(taskId));
       expect(task!.projectId).toBeNull();
     });
 
@@ -499,7 +503,7 @@ describe('tasks', () => {
       const user = t.withIdentity({ subject: userId });
 
       const missingTaskId = await user.mutation(api.tasks.create, { title: 'Missing Task' });
-      await t.run(ctx => ctx.db.delete(missingTaskId));
+      await t.run(context => context.db.delete(missingTaskId));
 
       await expect(
         user.mutation(api.tasks.update, {
@@ -559,7 +563,7 @@ describe('tasks', () => {
       const user = t.withIdentity({ subject: userId });
 
       const taskId = await user.mutation(api.tasks.create, { title: 'Task' });
-      const task = await t.run(ctx => ctx.db.get(taskId));
+      const task = await t.run(context => context.db.get(taskId));
       const originalUpdatedAt = task!.updatedAt;
 
       await new Promise(resolve => setTimeout(resolve, 10));
@@ -569,7 +573,7 @@ describe('tasks', () => {
         title: 'Updated Task',
       });
 
-      const updatedTask = await t.run(ctx => ctx.db.get(taskId));
+      const updatedTask = await t.run(context => context.db.get(taskId));
       expect(updatedTask!.updatedAt).toBeGreaterThan(originalUpdatedAt);
     });
   });
@@ -586,7 +590,7 @@ describe('tasks', () => {
         status: 'doing',
       });
 
-      const task = await t.run(ctx => ctx.db.get(taskId));
+      const task = await t.run(context => context.db.get(taskId));
       expect(task!.status).toBe('doing');
     });
 
@@ -601,7 +605,7 @@ describe('tasks', () => {
         status: 'done',
       });
 
-      const task = await t.run(ctx => ctx.db.get(taskId));
+      const task = await t.run(context => context.db.get(taskId));
       expect(task!.status).toBe('done');
     });
 
@@ -610,7 +614,7 @@ describe('tasks', () => {
       const user = t.withIdentity({ subject: userId });
 
       const missingTaskId = await user.mutation(api.tasks.create, { title: 'Missing Task' });
-      await t.run(ctx => ctx.db.delete(missingTaskId));
+      await t.run(context => context.db.delete(missingTaskId));
 
       await expect(
         user.mutation(api.tasks.setStatus, {
@@ -649,7 +653,7 @@ describe('tasks', () => {
         order: 99,
       });
 
-      const task = await t.run(ctx => ctx.db.get(taskId));
+      const task = await t.run(context => context.db.get(taskId));
       expect(task!.order).toBe(99);
     });
 
@@ -658,7 +662,7 @@ describe('tasks', () => {
       const user = t.withIdentity({ subject: userId });
 
       const missingTaskId = await user.mutation(api.tasks.create, { title: 'Missing Task' });
-      await t.run(ctx => ctx.db.delete(missingTaskId));
+      await t.run(context => context.db.delete(missingTaskId));
 
       await expect(
         user.mutation(api.tasks.reorder, {
@@ -694,7 +698,7 @@ describe('tasks', () => {
 
       await user.mutation(api.tasks.archive, { taskId });
 
-      const task = await t.run(ctx => ctx.db.get(taskId));
+      const task = await t.run(context => context.db.get(taskId));
       expect(task!.archived).toBe(true);
     });
 
@@ -703,7 +707,7 @@ describe('tasks', () => {
       const user = t.withIdentity({ subject: userId });
 
       const missingTaskId = await user.mutation(api.tasks.create, { title: 'Missing Task' });
-      await t.run(ctx => ctx.db.delete(missingTaskId));
+      await t.run(context => context.db.delete(missingTaskId));
 
       await expect(user.mutation(api.tasks.archive, { taskId: missingTaskId })).rejects.toThrow(
         'Task not found',
@@ -727,7 +731,7 @@ describe('tasks', () => {
       const user = t.withIdentity({ subject: 'u1' });
       const labelId = await user.mutation(api.labels.create, { name: 'Bug', color: '#f00' });
 
-      const _taskId = await user.mutation(api.tasks.create, {
+      await user.mutation(api.tasks.create, {
         title: 'Task',
         labelIds: [labelId],
       });
@@ -746,11 +750,11 @@ describe('tasks', () => {
       await user.mutation(api.tasks.create, { title: 'T3', labelIds: [l1, l2] });
       await user.mutation(api.tasks.create, { title: 'T4' }); // No labels
 
-      const res1 = await user.query(api.tasks.list, { labelIds: [l1] });
-      expect(res1).toHaveLength(2); // T1, T3
+      const response1 = await user.query(api.tasks.list, { labelIds: [l1] });
+      expect(response1).toHaveLength(2); // T1, T3
 
-      const res2 = await user.query(api.tasks.list, { labelIds: [l1, l2] });
-      expect(res2).toHaveLength(3); // T1, T2, T3 (OR logic)
+      const response2 = await user.query(api.tasks.list, { labelIds: [l1, l2] });
+      expect(response2).toHaveLength(3); // T1, T2, T3 (OR logic)
     });
 
     it('should update task labels', async () => {

@@ -5,7 +5,7 @@ import { useQuery } from 'convex/react';
 import { FolderOpen, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
-import { CreateProjectButton } from '@/components/CreateProjectButton';
+import { CreateProjectButton } from '@/components/create-project-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/convex/_generated/api';
 
@@ -20,6 +20,49 @@ export default function ProjectsPage() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+  function renderProjectsContent() {
+    if (projects === undefined) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-sm text-muted-foreground">Loading projects...</div>
+        </div>
+      );
+    }
+    if (projects.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center space-y-3 py-12 text-center">
+          <FolderOpen className="h-12 w-12 text-muted-foreground/50" />
+          <p className="text-sm text-muted-foreground">
+            No projects yet. Create your first project!
+          </p>
+        </div>
+      );
+    }
+    return (
+      <div className="grid gap-4 md:grid-cols-2">
+        {projects.map(project => (
+          <Link
+            key={project._id}
+            href={`/projects/${project._id}`}
+            className="group rounded-2xl border border-border/60 bg-background/80 p-5 shadow-sm transition hover:border-primary/40 hover:bg-card"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <div className="text-lg font-semibold text-foreground">{project.name}</div>
+                <p className="text-sm text-muted-foreground">
+                  Stay aligned with milestones and daily progress updates.
+                </p>
+              </div>
+              <span className="rounded-full border border-border/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground transition group-hover:border-primary/60 group-hover:text-primary">
+                View
+              </span>
+            </div>
+          </Link>
+        ))}
       </div>
     );
   }
@@ -59,42 +102,7 @@ export default function ProjectsPage() {
               {projects?.length ?? 0} active
             </div>
           </CardHeader>
-          <CardContent>
-            {projects === undefined ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-sm text-muted-foreground">Loading projects...</div>
-              </div>
-            ) : projects.length === 0 ? (
-              <div className="flex flex-col items-center justify-center space-y-3 py-12 text-center">
-                <FolderOpen className="h-12 w-12 text-muted-foreground/50" />
-                <p className="text-sm text-muted-foreground">
-                  No projects yet. Create your first project!
-                </p>
-              </div>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2">
-                {projects.map(project => (
-                  <Link
-                    key={project._id}
-                    href={`/projects/${project._id}`}
-                    className="group rounded-2xl border border-border/60 bg-background/80 p-5 shadow-sm transition hover:border-primary/40 hover:bg-card"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="space-y-2">
-                        <div className="text-lg font-semibold text-foreground">{project.name}</div>
-                        <p className="text-sm text-muted-foreground">
-                          Stay aligned with milestones and daily progress updates.
-                        </p>
-                      </div>
-                      <span className="rounded-full border border-border/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground transition group-hover:border-primary/60 group-hover:text-primary">
-                        View
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </CardContent>
+          <CardContent>{renderProjectsContent()}</CardContent>
         </Card>
       </div>
     </div>

@@ -3,15 +3,15 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-import { TaskItem } from './TaskItem';
+import { TaskItem } from './task-item';
 
 import type { Doc } from '@/convex/_generated/dataModel';
 
-interface SortableTaskItemProps {
-  task: Doc<'tasks'>;
+interface SortableTaskItemProperties {
+  readonly task: Doc<'tasks'>;
 }
 
-export function SortableTaskItem({ task }: SortableTaskItemProps) {
+export function SortableTaskItem({ task }: Readonly<SortableTaskItemProperties>) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task._id,
   });

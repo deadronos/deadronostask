@@ -2,12 +2,12 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils/cn';
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface BadgeProperties extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'secondary' | 'destructive' | 'outline';
 }
 
-const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
-  ({ className, variant = 'default', ...props }, ref) => {
+const Badge = React.forwardRef<HTMLDivElement, BadgeProperties>(
+  ({ className, variant = 'default', ...properties }, reference) => {
     const variantClasses = {
       default: 'bg-primary text-primary-foreground shadow hover:bg-primary/80',
       secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
@@ -17,13 +17,13 @@ const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
 
     return (
       <div
-        ref={ref}
+        ref={reference}
         className={cn(
           'inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
           variantClasses[variant],
           className,
         )}
-        {...props}
+        {...properties}
       />
     );
   },

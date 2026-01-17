@@ -1,0 +1,29 @@
+
+> convex-task-manager@0.1.0 lint
+> eslint "src/**/*.{js,jsx,ts,tsx}" "tests/**/*.{ts,tsx}" "**/*.{mjs,cjs}" next.config.mjs tailwind.config.ts --ignore-pattern "**/convex/_generated/**" --quiet
+
+
+D:\GitHub\deadronostask\eslint.config.mjs
+  37:5   error  Remove this redundant jump                                                           sonarjs/no-redundant-jump
+  44:44  error  Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed  sonarjs/cognitive-complexity
+
+D:\GitHub\deadronostask\src\app\(app)\projects\[projectId]\page.tsx
+  176:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\GitHub\deadronostask\src\app\(app)\projects\[projectId]\page.tsx:176:7
+  174 |   useEffect(() => {
+  175 |     if (tasks) {
+> 176 |       setOrderedTasks(tasks);
+      |       ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  177 |     }
+  178 |      
+  179 |   }, [tasks]);  react-hooks/set-state-in-effect
+
+✖ 3 problems (3 errors, 0 warnings)
+

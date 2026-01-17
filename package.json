@@ -18,9 +18,9 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "typecheck:strict": "tsc -p tsconfig.strict.json --noEmit",
-    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\" \"tests/**/*.{ts,tsx}\" \"**/*.{mjs,cjs}\" next.config.mjs tailwind.config.ts --ignore-pattern \"src/convex/_generated/**\"",
-    "lint:ci": "eslint --max-warnings=0 \"src/**/*.{js,jsx,ts,tsx}\" \"tests/**/*.{ts,tsx}\" --ignore-pattern \"src/convex/_generated/**\"",
-    "lint:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" \"tests/**/*.{ts,tsx}\" \"**/*.{mjs,cjs}\" next.config.mjs tailwind.config.ts --fix --ignore-pattern \"src/convex/_generated/**\" && npm run format:write",
+    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\" \"tests/**/*.{ts,tsx}\" \"**/*.{mjs,cjs}\" next.config.mjs tailwind.config.ts --ignore-pattern \"**/convex/_generated/**\"",
+    "lint:ci": "eslint --max-warnings=0 \"src/**/*.{js,jsx,ts,tsx}\" \"tests/**/*.{ts,tsx}\" --ignore-pattern \"**/convex/_generated/**\"",
+    "lint:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" \"tests/**/*.{ts,tsx}\" \"**/*.{mjs,cjs}\" next.config.mjs tailwind.config.ts --fix --ignore-pattern \"**/convex/_generated/**\" && npm run format:write",
     "check:premerge": "npm run lint:ci && npm run typecheck:strict",
     "format": "prettier . --check",
     "format:write": "prettier . --write"

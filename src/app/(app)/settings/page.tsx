@@ -27,7 +27,7 @@ export default function SettingsPage() {
         <div className="rounded-3xl border border-border/60 bg-card/80 p-8 shadow-[0_30px_60px_-45px_rgba(15,23,42,0.45)] backdrop-blur">
           <h2 className="mb-4 text-2xl font-semibold">Account</h2>
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
-            <UserButton afterSignOutUrl="/sign-in" />
+            <UserButton />
             <p className="text-muted-foreground">
               Manage your profile, authentication, and notification preferences.
             </p>

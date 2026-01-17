@@ -1,32 +1,37 @@
 import { customCtx, customMutation, customQuery } from 'convex-helpers/server/customFunctions';
 
-import { mutation, query, type QueryCtx, type MutationCtx } from '../_generated/server';
+import {
+  mutation,
+  query,
+  type QueryCtx as QueryContext,
+  type MutationCtx as MutationContext,
+} from '../_generated/server';
 
-export async function getUserIdentity(ctx: QueryCtx | MutationCtx) {
-  const identity = await ctx.auth.getUserIdentity();
+export async function getUserIdentity(context: QueryContext | MutationContext) {
+  const identity = await context.auth.getUserIdentity();
   if (!identity) {
     throw new Error('Unauthenticated');
   }
   return identity;
 }
 
-export async function requireUserId(ctx: QueryCtx | MutationCtx) {
-  const identity = await getUserIdentity(ctx);
+export async function requireUserId(context: QueryContext | MutationContext) {
+  const identity = await getUserIdentity(context);
   return identity.subject;
 }
 
 export const queryWithUser = customQuery(
   query,
-  customCtx(async ctx => {
-    const clerkUserId = await requireUserId(ctx);
+  customCtx(async context => {
+    const clerkUserId = await requireUserId(context);
     return { clerkUserId };
   }),
 );
 
 export const mutationWithUser = customMutation(
   mutation,
-  customCtx(async ctx => {
-    const clerkUserId = await requireUserId(ctx);
+  customCtx(async context => {
+    const clerkUserId = await requireUserId(context);
     return { clerkUserId };
   }),
 );

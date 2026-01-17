@@ -1,7 +1,7 @@
 import { convexTest } from 'convex-test';
 import { expect, describe, it, beforeEach } from 'vitest';
 
-import { convexModules } from '../utils/convexModules';
+import { convexModules } from '../utils/convex-modules';
 
 import { api } from '@/convex/_generated/api';
 import schema from '@/convex/schema';
@@ -25,7 +25,7 @@ describe('projects', () => {
 
       expect(projectId).toBeDefined();
 
-      const project = await t.run(ctx => ctx.db.get(projectId));
+      const project = await t.run(context => context.db.get(projectId));
       expect(project).toBeDefined();
       expect(project!.name).toBe('Test Project');
       expect(project!.ownerClerkUserId).toBe(userId);
@@ -40,7 +40,7 @@ describe('projects', () => {
         name: '  Trimmed Project  ',
       });
 
-      const project = await t.run(ctx => ctx.db.get(projectId));
+      const project = await t.run(context => context.db.get(projectId));
       expect(project!.name).toBe('Trimmed Project');
     });
 
@@ -85,7 +85,7 @@ describe('projects', () => {
       });
       const afterCreate = Date.now();
 
-      const project = await t.run(ctx => ctx.db.get(projectId));
+      const project = await t.run(context => context.db.get(projectId));
       expect(project!.createdAt).toBeGreaterThanOrEqual(beforeCreate);
       expect(project!.createdAt).toBeLessThanOrEqual(afterCreate);
       expect(project!.updatedAt).toEqual(project!.createdAt);
@@ -188,7 +188,7 @@ describe('projects', () => {
         name: 'New Name',
       });
 
-      const project = await t.run(ctx => ctx.db.get(projectId));
+      const project = await t.run(context => context.db.get(projectId));
       expect(project!.name).toBe('New Name');
     });
 
@@ -203,7 +203,7 @@ describe('projects', () => {
         name: '  Updated Project  ',
       });
 
-      const project = await t.run(ctx => ctx.db.get(projectId));
+      const project = await t.run(context => context.db.get(projectId));
       expect(project!.name).toBe('Updated Project');
     });
 
@@ -214,7 +214,7 @@ describe('projects', () => {
       const missingProjectId = await user.mutation(api.projects.create, {
         name: 'Missing Project',
       });
-      await t.run(ctx => ctx.db.delete(missingProjectId));
+      await t.run(context => context.db.delete(missingProjectId));
 
       await expect(
         user.mutation(api.projects.update, {
@@ -274,7 +274,7 @@ describe('projects', () => {
       const user = t.withIdentity({ subject: userId });
 
       const projectId = await user.mutation(api.projects.create, { name: 'Project' });
-      const project = await t.run(ctx => ctx.db.get(projectId));
+      const project = await t.run(context => context.db.get(projectId));
       const originalUpdatedAt = project!.updatedAt;
 
       await new Promise(resolve => setTimeout(resolve, 10));
@@ -284,7 +284,7 @@ describe('projects', () => {
         name: 'Updated Project',
       });
 
-      const updatedProject = await t.run(ctx => ctx.db.get(projectId));
+      const updatedProject = await t.run(context => context.db.get(projectId));
       expect(updatedProject!.updatedAt).toBeGreaterThan(originalUpdatedAt);
     });
   });
@@ -298,7 +298,7 @@ describe('projects', () => {
 
       await user.mutation(api.projects.archive, { projectId });
 
-      const project = await t.run(ctx => ctx.db.get(projectId));
+      const project = await t.run(context => context.db.get(projectId));
       expect(project!.archived).toBe(true);
     });
 
@@ -309,7 +309,7 @@ describe('projects', () => {
       const missingProjectId = await user.mutation(api.projects.create, {
         name: 'Missing Project',
       });
-      await t.run(ctx => ctx.db.delete(missingProjectId));
+      await t.run(context => context.db.delete(missingProjectId));
 
       await expect(
         user.mutation(api.projects.archive, { projectId: missingProjectId }),
@@ -334,14 +334,14 @@ describe('projects', () => {
       const user = t.withIdentity({ subject: userId });
 
       const projectId = await user.mutation(api.projects.create, { name: 'Project' });
-      const project = await t.run(ctx => ctx.db.get(projectId));
+      const project = await t.run(context => context.db.get(projectId));
       const originalUpdatedAt = project!.updatedAt;
 
       await new Promise(resolve => setTimeout(resolve, 10));
 
       await user.mutation(api.projects.archive, { projectId });
 
-      const archivedProject = await t.run(ctx => ctx.db.get(projectId));
+      const archivedProject = await t.run(context => context.db.get(projectId));
       expect(archivedProject!.updatedAt).toBeGreaterThan(originalUpdatedAt);
     });
   });

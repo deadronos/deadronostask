@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { TRPCProvider } from '@/lib/trpc/client';
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const user = await currentUser();
 
   if (!user) {
@@ -52,7 +52,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
                   <Settings className="h-5 w-5" />
                 </Button>
               </Link>
-              <UserButton afterSignOutUrl="/" />
+              <UserButton />
             </div>
           </div>
         </header>
