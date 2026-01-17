@@ -77,6 +77,13 @@ and others as relevant.
 - Prefer unit tests for Convex functions where feasible.
 - Validate edge cases for auth, ownership, and missing data.
 
+### Agent linting & pre-PR checklist (required for automated contributors)
+
+- Read `eslint.config.mjs` and `tsconfig.json` (and `tsconfig.strict.json` when present) before editing code.
+- Run `npm run lint:ci` and `npm run typecheck` locally; **do not open a PR** if either command fails.
+- For higher-assurance changes run `npm run typecheck:strict` and include results in the PR description.
+- Include one-line status in PR body: `lint: OK — 0 warnings; typecheck: OK; strict-typecheck: OK/FAILED`.
+
 ## Documentation
 
 - Update relevant docs when adding features or changing workflows.
