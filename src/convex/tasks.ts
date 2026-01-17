@@ -1,12 +1,12 @@
 import { v } from 'convex/values';
 
-import { mutation, query } from './_generated/server';
-import { requireUserId } from './lib/auth';
+import { mutationWithUser, queryWithUser } from './lib/auth';
+import { checkOwnership, validateString } from './lib/validations';
 
 /**
  * List tasks with optional filters
  */
-export const list = query({
+export const list = queryWithUser({
   args: {
     projectId: v.optional(v.union(v.id('projects'), v.null())),
     status: v.optional(v.union(v.literal('todo'), v.literal('doing'), v.literal('done'))),
@@ -14,7 +14,7 @@ export const list = query({
     includeArchived: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const clerkUserId = await requireUserId(ctx);
+    const { clerkUserId } = ctx;
     const includeArchived = args.includeArchived ?? false;
 
     let tasks;
@@ -68,7 +68,7 @@ export const list = query({
 /**
  * Create a new task
  */
-export const create = mutation({
+export const create = mutationWithUser({
   args: {
     projectId: v.optional(v.union(v.id('projects'), v.null())),
     title: v.string(),
@@ -77,25 +77,13 @@ export const create = mutation({
     dueAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const clerkUserId = await requireUserId(ctx);
+    const { clerkUserId } = ctx;
 
-    const title = args.title.trim();
-    if (!title) {
-      throw new Error('Task title is required');
-    }
-    if (title.length > 200) {
-      throw new Error('Task title must be 200 characters or less');
-    }
+    const title = validateString(args.title, 'Task title', 200);
 
     // Validate project ownership if projectId provided
     if (args.projectId) {
-      const project = await ctx.db.get(args.projectId);
-      if (!project) {
-        throw new Error('Project not found');
-      }
-      if (project.ownerClerkUserId !== clerkUserId) {
-        throw new Error('Unauthorized');
-      }
+      await checkOwnership(ctx, args.projectId, clerkUserId, 'Project not found');
     }
 
     // Get max order for new task
@@ -126,7 +114,7 @@ export const create = mutation({
 /**
  * Update a task
  */
-export const update = mutation({
+export const update = mutationWithUser({
   args: {
     taskId: v.id('tasks'),
     title: v.optional(v.string()),
@@ -137,27 +125,14 @@ export const update = mutation({
     projectId: v.optional(v.union(v.id('projects'), v.null())),
   },
   handler: async (ctx, args) => {
-    const clerkUserId = await requireUserId(ctx);
+    const { clerkUserId } = ctx;
 
-    const task = await ctx.db.get(args.taskId);
-    if (!task) {
-      throw new Error('Task not found');
-    }
-    if (task.ownerClerkUserId !== clerkUserId) {
-      throw new Error('Unauthorized');
-    }
+    await checkOwnership(ctx, args.taskId, clerkUserId, 'Task not found');
 
     const patch: Record<string, unknown> = { updatedAt: Date.now() };
 
     if (args.title !== undefined) {
-      const title = args.title.trim();
-      if (!title) {
-        throw new Error('Task title is required');
-      }
-      if (title.length > 200) {
-        throw new Error('Task title must be 200 characters or less');
-      }
-      patch.title = title;
+      patch.title = validateString(args.title, 'Task title', 200);
     }
 
     if (args.description !== undefined) {
@@ -179,13 +154,7 @@ export const update = mutation({
     if (args.projectId !== undefined) {
       // Validate project ownership if projectId provided
       if (args.projectId) {
-        const project = await ctx.db.get(args.projectId);
-        if (!project) {
-          throw new Error('Project not found');
-        }
-        if (project.ownerClerkUserId !== clerkUserId) {
-          throw new Error('Unauthorized');
-        }
+        await checkOwnership(ctx, args.projectId, clerkUserId, 'Project not found');
       }
       patch.projectId = args.projectId;
     }
@@ -197,21 +166,15 @@ export const update = mutation({
 /**
  * Set task status
  */
-export const setStatus = mutation({
+export const setStatus = mutationWithUser({
   args: {
     taskId: v.id('tasks'),
     status: v.union(v.literal('todo'), v.literal('doing'), v.literal('done')),
   },
   handler: async (ctx, args) => {
-    const clerkUserId = await requireUserId(ctx);
+    const { clerkUserId } = ctx;
 
-    const task = await ctx.db.get(args.taskId);
-    if (!task) {
-      throw new Error('Task not found');
-    }
-    if (task.ownerClerkUserId !== clerkUserId) {
-      throw new Error('Unauthorized');
-    }
+    await checkOwnership(ctx, args.taskId, clerkUserId, 'Task not found');
 
     await ctx.db.patch(args.taskId, {
       status: args.status,
@@ -223,22 +186,16 @@ export const setStatus = mutation({
 /**
  * Reorder a task
  */
-export const reorder = mutation({
+export const reorder = mutationWithUser({
   args: {
     taskId: v.id('tasks'),
     order: v.number(),
     status: v.optional(v.union(v.literal('todo'), v.literal('doing'), v.literal('done'))),
   },
   handler: async (ctx, args) => {
-    const clerkUserId = await requireUserId(ctx);
+    const { clerkUserId } = ctx;
 
-    const task = await ctx.db.get(args.taskId);
-    if (!task) {
-      throw new Error('Task not found');
-    }
-    if (task.ownerClerkUserId !== clerkUserId) {
-      throw new Error('Unauthorized');
-    }
+    await checkOwnership(ctx, args.taskId, clerkUserId, 'Task not found');
 
     const patch: Record<string, unknown> = {
       order: args.order,
@@ -256,20 +213,14 @@ export const reorder = mutation({
 /**
  * Archive a task
  */
-export const archive = mutation({
+export const archive = mutationWithUser({
   args: {
     taskId: v.id('tasks'),
   },
   handler: async (ctx, args) => {
-    const clerkUserId = await requireUserId(ctx);
+    const { clerkUserId } = ctx;
 
-    const task = await ctx.db.get(args.taskId);
-    if (!task) {
-      throw new Error('Task not found');
-    }
-    if (task.ownerClerkUserId !== clerkUserId) {
-      throw new Error('Unauthorized');
-    }
+    await checkOwnership(ctx, args.taskId, clerkUserId, 'Task not found');
 
     await ctx.db.patch(args.taskId, {
       archived: true,
