@@ -8,13 +8,13 @@ import { test } from '@playwright/test';
  * task associations, and archival.
  */
 test.describe('Project Management E2E', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async () => {
     // TODO: Setup authenticated user session
     // TODO: Navigate to projects page
   });
 
   test.describe('Project Creation', () => {
-    test.skip('should create a new project', async ({ page }) => {
+    test.skip('should create a new project', async () => {
       // TODO: Implement E2E test
       // 1. Click "New Project" button
       // 2. Fill in project name
@@ -22,17 +22,17 @@ test.describe('Project Management E2E', () => {
       // 4. Verify project appears in list
     });
 
-    test.skip('should show validation error for empty name', async ({ page }) => {
+    test.skip('should show validation error for empty name', async () => {
       // TODO: Implement E2E test
     });
 
-    test.skip('should show validation error for name exceeding max length', async ({ page }) => {
+    test.skip('should show validation error for name exceeding max length', async () => {
       // TODO: Implement E2E test
     });
   });
 
   test.describe('Project Updates', () => {
-    test.skip('should edit project name', async ({ page }) => {
+    test.skip('should edit project name', async () => {
       // TODO: Implement E2E test
       // 1. Create a project
       // 2. Click edit button
@@ -41,13 +41,13 @@ test.describe('Project Management E2E', () => {
       // 5. Verify updated name
     });
 
-    test.skip('should cancel project edit', async ({ page }) => {
+    test.skip('should cancel project edit', async () => {
       // TODO: Implement E2E test
     });
   });
 
   test.describe('Project-Task Associations', () => {
-    test.skip('should create task within project', async ({ page }) => {
+    test.skip('should create task within project', async () => {
       // TODO: Implement E2E test
       // 1. Create a project
       // 2. Navigate to project detail page
@@ -55,39 +55,39 @@ test.describe('Project Management E2E', () => {
       // 4. Verify task is associated with project
     });
 
-    test.skip('should assign existing task to project', async ({ page }) => {
+    test.skip('should assign existing task to project', async () => {
       // TODO: Implement E2E test
     });
 
-    test.skip('should remove task from project', async ({ page }) => {
+    test.skip('should remove task from project', async () => {
       // TODO: Implement E2E test
     });
 
-    test.skip('should show all tasks in project', async ({ page }) => {
+    test.skip('should show all tasks in project', async () => {
       // TODO: Implement E2E test
     });
 
-    test.skip('should filter tasks by project', async ({ page }) => {
+    test.skip('should filter tasks by project', async () => {
       // TODO: Implement E2E test
     });
   });
 
   test.describe('Project List', () => {
-    test.skip('should display all projects', async ({ page }) => {
+    test.skip('should display all projects', async () => {
       // TODO: Implement E2E test
     });
 
-    test.skip('should sort projects by creation date', async ({ page }) => {
+    test.skip('should sort projects by creation date', async () => {
       // TODO: Implement E2E test
     });
 
-    test.skip('should show project task count', async ({ page }) => {
+    test.skip('should show project task count', async () => {
       // TODO: Implement E2E test
     });
   });
 
   test.describe('Project Archival', () => {
-    test.skip('should archive a project', async ({ page }) => {
+    test.skip('should archive a project', async () => {
       // TODO: Implement E2E test
       // 1. Create a project
       // 2. Click archive button
@@ -95,27 +95,27 @@ test.describe('Project Management E2E', () => {
       // 4. Verify project removed from main view
     });
 
-    test.skip('should view archived projects', async ({ page }) => {
+    test.skip('should view archived projects', async () => {
       // TODO: Implement E2E test
     });
 
-    test.skip('should handle tasks when project is archived', async ({ page }) => {
+    test.skip('should handle tasks when project is archived', async () => {
       // TODO: Implement E2E test
     });
   });
 
   test.describe('Project Navigation', () => {
-    test.skip('should navigate to project detail page', async ({ page }) => {
+    test.skip('should navigate to project detail page', async () => {
       // TODO: Implement E2E test
     });
 
-    test.skip('should navigate back to project list', async ({ page }) => {
+    test.skip('should navigate back to project list', async () => {
       // TODO: Implement E2E test
     });
   });
 
   test.describe('Real-time Updates', () => {
-    test.skip('should reflect project changes in real-time across tabs', async ({ page, context }) => {
+    test.skip('should reflect project changes in real-time across tabs', async () => {
       // TODO: Implement E2E test
       // 1. Open app in two tabs
       // 2. Create project in first tab
@@ -124,11 +124,11 @@ test.describe('Project Management E2E', () => {
   });
 
   test.describe('Error Handling', () => {
-    test.skip('should show error message when operation fails', async ({ page }) => {
+    test.skip('should show error message when operation fails', async () => {
       // TODO: Implement E2E test
     });
 
-    test.skip('should handle network errors gracefully', async ({ page }) => {
+    test.skip('should handle network errors gracefully', async () => {
       // TODO: Implement E2E test
     });
   });

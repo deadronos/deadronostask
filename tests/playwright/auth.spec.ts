@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
 import { setupClerkTestingToken } from '@clerk/testing/playwright';
+import { test, expect } from '@playwright/test';
 
 test.describe('Authentication', () => {
   test('unauthenticated user is redirected to sign-in when accessing dashboard', async ({ page }) => {

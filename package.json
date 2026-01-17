@@ -17,8 +17,8 @@
     "test:ci": "vitest run --reporter verbose --coverage",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\" \"**/*.{mjs,cjs}\" next.config.mjs tailwind.config.ts --ignore-pattern \"src/convex/_generated/**\"",
-    "lint:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" \"**/*.{mjs,cjs}\" next.config.mjs tailwind.config.ts --fix --ignore-pattern \"src/convex/_generated/**\" && npm run format:write",
+    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\" \"tests/**/*.{ts,tsx}\" \"**/*.{mjs,cjs}\" next.config.mjs tailwind.config.ts --ignore-pattern \"src/convex/_generated/**\"",
+    "lint:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" \"tests/**/*.{ts,tsx}\" \"**/*.{mjs,cjs}\" next.config.mjs tailwind.config.ts --fix --ignore-pattern \"src/convex/_generated/**\" && npm run format:write",
     "format": "prettier . --check",
     "format:write": "prettier . --write"
   },

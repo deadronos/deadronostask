@@ -1,11 +1,10 @@
 import { convexTest } from 'convex-test';
 import { expect, describe, it, beforeEach } from 'vitest';
 
-import { api } from '@/convex/_generated/api';
-import { type Id } from '@/convex/_generated/dataModel';
-import schema from '@/convex/schema';
-
 import { convexModules } from '../utils/convexModules';
+
+import { api } from '@/convex/_generated/api';
+import schema from '@/convex/schema';
 
 describe('tasks', () => {
   let t: ReturnType<typeof convexTest>;

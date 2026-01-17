@@ -1,6 +1,8 @@
-import { test, expect, type Page } from '@playwright/test';
+/* eslint-disable no-console */
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { test } from '@playwright/test';
 
 interface SiteEvaluationReport {
   uiUx: {
@@ -158,6 +160,7 @@ test.describe('Site Exploration and Evaluation', () => {
     const totalChecks = uiFindings.filter((f) => f.startsWith('✓') || f.startsWith('✗')).length;
     report.uiUx.score = totalChecks > 0 ? Math.round((positiveFindings / totalChecks) * 100) : 50;
 
+    // eslint-disable-next-line no-console
     console.log('UI/UX Evaluation:', report.uiUx);
   });
 
