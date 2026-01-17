@@ -93,7 +93,10 @@ Before making changes or committing anything, do the following:
 
 - Document any non-obvious decisions in a short note in the PR and update the relevant file in `/memory` (e.g., `tasks/` or `designs/`).
 
-- If you automated a change (fix, format, migration), attach a short log of commands you ran and their outputs.
+- Read eslint.config.mjs and tsconfig.json.
+  Run npm run lint and npm run -s typecheck locally; fail the change if either command reports errors or any ESLint warnings.
+  Ensure all new or modified functions use the appropriate Convex context types (QueryCtx for reads, MutationCtx for writes) and avoid any`.
+  Include a one-line Lint/Typecheck result in the PR description (e.g., “lint: OK — 0 warnings; typecheck: OK”).
 
 ---
 

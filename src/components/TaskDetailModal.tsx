@@ -30,7 +30,7 @@ import type { Doc, Id } from '@/convex/_generated/dataModel';
 import { cn } from '@/lib/utils/cn';
 
 interface TaskDetailModalProps {
-  task: Doc<'tasks'>;
+  task: Doc<'tasks'> & { labelIds?: Id<'labels'>[] };
   isOpen: boolean;
   onClose: () => void;
 }
@@ -40,10 +40,7 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
   const deleteTask = useMutation(api.tasks.archive);
   const createLabel = useMutation(api.labels.create);
 
-  // Safe project Id retrieval
-  const projectId = task.projectId ?? undefined;
-
-  const labels = useQuery(api.labels.list, projectId ? { projectId } : 'skip');
+  const labels = useQuery(api.labels.list, {});
 
   const [desc, setDesc] = useState(task.description || '');
   const [isEditingDesc, setIsEditingDesc] = useState(false);
@@ -72,10 +69,9 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
   ];
 
   const handleCreateLabel = async () => {
-    if (!newLabelName.trim() || !projectId) return;
+    if (!newLabelName.trim()) return;
 
     const labelId = await createLabel({
-      projectId,
       name: newLabelName.trim(),
       color: newLabelColor,
     });
