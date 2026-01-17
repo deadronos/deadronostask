@@ -2,9 +2,12 @@
 
 ## In Progress
 
+- [TASK003] Add Playwright tests for `/projects` and project flows - E2E skeleton present; needs robust, CI-run Playwright scenarios (see TASK003 file for subtasks).
+
 ## Pending
 
-- [TASK003] Add Playwright tests for `/projects` and project flows - Add/enable E2E verification for projects index and project detail.
+- [TASK004] Implement tRPC integrations & add unit tests - Convert placeholder procedures into tested implementations or mark experimental.
+- [TASK005] Add visual-regression tests for core components - Optional follow-up to guard UI drift.
 
 ## Completed
 
