@@ -17,7 +17,10 @@ export async function checkOwnership<T extends TableNames>(
   }
 
   // Check if the document has an owner field and if it matches
-  if (!('ownerClerkUserId' in doc) || (doc as any).ownerClerkUserId !== clerkUserId) {
+  if (
+    !('ownerClerkUserId' in doc) ||
+    (doc as unknown as { ownerClerkUserId: string }).ownerClerkUserId !== clerkUserId
+  ) {
     throw new Error('Unauthorized');
   }
 

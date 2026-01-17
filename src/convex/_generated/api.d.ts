@@ -10,6 +10,8 @@
 
 import type * as labels from "../labels.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as lib_utils from "../lib/utils.js";
+import type * as lib_validations from "../lib/validations.js";
 import type * as projects from "../projects.js";
 import type * as subtasks from "../subtasks.js";
 import type * as tasks from "../tasks.js";
@@ -24,6 +26,8 @@ import type {
 declare const fullApi: ApiFromModules<{
   labels: typeof labels;
   "lib/auth": typeof lib_auth;
+  "lib/utils": typeof lib_utils;
+  "lib/validations": typeof lib_validations;
   projects: typeof projects;
   subtasks: typeof subtasks;
   tasks: typeof tasks;

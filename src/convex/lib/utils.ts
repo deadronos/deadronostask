@@ -1,4 +1,4 @@
-import { type Id } from '../_generated/dataModel';
+import { type Id, type Doc } from '../_generated/dataModel';
 import { type MutationCtx } from '../_generated/server';
 
 import { checkOwnership } from './validations';
@@ -33,5 +33,5 @@ export async function archiveWithCheck<T extends ArchivableTable>(
   await ctx.db.patch(id, {
     archived: true,
     updatedAt: Date.now(),
-  });
+  } as unknown as Partial<Doc<T>>);
 }
