@@ -4,7 +4,7 @@ import { useMutation, useQuery } from 'convex/react';
 import { CheckCircle2, Circle, Clock, AlertCircle, Archive } from 'lucide-react';
 import { useState } from 'react';
 
-import { TaskDetailModal } from './TaskDetailModal';
+import { TaskDetailModal } from './task-detail-modal';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,11 +13,11 @@ import { api } from '@/convex/_generated/api';
 import { type Doc, type Id } from '@/convex/_generated/dataModel';
 import { cn } from '@/lib/utils/cn';
 
-interface TaskItemProps {
-  task: Doc<'tasks'> & { labelIds?: Id<'labels'>[] };
+interface TaskItemProperties {
+  readonly task: Doc<'tasks'> & { labelIds?: Id<'labels'>[] };
 }
 
-export function TaskItem({ task }: TaskItemProps) {
+export function TaskItem({ task }: TaskItemProperties) {
   const setStatus = useMutation(api.tasks.setStatus);
   const archiveTask = useMutation(api.tasks.archive);
 
@@ -52,8 +52,8 @@ export function TaskItem({ task }: TaskItemProps) {
     <>
       <div
         onClick={() => setIsModalOpen(true)}
-        onKeyDown={e => {
-          if (e.key === 'Enter' || e.key === ' ') setIsModalOpen(true);
+        onKeyDown={event => {
+          if (event.key === 'Enter' || event.key === ' ') setIsModalOpen(true);
         }}
         role="button"
         tabIndex={0}
@@ -81,6 +81,7 @@ export function TaskItem({ task }: TaskItemProps) {
               <div className="flex flex-wrap gap-1">
                 {task.labelIds.map(labelId => {
                   const label = labels?.find(l => l._id === labelId);
+                  // eslint-disable-next-line unicorn/no-null -- React requires null for conditional rendering
                   if (!label) return null;
                   return (
                     <div
@@ -93,7 +94,7 @@ export function TaskItem({ task }: TaskItemProps) {
               </div>
             )}
 
-            {task.description && (
+            {task.description !== undefined && task.description !== '' && (
               <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
             )}
 
@@ -114,17 +115,17 @@ export function TaskItem({ task }: TaskItemProps) {
 
             <div
               className="flex items-center gap-2 pt-1"
-              onClick={e => e.stopPropagation()}
-              onKeyDown={e => e.stopPropagation()}
+              onClick={event => event.stopPropagation()}
+              onKeyDown={event => event.stopPropagation()}
               role="toolbar"
               aria-label="Task actions"
             >
               <Select
                 value={task.status}
-                onChange={e =>
+                onChange={event =>
                   setStatus({
                     taskId: task._id,
-                    status: e.target.value as 'todo' | 'doing' | 'done',
+                    status: event.target.value as 'todo' | 'doing' | 'done',
                   })
                 }
                 className="h-8 text-xs"

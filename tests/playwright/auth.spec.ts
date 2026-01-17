@@ -6,7 +6,7 @@ test.describe('Authentication', () => {
     page,
   }) => {
     await page.goto('/dashboard');
-    await expect(page).toHaveURL(/.*sign-in.*/);
+    await expect(page).toHaveURL(/sign-in/);
   });
 
   test('authenticated user can access dashboard', async ({ page }) => {

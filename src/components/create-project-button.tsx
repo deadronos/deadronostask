@@ -24,8 +24,8 @@ export function CreateProjectButton() {
   const [isLoading, setIsLoading] = useState(false);
   const createProject = useMutation(api.projects.create);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (!name.trim()) return;
 
     setIsLoading(true);
@@ -62,7 +62,7 @@ export function CreateProjectButton() {
                 id="project-name"
                 placeholder="e.g., Website Redesign"
                 value={name}
-                onChange={e => setName(e.target.value)}
+                onChange={event => setName(event.target.value)}
               />
             </div>
           </div>

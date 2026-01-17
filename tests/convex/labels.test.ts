@@ -1,7 +1,7 @@
 import { convexTest } from 'convex-test';
 import { expect, describe, it, beforeEach } from 'vitest';
 
-import { convexModules } from '../utils/convexModules';
+import { convexModules } from '../utils/convex-modules';
 
 import { api } from '@/convex/_generated/api';
 import schema from '@/convex/schema';
@@ -23,7 +23,7 @@ describe('labels', () => {
         color: '#ff0000',
       });
 
-      const label = await t.run(ctx => ctx.db.get(labelId));
+      const label = await t.run(context => context.db.get(labelId));
       expect(label).toBeDefined();
       expect(label!.name).toBe('Bug');
       expect(label!.ownerClerkUserId).toBe(userId);
@@ -62,26 +62,26 @@ describe('labels', () => {
 
       await user.mutation(api.labels.deleteLabel, { labelId });
 
-      const label = await t.run(ctx => ctx.db.get(labelId));
+      const label = await t.run(context => context.db.get(labelId));
       expect(label).toBeNull();
     });
 
     it('should cleanup task associations', async () => {
       const user = t.withIdentity({ subject: 'u1' });
       const labelId = await user.mutation(api.labels.create, { name: 'L1', color: '#f00' });
-      const _taskId = await user.mutation(api.tasks.create, {
+      await user.mutation(api.tasks.create, {
         title: 'Task',
         labelIds: [labelId],
       });
 
       // Verify association exists
-      const assoc = await t.run(ctx => ctx.db.query('taskLabels').first());
+      const assoc = await t.run(context => context.db.query('taskLabels').first());
       expect(assoc).toBeDefined();
 
       await user.mutation(api.labels.deleteLabel, { labelId });
 
       // Verify association gone
-      const assocAfter = await t.run(ctx => ctx.db.query('taskLabels').first());
+      const assocAfter = await t.run(context => context.db.query('taskLabels').first());
       expect(assocAfter).toBeNull();
     });
   });

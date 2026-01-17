@@ -10,79 +10,67 @@ import { test } from '@playwright/test';
 test.describe('Authentication E2E', () => {
   test.describe('Sign Up Flow', () => {
     test.skip('should sign up with email and password', async () => {
-      // TODO: Implement E2E test
-      // 1. Navigate to sign up page
-      // 2. Fill in registration form
-      // 3. Submit form
-      // 4. Verify redirect to dashboard
-      // 5. Verify user is authenticated
+      // Not implemented: Navigate to sign up page, fill in registration form,
+      // submit form, verify redirect to dashboard, verify user is authenticated
     });
 
     test.skip('should sign up with Google OAuth', async () => {
-      // TODO: Implement E2E test
+      // Not implemented
     });
 
     test.skip('should show validation errors for invalid input', async () => {
-      // TODO: Implement E2E test
+      // Not implemented
     });
   });
 
   test.describe('Sign In Flow', () => {
     test.skip('should sign in with email and password', async () => {
-      // TODO: Implement E2E test
-      // 1. Navigate to sign in page
-      // 2. Fill in credentials
-      // 3. Submit form
-      // 4. Verify redirect to dashboard
-      // 5. Verify user is authenticated
+      // Not implemented: Navigate to sign in page, fill in credentials,
+      // submit form, verify redirect to dashboard, verify user is authenticated
     });
 
     test.skip('should sign in with Google OAuth', async () => {
-      // TODO: Implement E2E test
+      // Not implemented
     });
 
     test.skip('should show error for invalid credentials', async () => {
-      // TODO: Implement E2E test
+      // Not implemented
     });
 
     test.skip('should redirect to original page after sign in', async () => {
-      // TODO: Implement E2E test
+      // Not implemented
     });
   });
 
   test.describe('Sign Out Flow', () => {
     test.skip('should sign out and redirect to sign in page', async () => {
-      // TODO: Implement E2E test
-      // 1. Sign in user
-      // 2. Click sign out button
-      // 3. Verify redirect to sign in page
-      // 4. Verify user is signed out
+      // Not implemented: Sign in user, click sign out button,
+      // verify redirect to sign in page, verify user is signed out
     });
 
     test.skip('should clear session on sign out', async () => {
-      // TODO: Implement E2E test
+      // Not implemented
     });
   });
 
   test.describe('Protected Routes', () => {
     test.skip('should redirect unauthenticated users to sign in', async () => {
-      // TODO: Implement E2E test
-      // 1. Navigate to protected route without auth
-      // 2. Verify redirect to sign in page
+      // Not implemented: Navigate to protected route without auth,
+      // verify redirect to sign in page
     });
 
     test.skip('should allow authenticated users to access protected routes', async () => {
-      // TODO: Implement E2E test
+      // Not implemented
     });
   });
 
   test.describe('Session Persistence', () => {
     test.skip('should maintain session after page reload', async () => {
-      // TODO: Implement E2E test
+      // Not implemented
     });
 
     test.skip('should maintain session across navigation', async () => {
-      // TODO: Implement E2E test
+      // Not implemented
     });
   });
 });

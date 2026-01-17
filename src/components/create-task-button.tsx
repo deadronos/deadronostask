@@ -21,11 +21,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
 
-interface CreateTaskButtonProps {
-  projectId?: Id<'projects'> | null;
+interface CreateTaskButtonProperties {
+  readonly projectId?: Id<'projects'> | null;
 }
 
-export function CreateTaskButton({ projectId }: CreateTaskButtonProps) {
+export function CreateTaskButton({ projectId }: CreateTaskButtonProperties) {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -33,8 +33,8 @@ export function CreateTaskButton({ projectId }: CreateTaskButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const createTask = useMutation(api.tasks.create);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (!title.trim()) return;
 
     setIsLoading(true);
@@ -78,7 +78,7 @@ export function CreateTaskButton({ projectId }: CreateTaskButtonProps) {
                 id="task-title"
                 placeholder="e.g., Design landing page"
                 value={title}
-                onChange={e => setTitle(e.target.value)}
+                onChange={event => setTitle(event.target.value)}
               />
             </div>
             <div className="grid gap-2">
@@ -87,7 +87,7 @@ export function CreateTaskButton({ projectId }: CreateTaskButtonProps) {
                 id="task-description"
                 placeholder="Add more details about this task (optional)"
                 value={description}
-                onChange={e => setDescription(e.target.value)}
+                onChange={event => setDescription(event.target.value)}
                 rows={3}
               />
             </div>
@@ -96,7 +96,7 @@ export function CreateTaskButton({ projectId }: CreateTaskButtonProps) {
               <Select
                 id="task-priority"
                 value={priority}
-                onChange={e => setPriority(Number(e.target.value) as 0 | 1 | 2 | 3)}
+                onChange={event => setPriority(Number(event.target.value) as 0 | 1 | 2 | 3)}
               >
                 <option value={0}>Low</option>
                 <option value={1}>Medium</option>

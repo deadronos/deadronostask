@@ -27,9 +27,9 @@ import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-import { CreateTaskButton } from '@/components/CreateTaskButton';
-import { SortableTaskItem } from '@/components/SortableTaskItem';
-import { TaskItem } from '@/components/TaskItem';
+import { CreateTaskButton } from '@/components/create-task-button';
+import { SortableTaskItem } from '@/components/sortable-task-item';
+import { TaskItem } from '@/components/task-item';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,7 +47,7 @@ import { api } from '@/convex/_generated/api';
 import { type Id, type Doc } from '@/convex/_generated/dataModel';
 import { cn } from '@/lib/utils/cn';
 
-function DroppableColumn({ id, children }: { id: string; children: React.ReactNode }) {
+function DroppableColumn({ id, children }: Readonly<{ id: string; children: React.ReactNode }>) {
   const { setNodeRef } = useDroppable({ id });
   return (
     <div ref={setNodeRef} className="flex h-full min-h-[150px] flex-col gap-3">
@@ -56,43 +56,108 @@ function DroppableColumn({ id, children }: { id: string; children: React.ReactNo
   );
 }
 
+type TaskStatus = 'todo' | 'doing' | 'done';
+const STATUS_VALUES = new Set<TaskStatus>(['todo', 'doing', 'done']);
+
+/** Determine the target status from the drop target */
+function getTargetStatus(
+  overId: string | number,
+  overTask: { status: TaskStatus } | undefined,
+): TaskStatus | undefined {
+  if (STATUS_VALUES.has(overId as TaskStatus)) {
+    return overId as TaskStatus;
+  }
+  return overTask?.status;
+}
+
+/** Calculate the new order value for a task being inserted at a position */
+function calculateNewOrder(
+  previousItem: { order: number } | undefined,
+  nextItem: { order: number } | undefined,
+): number {
+  if (previousItem && nextItem) {
+    return (previousItem.order + nextItem.order) / 2;
+  }
+  if (previousItem) {
+    return previousItem.order + 1;
+  }
+  if (nextItem && nextItem.order !== Infinity) {
+    return nextItem.order - 1;
+  }
+  return Date.now();
+}
+
+/** Get the maximum order value from a list of tasks, or 0 if empty */
+function getMaxOrder(tasks: { order: number }[]): number {
+  if (tasks.length === 0) return 0;
+  return Math.max(...tasks.map(t => t.order));
+}
+
+/** Extracted component for label filter items to reduce nested function depth */
+function LabelCommandItem({
+  label,
+  isSelected,
+  onToggle,
+}: Readonly<{
+  label: { _id: Id<'labels'>; name: string; color: string };
+  isSelected: boolean;
+  onToggle: (labelId: Id<'labels'>) => void;
+}>) {
+  return (
+    <CommandItem onSelect={() => onToggle(label._id)}>
+      <div
+        className={cn(
+          'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
+          isSelected ? 'bg-primary text-primary-foreground' : 'opacity-50 [&_svg]:invisible',
+        )}
+      >
+        <Check className="h-4 w-4" />
+      </div>
+      <div className={cn('h-3 w-3 rounded-full mr-2', label.color)} />
+      <span>{label.name}</span>
+    </CommandItem>
+  );
+}
+
 export default function ProjectPage() {
   const { user, isLoaded } = useUser();
-  const params = useParams();
-  const projectId = params.projectId as Id<'projects'>;
+  const parameters = useParams();
+  const projectId = parameters.projectId as Id<'projects'>;
 
   // Local state for tasks to support optimistic UI updates during drag
   const [orderedTasks, setOrderedTasks] = useState<
     (Doc<'tasks'> & { labelIds?: Id<'labels'>[] })[]
   >([]);
-  const [activeId, setActiveId] = useState<Id<'tasks'> | null>(null);
+  const [activeId, setActiveId] = useState<Id<'tasks'>>();
 
   // Filtering state
   const [selectedLabels, setSelectedLabels] = useState<Id<'labels'>[]>([]);
 
-  const reorderTask = useMutation(api.tasks.reorder).withOptimisticUpdate((localStore, args) => {
-    const { taskId, order, status } = args;
-    const existingTasks = localStore.getQuery(api.tasks.list, {
-      projectId,
-      includeArchived: false,
-    });
-
-    if (existingTasks) {
-      const newTasks = existingTasks.map(t => {
-        if (t._id === taskId) {
-          return { ...t, order, ...(status && { status }) };
-        }
-        return t;
+  const reorderTask = useMutation(api.tasks.reorder).withOptimisticUpdate(
+    (localStore, arguments_) => {
+      const { taskId, order, status } = arguments_;
+      const existingTasks = localStore.getQuery(api.tasks.list, {
+        projectId,
+        includeArchived: false,
       });
 
-      newTasks.sort((a, b) => {
-        if (a.order !== b.order) return a.order - b.order;
-        return b.createdAt - a.createdAt;
-      });
+      if (existingTasks) {
+        const newTasks = existingTasks.map(t => {
+          if (t._id === taskId) {
+            return { ...t, order, ...(status && { status }) };
+          }
+          return t;
+        });
 
-      localStore.setQuery(api.tasks.list, { projectId, includeArchived: false }, newTasks);
-    }
-  });
+        const sorted = newTasks.toSorted((a, b) => {
+          if (a.order !== b.order) return a.order - b.order;
+          return b.createdAt - a.createdAt;
+        });
+
+        localStore.setQuery(api.tasks.list, { projectId, includeArchived: false }, sorted);
+      }
+    },
+  );
 
   // Guard Convex queries - only run when user is authenticated
   const project = useQuery(
@@ -110,9 +175,9 @@ export default function ProjectPage() {
   // Sync tasks from Convex to local state when they change
   useEffect(() => {
     if (tasks) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync server state to local state for optimistic UI
       setOrderedTasks(tasks);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tasks]);
 
   const sensors = useSensors(
@@ -146,14 +211,20 @@ export default function ProjectPage() {
   const filteredTasks = orderedTasks.filter(t => {
     if (selectedLabels.length === 0) return true;
     if (!t.labelIds) return false;
-    return selectedLabels.some(labelId => t.labelIds?.includes(labelId));
+    return selectedLabels.some(labelId => t.labelIds?.includes(labelId) === true);
   });
 
   const todoTasks = filteredTasks.filter(t => t.status === 'todo');
   const doingTasks = filteredTasks.filter(t => t.status === 'doing');
   const doneTasks = filteredTasks.filter(t => t.status === 'done');
 
-  const activeTask = activeId ? orderedTasks.find(t => t._id === activeId) : null;
+  const activeTask = activeId ? orderedTasks.find(t => t._id === activeId) : undefined;
+
+  function handleLabelToggle(labelId: Id<'labels'>) {
+    setSelectedLabels(previous =>
+      previous.includes(labelId) ? previous.filter(id => id !== labelId) : [...previous, labelId],
+    );
+  }
 
   function handleDragStart(event: DragStartEvent) {
     setActiveId(event.active.id as Id<'tasks'>);
@@ -174,7 +245,7 @@ export default function ProjectPage() {
 
     const activeStatus = activeTask.status;
     // If over an item, use its status, otherwise check if over a container
-    let overStatus = overTask ? overTask.status : null;
+    let overStatus = overTask ? overTask.status : undefined;
 
     // If overId matches a status container ID (we'll use status strings as container IDs)
     if (['todo', 'doing', 'done'].includes(overId as string)) {
@@ -184,7 +255,19 @@ export default function ProjectPage() {
     if (!overStatus) return;
 
     // If moving between columns
-    if (activeStatus !== overStatus) {
+    if (activeStatus === overStatus) {
+      // Reordering within the same column
+      if (activeId !== overId) {
+        setOrderedTasks(items => {
+          const activeIndex = items.findIndex(t => t._id === activeId);
+          const overIndex = items.findIndex(t => t._id === overId);
+
+          if (activeIndex === -1 || overIndex === -1) return items;
+
+          return arrayMove(items, activeIndex, overIndex);
+        });
+      }
+    } else {
       setOrderedTasks(items => {
         const activeIndex = items.findIndex(t => t._id === activeId);
         const overIndex = items.findIndex(t => t._id === overId);
@@ -197,7 +280,7 @@ export default function ProjectPage() {
         // Update the status of the active item
         newItems[activeIndex] = {
           ...newItems[activeIndex],
-          status: overStatus as 'todo' | 'doing' | 'done',
+          status: overStatus,
         };
 
         // If dropping on a container (empty or not), just update status
@@ -207,78 +290,50 @@ export default function ProjectPage() {
 
         return arrayMove(newItems, activeIndex, overIndex);
       });
-    } else {
-      // Reordering within the same column
-      if (activeId !== overId) {
-        setOrderedTasks(items => {
-          const activeIndex = items.findIndex(t => t._id === activeId);
-          const overIndex = items.findIndex(t => t._id === overId);
-
-          if (activeIndex === -1 || overIndex === -1) return items;
-
-          return arrayMove(items, activeIndex, overIndex);
-        });
-      }
     }
   }
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    setActiveId(null);
+    setActiveId(undefined);
 
     if (!over) return;
 
-    const activeId = active.id;
+    const activeTaskId = active.id as Id<'tasks'>;
     const overId = over.id;
 
-    const activeTask = orderedTasks.find(t => t._id === activeId);
-
+    const activeTask = orderedTasks.find(t => t._id === activeTaskId);
     if (!activeTask) return;
 
-    let newStatus = activeTask.status;
     const overTask = orderedTasks.find(t => t._id === overId);
+    const newStatus = getTargetStatus(overId as string, overTask) ?? activeTask.status;
 
-    // Check if we dropped on a column container
-    if (['todo', 'doing', 'done'].includes(overId as string)) {
-      newStatus = overId as 'todo' | 'doing' | 'done';
-    } else if (overTask) {
-      newStatus = overTask.status;
-    }
+    const hasPositionChanged = activeTaskId !== overId || activeTask.status !== newStatus;
+    if (!hasPositionChanged) return;
 
-    if (activeId !== overId || activeTask.status !== newStatus) {
-      // Ensure activeTask is in the right status in our local state check
-      const finalColumnTasks = orderedTasks.filter(t => t.status === newStatus);
-      const finalIndex = finalColumnTasks.findIndex(t => t._id === activeId);
+    const reorderResult = tryReorderWithinColumn(activeTaskId, newStatus);
+    if (reorderResult) return;
 
-      if (finalIndex !== -1) {
-        const prevItem = finalColumnTasks[finalIndex - 1];
-        const nextItem = finalColumnTasks[finalIndex + 1];
-
-        const prevOrder = prevItem ? prevItem.order : -Infinity;
-        const nextOrder = nextItem ? nextItem.order : Infinity;
-
-        let newOrder = 0;
-        if (prevItem && nextItem) {
-          newOrder = (prevOrder + nextOrder) / 2;
-        } else if (prevItem) {
-          newOrder = prevOrder + 1;
-        } else if (nextItem) {
-          newOrder = nextOrder === Infinity ? Date.now() : nextOrder - 1;
-        } else {
-          newOrder = Date.now();
-        }
-
-        reorderTask({ taskId: activeId as Id<'tasks'>, order: newOrder, status: newStatus });
-        return;
-      }
-    }
-
-    // Fallback if status changed but calculation failed (e.g. empty list logic)
+    // Fallback: status changed but position calculation failed (e.g. dropping into empty column)
     if (activeTask.status !== newStatus) {
-      const targetColumnTasks = tasks?.filter(t => t.status === newStatus) || [];
-      const maxOrder = targetColumnTasks.reduce((max, t) => Math.max(max, t.order), 0);
-      reorderTask({ taskId: activeId as Id<'tasks'>, order: maxOrder + 1, status: newStatus });
+      const targetColumnTasks = tasks?.filter(t => t.status === newStatus) ?? [];
+      const maxOrder = getMaxOrder(targetColumnTasks);
+      reorderTask({ taskId: activeTaskId, order: maxOrder + 1, status: newStatus });
     }
+  }
+
+  function tryReorderWithinColumn(taskId: Id<'tasks'>, status: TaskStatus): boolean {
+    const columnTasks = orderedTasks.filter(t => t.status === status);
+    const taskIndex = columnTasks.findIndex(t => t._id === taskId);
+
+    if (taskIndex === -1) return false;
+
+    const previousItem = columnTasks[taskIndex - 1];
+    const nextItem = columnTasks[taskIndex + 1];
+    const newOrder = calculateNewOrder(previousItem, nextItem);
+
+    reorderTask({ taskId, order: newOrder, status });
+    return true;
   }
 
   return (
@@ -349,34 +404,14 @@ export default function ProjectPage() {
                   <CommandList>
                     <CommandEmpty>No results found.</CommandEmpty>
                     <CommandGroup>
-                      {labels?.map(label => {
-                        const isSelected = selectedLabels.includes(label._id);
-                        return (
-                          <CommandItem
-                            key={label._id}
-                            onSelect={() => {
-                              if (isSelected) {
-                                setSelectedLabels(prev => prev.filter(id => id !== label._id));
-                              } else {
-                                setSelectedLabels(prev => [...prev, label._id]);
-                              }
-                            }}
-                          >
-                            <div
-                              className={cn(
-                                'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
-                                isSelected
-                                  ? 'bg-primary text-primary-foreground'
-                                  : 'opacity-50 [&_svg]:invisible',
-                              )}
-                            >
-                              <Check className="h-4 w-4" />
-                            </div>
-                            <div className={cn('h-3 w-3 rounded-full mr-2', label.color)} />
-                            <span>{label.name}</span>
-                          </CommandItem>
-                        );
-                      })}
+                      {labels?.map(label => (
+                        <LabelCommandItem
+                          key={label._id}
+                          label={label}
+                          isSelected={selectedLabels.includes(label._id)}
+                          onToggle={handleLabelToggle}
+                        />
+                      ))}
                     </CommandGroup>
                     {selectedLabels.length > 0 && (
                       <>
@@ -523,7 +558,7 @@ export default function ProjectPage() {
                   <div className="rotate-2 cursor-grabbing opacity-90">
                     <TaskItem task={activeTask} />
                   </div>
-                ) : null}
+                ) : undefined}
               </DragOverlay>,
               document.body,
             )}

@@ -11,11 +11,11 @@ import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
 import { cn } from '@/lib/utils/cn';
 
-interface SubtaskListProps {
-  taskId: Id<'tasks'>;
+interface SubtaskListProperties {
+  readonly taskId: Id<'tasks'>;
 }
 
-export function SubtaskList({ taskId }: SubtaskListProps) {
+export function SubtaskList({ taskId }: SubtaskListProperties) {
   const subtasks = useQuery(api.subtasks.list, { taskId });
   const createSubtask = useMutation(api.subtasks.create);
   const toggleSubtask = useMutation(api.subtasks.toggle);
@@ -23,8 +23,8 @@ export function SubtaskList({ taskId }: SubtaskListProps) {
 
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreate = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (!newSubtaskTitle.trim()) return;
 
     await createSubtask({ taskId, title: newSubtaskTitle.trim() });
@@ -94,7 +94,7 @@ export function SubtaskList({ taskId }: SubtaskListProps) {
         <Input
           placeholder="Add a step..."
           value={newSubtaskTitle}
-          onChange={e => setNewSubtaskTitle(e.target.value)}
+          onChange={event => setNewSubtaskTitle(event.target.value)}
           className="h-8 text-sm"
         />
         <Button

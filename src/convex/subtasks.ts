@@ -1,14 +1,21 @@
 import { v } from 'convex/values';
 
-import { mutation, query } from './_generated/server';
-import { getNextOrder } from './lib/utils';
+import { type Id } from './_generated/dataModel';
+import {
+  type MutationCtx as MutationContext,
+  type QueryCtx as QueryContext,
+  mutation,
+  query,
+} from './_generated/server';
+import { getNextOrder } from './lib/utilities';
 
 export const list = query({
   args: { taskId: v.id('tasks') },
-  handler: async (ctx, args) => {
-    return await ctx.db
+  handler: async (context: QueryContext, arguments_: { taskId: Id<'tasks'> }) => {
+    return await context.db
       .query('subtasks')
-      .withIndex('by_task', q => q.eq('taskId', args.taskId))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FilterBuilder type complex to import
+      .withIndex('by_task', (q: any) => q.eq('taskId', arguments_.taskId))
       .collect(); // Order by creation/order if needed
   },
 });
@@ -18,18 +25,19 @@ export const create = mutation({
     taskId: v.id('tasks'),
     title: v.string(),
   },
-  handler: async (ctx, args) => {
-    const existing = await ctx.db
+  handler: async (context: MutationContext, arguments_: { taskId: Id<'tasks'>; title: string }) => {
+    const existing = await context.db
       .query('subtasks')
-      .withIndex('by_task', q => q.eq('taskId', args.taskId))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FilterBuilder type complex to import
+      .withIndex('by_task', (q: any) => q.eq('taskId', arguments_.taskId))
       .collect();
 
     // Simple order: append to end
     const order = getNextOrder(existing, 0);
 
-    return await ctx.db.insert('subtasks', {
-      taskId: args.taskId,
-      title: args.title,
+    return await context.db.insert('subtasks', {
+      taskId: arguments_.taskId,
+      title: arguments_.title,
       completed: false,
       order,
     });
@@ -38,14 +46,17 @@ export const create = mutation({
 
 export const toggle = mutation({
   args: { subtaskId: v.id('subtasks'), completed: v.boolean() },
-  handler: async (ctx, args) => {
-    await ctx.db.patch(args.subtaskId, { completed: args.completed });
+  handler: async (
+    context: MutationContext,
+    arguments_: { subtaskId: Id<'subtasks'>; completed: boolean },
+  ) => {
+    await context.db.patch(arguments_.subtaskId, { completed: arguments_.completed });
   },
 });
 
 export const remove = mutation({
   args: { subtaskId: v.id('subtasks') },
-  handler: async (ctx, args) => {
-    await ctx.db.delete(args.subtaskId);
+  handler: async (context: MutationContext, arguments_: { subtaskId: Id<'subtasks'> }) => {
+    await context.db.delete(arguments_.subtaskId);
   },
 });

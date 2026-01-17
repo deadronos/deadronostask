@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import path from 'node:path';
 
 import { test } from '@playwright/test';
 
@@ -34,6 +34,24 @@ interface SiteEvaluationReport {
     availableFeatures: string[];
   };
   overallScore: number;
+}
+
+/** Helper to get letter grade from numeric score */
+function getGrade(score: number): string {
+  if (score >= 90) return 'A (Excellent)';
+  if (score >= 80) return 'B (Good)';
+  if (score >= 70) return 'C (Satisfactory)';
+  if (score >= 60) return 'D (Needs Improvement)';
+  return 'F (Poor)';
+}
+
+/** Helper to get emoji from numeric score */
+function getEmoji(score: number): string {
+  if (score >= 90) return '🎉';
+  if (score >= 80) return '✅';
+  if (score >= 70) return '👍';
+  if (score >= 60) return '⚠️';
+  return '❌';
 }
 
 test.describe('Site Exploration and Evaluation', () => {
@@ -147,7 +165,7 @@ test.describe('Site Exploration and Evaluation', () => {
     // Check color contrast (basic check)
     const bodyBg = await page.evaluate(() => {
       const body = document.body;
-      return window.getComputedStyle(body).backgroundColor;
+      return globalThis.getComputedStyle(body).backgroundColor;
     });
     uiFindings.push(`Body background color: ${bodyBg}`);
 
@@ -163,10 +181,10 @@ test.describe('Site Exploration and Evaluation', () => {
     const totalChecks = uiFindings.filter(f => f.startsWith('✓') || f.startsWith('✗')).length;
     report.uiUx.score = totalChecks > 0 ? Math.round((positiveFindings / totalChecks) * 100) : 50;
 
-    // eslint-disable-next-line no-console
     console.log('UI/UX Evaluation:', report.uiUx);
   });
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity -- Test function with many metrics checks
   test('Evaluate Performance', async ({ page }) => {
     // Navigate and collect performance metrics
     const navigationPromise = page.goto('/', { waitUntil: 'networkidle' });
@@ -231,8 +249,8 @@ test.describe('Site Exploration and Evaluation', () => {
       };
     });
 
-    findings.push(`Total resources loaded: ${resourceStats.total}`);
     findings.push(
+      `Total resources loaded: ${resourceStats.total}`,
       `Scripts: ${resourceStats.scripts}, Stylesheets: ${resourceStats.stylesheets}, Images: ${resourceStats.images}`,
     );
 
@@ -311,15 +329,15 @@ test.describe('Site Exploration and Evaluation', () => {
 
     // Check for external scripts
     const externalScripts = await page.evaluate(() => {
-      const scripts = Array.from(document.querySelectorAll('script[src]'));
+      const scripts = [...document.querySelectorAll('script[src]')];
       return scripts
         .map(s => (s as HTMLScriptElement).src)
-        .filter(src => !src.includes(window.location.hostname));
+        .filter(source => !source.includes(globalThis.location.hostname));
     });
 
     if (externalScripts.length > 0) {
-      findings.push(`⚠ ${externalScripts.length} external script(s) loaded`);
       findings.push(
+        `⚠ ${externalScripts.length} external script(s) loaded`,
         `  External sources: ${[...new Set(externalScripts.map(s => new URL(s).hostname))].join(', ')}`,
       );
     } else {
@@ -328,18 +346,19 @@ test.describe('Site Exploration and Evaluation', () => {
 
     // Check for mixed content
     const mixedContent = await page.evaluate(() => {
-      const resources = Array.from(document.querySelectorAll('[src], [href]'));
-      return resources.some(el => {
+      const resources = [...document.querySelectorAll('[src], [href]')];
+      return resources.some(element => {
         const url =
-          (el as HTMLElement).getAttribute('src') || (el as HTMLElement).getAttribute('href');
+          (element as HTMLElement).getAttribute('src') ||
+          (element as HTMLElement).getAttribute('href');
         return url && url.startsWith('http://') && !url.includes('localhost');
       });
     });
 
-    if (!mixedContent) {
-      findings.push('✓ No mixed content detected');
-    } else {
+    if (mixedContent) {
       findings.push('✗ Mixed content detected (HTTP resources on HTTPS page)');
+    } else {
+      findings.push('✓ No mixed content detected');
     }
 
     report.security.findings = findings;
@@ -469,6 +488,7 @@ test.describe('Site Exploration and Evaluation', () => {
     console.log('Features Evaluation:', report.features);
   });
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity -- Test function with many code quality checks
   test('Evaluate Code Quality (Client-Side)', async ({ page }) => {
     await page.goto('/');
 
@@ -476,9 +496,9 @@ test.describe('Site Exploration and Evaluation', () => {
 
     // Check for console errors
     const consoleErrors: string[] = [];
-    page.on('console', msg => {
-      if (msg.type() === 'error') {
-        consoleErrors.push(msg.text());
+    page.on('console', message => {
+      if (message.type() === 'error') {
+        consoleErrors.push(message.text());
       }
     });
 
@@ -488,12 +508,12 @@ test.describe('Site Exploration and Evaluation', () => {
       findings.push('✓ No console errors detected');
     } else {
       findings.push(`✗ ${consoleErrors.length} console error(s) detected:`);
-      consoleErrors.slice(0, 3).forEach(err => findings.push(`  - ${err}`));
+      for (const error of consoleErrors.slice(0, 3)) findings.push(`  - ${error}`);
     }
 
     // Check for proper error boundaries
     const hasErrorBoundary = await page.evaluate(() => {
-      return !!window.onerror || !!window.addEventListener;
+      return Boolean(globalThis.onerror) || Boolean(window.addEventListener);
     });
 
     if (hasErrorBoundary) {
@@ -502,15 +522,12 @@ test.describe('Site Exploration and Evaluation', () => {
 
     // Check for proper HTML structure
     const htmlValidation = await page.evaluate(() => {
-      const duplicateIds = (): number => {
-        const ids = Array.from(document.querySelectorAll('[id]')).map(el => el.id);
-        return ids.length - new Set(ids).size;
-      };
-
+      const ids = [...document.querySelectorAll('[id]')].map(element => element.id);
+      const duplicateIdCount = ids.length - new Set(ids).size;
       const invalidNesting = document.querySelectorAll('p p, a a').length;
 
       return {
-        duplicateIds: duplicateIds(),
+        duplicateIds: duplicateIdCount,
         invalidNesting,
       };
     });
@@ -530,10 +547,10 @@ test.describe('Site Exploration and Evaluation', () => {
     // Check for proper meta tags
     const metaTags = await page.evaluate(() => {
       return {
-        viewport: !!document.querySelector('meta[name="viewport"]'),
-        description: !!document.querySelector('meta[name="description"]'),
-        charset: !!document.querySelector('meta[charset]'),
-        title: !!document.title && document.title.length > 0,
+        viewport: Boolean(document.querySelector('meta[name="viewport"]')),
+        description: Boolean(document.querySelector('meta[name="description"]')),
+        charset: Boolean(document.querySelector('meta[charset]')),
+        title: Boolean(document.title) && document.title.length > 0,
       };
     });
 
@@ -582,12 +599,13 @@ test.describe('Site Exploration and Evaluation', () => {
     const markdownReportPath = path.join('test-results', 'site-evaluation-report.md');
 
     // Ensure directory exists
-    const dir = path.dirname(reportPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    const directory = path.dirname(reportPath);
+    if (!fs.existsSync(directory)) {
+      fs.mkdirSync(directory, { recursive: true });
     }
 
     // Save JSON report
+    // eslint-disable-next-line unicorn/no-null -- JSON.stringify uses null for indentation
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
 
     // Generate markdown report
@@ -604,22 +622,6 @@ test.describe('Site Exploration and Evaluation', () => {
 });
 
 function generateMarkdownReport(report: SiteEvaluationReport): string {
-  const getGrade = (score: number): string => {
-    if (score >= 90) return 'A (Excellent)';
-    if (score >= 80) return 'B (Good)';
-    if (score >= 70) return 'C (Satisfactory)';
-    if (score >= 60) return 'D (Needs Improvement)';
-    return 'F (Poor)';
-  };
-
-  const getEmoji = (score: number): string => {
-    if (score >= 90) return '🎉';
-    if (score >= 80) return '✅';
-    if (score >= 70) return '👍';
-    if (score >= 60) return '⚠️';
-    return '❌';
-  };
-
   let md = '# Site Evaluation Report\n\n';
   md += `**Generated:** ${new Date().toISOString()}\n\n`;
   md += `## Overall Score: ${report.overallScore}/100 ${getEmoji(report.overallScore)} - ${getGrade(report.overallScore)}\n\n`;
@@ -629,14 +631,14 @@ function generateMarkdownReport(report: SiteEvaluationReport): string {
   md += `## 1. UI/UX ${getEmoji(report.uiUx.score)}\n\n`;
   md += `**Score:** ${report.uiUx.score}/100 - ${getGrade(report.uiUx.score)}\n\n`;
   md += '### Findings:\n';
-  report.uiUx.findings.forEach(f => {
+  for (const f of report.uiUx.findings) {
     md += `- ${f}\n`;
-  });
+  }
   if (report.uiUx.screenshots.length > 0) {
     md += '\n### Screenshots:\n';
-    report.uiUx.screenshots.forEach(s => {
+    for (const s of report.uiUx.screenshots) {
       md += `- ${s}\n`;
-    });
+    }
   }
   md += '\n';
 
@@ -648,27 +650,27 @@ function generateMarkdownReport(report: SiteEvaluationReport): string {
   md += `- Time to Interactive: ${report.performance.metrics.timeToInteractive.toFixed(0)}ms\n`;
   md += `- First Contentful Paint: ${report.performance.metrics.firstContentfulPaint.toFixed(0)}ms\n`;
   md += '\n### Findings:\n';
-  report.performance.findings.forEach(f => {
+  for (const f of report.performance.findings) {
     md += `- ${f}\n`;
-  });
+  }
   md += '\n';
 
   // Code Quality Section
   md += `## 3. Code Quality ${getEmoji(report.codeQuality.score)}\n\n`;
   md += `**Score:** ${report.codeQuality.score}/100 - ${getGrade(report.codeQuality.score)}\n\n`;
   md += '### Findings:\n';
-  report.codeQuality.findings.forEach(f => {
+  for (const f of report.codeQuality.findings) {
     md += `- ${f}\n`;
-  });
+  }
   md += '\n';
 
   // Security Section
   md += `## 4. Security ${getEmoji(report.security.score)}\n\n`;
   md += `**Score:** ${report.security.score}/100 - ${getGrade(report.security.score)}\n\n`;
   md += '### Findings:\n';
-  report.security.findings.forEach(f => {
+  for (const f of report.security.findings) {
     md += `- ${f}\n`;
-  });
+  }
   md += '\n';
 
   // Features Section
@@ -676,16 +678,16 @@ function generateMarkdownReport(report: SiteEvaluationReport): string {
   md += `**Score:** ${report.features.score}/100 - ${getGrade(report.features.score)}\n\n`;
   md += '### Available Features:\n';
   if (report.features.availableFeatures.length > 0) {
-    report.features.availableFeatures.forEach(f => {
+    for (const f of report.features.availableFeatures) {
       md += `- ${f}\n`;
-    });
+    }
   } else {
     md += '- No features detected\n';
   }
   md += '\n### Findings:\n';
-  report.features.findings.forEach(f => {
+  for (const f of report.features.findings) {
     md += `- ${f}\n`;
-  });
+  }
   md += '\n';
 
   // Summary
