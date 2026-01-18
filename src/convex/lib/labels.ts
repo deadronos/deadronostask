@@ -1,4 +1,4 @@
-import { type Doc as Document_, type Id } from '../_generated/dataModel';
+import { type Id } from '../_generated/dataModel';
 import { type QueryCtx as QueryContext } from '../_generated/server';
 
 // Helper to validate that labels belong to the user

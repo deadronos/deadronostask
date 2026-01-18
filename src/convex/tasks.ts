@@ -1,10 +1,7 @@
 import { v } from 'convex/values';
 
 import { type Doc as Document_, type Id } from './_generated/dataModel';
-import {
-  type MutationCtx as MutationContext,
-  type QueryCtx as QueryContext,
-} from './_generated/server';
+import { type MutationCtx as MutationContext } from './_generated/server';
 import {
   type UserMutationContext,
   type UserQueryContext,
