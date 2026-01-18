@@ -1,38 +1,15 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragOverEvent,
-  type DragStartEvent,
-  useDroppable,
-  DragOverlay,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-  sortableKeyboardCoordinates,
-  arrayMove,
-} from '@dnd-kit/sortable';
 import { useQuery, useMutation } from 'convex/react';
-import { ArrowLeft, CheckCircle2, Clock, ListTodo, Tag, Check } from 'lucide-react';
+import { ArrowLeft, Calendar, Check, GanttChartSquare, Layout, ListTodo, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import { useState } from 'react';
 
 import { CreateTaskButton } from '@/components/create-task-button';
-import { SortableTaskItem } from '@/components/sortable-task-item';
-import { TaskItem } from '@/components/task-item';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Command,
   CommandEmpty,
@@ -43,55 +20,13 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { TaskBoardView } from '@/components/views/board-view';
+import { TaskCalendarView } from '@/components/views/calendar-view';
+import { TaskListView } from '@/components/views/list-view';
+import { TaskTimelineView } from '@/components/views/timeline-view';
 import { api } from '@/convex/_generated/api';
-import { type Id, type Doc } from '@/convex/_generated/dataModel';
+import { type Id } from '@/convex/_generated/dataModel';
 import { cn } from '@/lib/utils/cn';
-
-function DroppableColumn({ id, children }: Readonly<{ id: string; children: React.ReactNode }>) {
-  const { setNodeRef } = useDroppable({ id });
-  return (
-    <div ref={setNodeRef} className="flex h-full min-h-[150px] flex-col gap-3">
-      {children}
-    </div>
-  );
-}
-
-type TaskStatus = 'todo' | 'doing' | 'done';
-const STATUS_VALUES = new Set<TaskStatus>(['todo', 'doing', 'done']);
-
-/** Determine the target status from the drop target */
-function getTargetStatus(
-  overId: string | number,
-  overTask: { status: TaskStatus } | undefined,
-): TaskStatus | undefined {
-  if (STATUS_VALUES.has(overId as TaskStatus)) {
-    return overId as TaskStatus;
-  }
-  return overTask?.status;
-}
-
-/** Calculate the new order value for a task being inserted at a position */
-function calculateNewOrder(
-  previousItem: { order: number } | undefined,
-  nextItem: { order: number } | undefined,
-): number {
-  if (previousItem && nextItem) {
-    return (previousItem.order + nextItem.order) / 2;
-  }
-  if (previousItem) {
-    return previousItem.order + 1;
-  }
-  if (nextItem && nextItem.order !== Infinity) {
-    return nextItem.order - 1;
-  }
-  return Date.now();
-}
-
-/** Get the maximum order value from a list of tasks, or 0 if empty */
-function getMaxOrder(tasks: { order: number }[]): number {
-  if (tasks.length === 0) return 0;
-  return Math.max(...tasks.map(t => t.order));
-}
 
 /** Extracted component for label filter items to reduce nested function depth */
 function LabelCommandItem({
@@ -124,11 +59,7 @@ export default function ProjectPage() {
   const parameters = useParams();
   const projectId = parameters.projectId as Id<'projects'>;
 
-  // Local state for tasks to support optimistic UI updates during drag
-  const [orderedTasks, setOrderedTasks] = useState<
-    (Doc<'tasks'> & { labelIds?: Id<'labels'>[] })[]
-  >([]);
-  const [activeId, setActiveId] = useState<Id<'tasks'>>();
+  const [view, setView] = useState<'board' | 'list' | 'calendar' | 'timeline'>('list');
 
   // Filtering state
   const [selectedLabels, setSelectedLabels] = useState<Id<'labels'>[]>([]);
@@ -172,25 +103,6 @@ export default function ProjectPage() {
 
   const labels = useQuery(api.labels.list, {});
 
-  // Sync tasks from Convex to local state when they change
-  useEffect(() => {
-    if (tasks) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync server state to local state for optimistic UI
-      setOrderedTasks(tasks);
-    }
-  }, [tasks]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
-
   if (!isLoaded || !user || tasks === undefined || project === undefined) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -208,132 +120,18 @@ export default function ProjectPage() {
   }
 
   // Filter tasks locally based on selectedLabels
-  const filteredTasks = orderedTasks.filter(t => {
+  const filteredTasks = tasks.filter(t => {
     if (selectedLabels.length === 0) return true;
     if (!t.labelIds) return false;
     return selectedLabels.some(labelId => t.labelIds?.includes(labelId) === true);
   });
 
-  const todoTasks = filteredTasks.filter(t => t.status === 'todo');
-  const doingTasks = filteredTasks.filter(t => t.status === 'doing');
   const doneTasks = filteredTasks.filter(t => t.status === 'done');
-
-  const activeTask = activeId ? orderedTasks.find(t => t._id === activeId) : undefined;
 
   function handleLabelToggle(labelId: Id<'labels'>) {
     setSelectedLabels(previous =>
       previous.includes(labelId) ? previous.filter(id => id !== labelId) : [...previous, labelId],
     );
-  }
-
-  function handleDragStart(event: DragStartEvent) {
-    setActiveId(event.active.id as Id<'tasks'>);
-  }
-
-  function handleDragOver(event: DragOverEvent) {
-    const { active, over } = event;
-    if (!over) return;
-
-    const activeId = active.id;
-    const overId = over.id;
-
-    // Find the containers
-    const activeTask = orderedTasks.find(t => t._id === activeId);
-    const overTask = orderedTasks.find(t => t._id === overId);
-
-    if (!activeTask) return;
-
-    const activeStatus = activeTask.status;
-    // If over an item, use its status, otherwise check if over a container
-    let overStatus = overTask ? overTask.status : undefined;
-
-    // If overId matches a status container ID (we'll use status strings as container IDs)
-    if (['todo', 'doing', 'done'].includes(overId as string)) {
-      overStatus = overId as 'todo' | 'doing' | 'done';
-    }
-
-    if (!overStatus) return;
-
-    // If moving between columns
-    if (activeStatus === overStatus) {
-      // Reordering within the same column
-      if (activeId !== overId) {
-        setOrderedTasks(items => {
-          const activeIndex = items.findIndex(t => t._id === activeId);
-          const overIndex = items.findIndex(t => t._id === overId);
-
-          if (activeIndex === -1 || overIndex === -1) return items;
-
-          return arrayMove(items, activeIndex, overIndex);
-        });
-      }
-    } else {
-      setOrderedTasks(items => {
-        const activeIndex = items.findIndex(t => t._id === activeId);
-        const overIndex = items.findIndex(t => t._id === overId);
-
-        if (activeIndex === -1) return items;
-
-        // Clone the items
-        const newItems = [...items];
-
-        // Update the status of the active item
-        newItems[activeIndex] = {
-          ...newItems[activeIndex],
-          status: overStatus,
-        };
-
-        // If dropping on a container (empty or not), just update status
-        if (overIndex === -1) {
-          return newItems;
-        }
-
-        return arrayMove(newItems, activeIndex, overIndex);
-      });
-    }
-  }
-
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    setActiveId(undefined);
-
-    if (!over) return;
-
-    const activeTaskId = active.id as Id<'tasks'>;
-    const overId = over.id;
-
-    const activeTask = orderedTasks.find(t => t._id === activeTaskId);
-    if (!activeTask) return;
-
-    const overTask = orderedTasks.find(t => t._id === overId);
-    const newStatus = getTargetStatus(overId as string, overTask) ?? activeTask.status;
-
-    const hasPositionChanged = activeTaskId !== overId || activeTask.status !== newStatus;
-    if (!hasPositionChanged) return;
-
-    const reorderResult = tryReorderWithinColumn(activeTaskId, newStatus);
-    if (reorderResult) return;
-
-    // Fallback: status changed but position calculation failed (e.g. dropping into empty column)
-    if (activeTask.status !== newStatus) {
-      const targetColumnTasks = tasks?.filter(t => t.status === newStatus) ?? [];
-      const maxOrder = getMaxOrder(targetColumnTasks);
-      reorderTask({ taskId: activeTaskId, order: maxOrder + 1, status: newStatus });
-    }
-  }
-
-  function tryReorderWithinColumn(taskId: Id<'tasks'>, status: TaskStatus): boolean {
-    const columnTasks = orderedTasks.filter(t => t.status === status);
-    const taskIndex = columnTasks.findIndex(t => t._id === taskId);
-
-    if (taskIndex === -1) return false;
-
-    const previousItem = columnTasks[taskIndex - 1];
-    const nextItem = columnTasks[taskIndex + 1];
-    const newOrder = calculateNewOrder(previousItem, nextItem);
-
-    reorderTask({ taskId, order: newOrder, status });
-    return true;
   }
 
   return (
@@ -363,206 +161,129 @@ export default function ProjectPage() {
               {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'} • {doneTasks.length} completed
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 border-dashed">
-                  <Tag className="mr-2 h-4 w-4" />
-                  Labels
-                  {selectedLabels.length > 0 && (
-                    <>
-                      <div className="mx-2 h-4 w-[1px] bg-border" />
-                      <Badge variant="secondary" className="rounded-sm px-1 font-normal lg:hidden">
-                        {selectedLabels.length}
-                      </Badge>
-                      <div className="hidden space-x-1 lg:flex">
-                        {selectedLabels.length > 2 ? (
-                          <Badge variant="secondary" className="rounded-sm px-1 font-normal">
-                            {selectedLabels.length} selected
-                          </Badge>
-                        ) : (
-                          labels
-                            ?.filter(l => selectedLabels.includes(l._id))
-                            .map(label => (
-                              <Badge
-                                key={label._id}
-                                variant="secondary"
-                                className="rounded-sm px-1 font-normal"
-                              >
-                                {label.name}
-                              </Badge>
-                            ))
-                        )}
-                      </div>
-                    </>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[200px] p-0" align="start">
-                <Command>
-                  <CommandInput placeholder="Filter label..." />
-                  <CommandList>
-                    <CommandEmpty>No results found.</CommandEmpty>
-                    <CommandGroup>
-                      {labels?.map(label => (
-                        <LabelCommandItem
-                          key={label._id}
-                          label={label}
-                          isSelected={selectedLabels.includes(label._id)}
-                          onToggle={handleLabelToggle}
-                        />
-                      ))}
-                    </CommandGroup>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {/* View Switcher */}
+            <div className="flex items-center gap-1 rounded-lg border bg-background/50 p-1">
+              <Button
+                variant={view === 'list' ? 'secondary' : 'ghost'}
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setView('list')}
+                title="List View"
+              >
+                <ListTodo className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={view === 'board' ? 'secondary' : 'ghost'}
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setView('board')}
+                title="Board View"
+              >
+                <Layout className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={view === 'calendar' ? 'secondary' : 'ghost'}
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setView('calendar')}
+                title="Calendar View"
+              >
+                <Calendar className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={view === 'timeline' ? 'secondary' : 'ghost'}
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setView('timeline')}
+                title="Timeline View"
+              >
+                <GanttChartSquare className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 border-dashed">
+                    <Tag className="mr-2 h-4 w-4" />
+                    Labels
                     {selectedLabels.length > 0 && (
                       <>
-                        <CommandSeparator />
-                        <CommandGroup>
-                          <CommandItem
-                            onSelect={() => setSelectedLabels([])}
-                            className="justify-center text-center"
-                          >
-                            Clear filters
-                          </CommandItem>
-                        </CommandGroup>
+                        <div className="mx-2 h-4 w-[1px] bg-border" />
+                        <Badge
+                          variant="secondary"
+                          className="rounded-sm px-1 font-normal lg:hidden"
+                        >
+                          {selectedLabels.length}
+                        </Badge>
+                        <div className="hidden space-x-1 lg:flex">
+                          {selectedLabels.length > 2 ? (
+                            <Badge variant="secondary" className="rounded-sm px-1 font-normal">
+                              {selectedLabels.length} selected
+                            </Badge>
+                          ) : (
+                            labels
+                              ?.filter(l => selectedLabels.includes(l._id))
+                              .map(label => (
+                                <Badge
+                                  key={label._id}
+                                  variant="secondary"
+                                  className="rounded-sm px-1 font-normal"
+                                >
+                                  {label.name}
+                                </Badge>
+                              ))
+                          )}
+                        </div>
                       </>
                     )}
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-            <CreateTaskButton projectId={projectId} />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[200px] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Filter label..." />
+                    <CommandList>
+                      <CommandEmpty>No results found.</CommandEmpty>
+                      <CommandGroup>
+                        {labels?.map(label => (
+                          <LabelCommandItem
+                            key={label._id}
+                            label={label}
+                            isSelected={selectedLabels.includes(label._id)}
+                            onToggle={handleLabelToggle}
+                          />
+                        ))}
+                      </CommandGroup>
+                      {selectedLabels.length > 0 && (
+                        <>
+                          <CommandSeparator />
+                          <CommandGroup>
+                            <CommandItem
+                              onSelect={() => setSelectedLabels([])}
+                              className="justify-center text-center"
+                            >
+                              Clear filters
+                            </CommandItem>
+                          </CommandGroup>
+                        </>
+                      )}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <CreateTaskButton projectId={projectId} />
+            </div>
           </div>
         </div>
 
-        {/* Task Board */}
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
-        >
-          {tasks.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center space-y-4 py-16 text-center">
-                <ListTodo className="h-16 w-16 text-muted-foreground/50" />
-                <div>
-                  <h3 className="text-lg font-semibold">No tasks yet</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Create your first task to get started
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-6 lg:grid-cols-3">
-              {/* To Do Column */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <ListTodo className="h-5 w-5 text-muted-foreground" />
-                    To Do
-                    <span className="ml-auto text-sm font-normal text-muted-foreground">
-                      {todoTasks.length}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="h-full min-h-[150px]">
-                  <DroppableColumn id="todo">
-                    <SortableContext
-                      id="todo"
-                      items={todoTasks.map(t => t._id)}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      {todoTasks.map(task => (
-                        <SortableTaskItem key={task._id} task={task} />
-                      ))}
-                      {todoTasks.length === 0 && (
-                        <div className="flex h-full flex-grow items-center justify-center text-sm text-muted-foreground/40">
-                          Drop items here
-                        </div>
-                      )}
-                    </SortableContext>
-                  </DroppableColumn>
-                </CardContent>
-              </Card>
-
-              {/* In Progress Column */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Clock className="h-5 w-5 text-primary" />
-                    In Progress
-                    <span className="ml-auto text-sm font-normal text-muted-foreground">
-                      {doingTasks.length}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="h-full min-h-[150px]">
-                  <DroppableColumn id="doing">
-                    <SortableContext
-                      id="doing"
-                      items={doingTasks.map(t => t._id)}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      {doingTasks.map(task => (
-                        <SortableTaskItem key={task._id} task={task} />
-                      ))}
-                      {doingTasks.length === 0 && (
-                        <div className="flex h-full flex-grow items-center justify-center text-sm text-muted-foreground/40">
-                          Drop items here
-                        </div>
-                      )}
-                    </SortableContext>
-                  </DroppableColumn>
-                </CardContent>
-              </Card>
-
-              {/* Done Column */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                    Done
-                    <span className="ml-auto text-sm font-normal text-muted-foreground">
-                      {doneTasks.length}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="h-full min-h-[150px]">
-                  <DroppableColumn id="done">
-                    <SortableContext
-                      id="done"
-                      items={doneTasks.map(t => t._id)}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      {doneTasks.map(task => (
-                        <SortableTaskItem key={task._id} task={task} />
-                      ))}
-                      {doneTasks.length === 0 && (
-                        <div className="flex h-full flex-grow items-center justify-center text-sm text-muted-foreground/40">
-                          Drop items here
-                        </div>
-                      )}
-                    </SortableContext>
-                  </DroppableColumn>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {typeof document !== 'undefined' &&
-            createPortal(
-              <DragOverlay>
-                {activeTask ? (
-                  <div className="rotate-2 cursor-grabbing opacity-90">
-                    <TaskItem task={activeTask} />
-                  </div>
-                ) : undefined}
-              </DragOverlay>,
-              document.body,
-            )}
-        </DndContext>
+        {/* Views */}
+        <div className="min-h-[500px]">
+          {view === 'board' && <TaskBoardView tasks={filteredTasks} onTaskReorder={reorderTask} />}
+          {view === 'list' && <TaskListView tasks={filteredTasks} />}
+          {view === 'calendar' && <TaskCalendarView tasks={filteredTasks} />}
+          {view === 'timeline' && <TaskTimelineView tasks={filteredTasks} />}
+        </div>
       </div>
     </div>
   );
