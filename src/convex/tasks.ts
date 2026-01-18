@@ -1,35 +1,18 @@
 import { v } from 'convex/values';
 
 import { type Doc as Document_, type Id } from './_generated/dataModel';
-import {
-  type MutationCtx as MutationContext,
-  type QueryCtx as QueryContext,
-} from './_generated/server';
+import { type MutationCtx as MutationContext } from './_generated/server';
 import {
   type UserMutationContext,
   type UserQueryContext,
   mutationWithUser,
   queryWithUser,
 } from './lib/auth';
+import { validateLabels } from './lib/labels';
 import { archiveWithCheck, getNextOrder } from './lib/utilities';
 import { checkOwnership, validateString } from './lib/validations';
 
 type TaskStatus = 'todo' | 'doing' | 'done';
-
-// Helper to validate that labels belong to the user
-async function validateLabels(
-  context: QueryContext,
-  labelIds: Id<'labels'>[],
-  clerkUserId: string,
-) {
-  const uniqueLabelIds = [...new Set(labelIds)];
-  const labels = await Promise.all(uniqueLabelIds.map((id: Id<'labels'>) => context.db.get(id)));
-  for (const label of labels) {
-    if (!label) throw new Error('Label not found');
-    if (label.ownerClerkUserId !== clerkUserId) throw new Error('Unauthorized label');
-  }
-  return uniqueLabelIds;
-}
 
 // Helper to sync labels for a task
 async function syncLabels(context: MutationContext, taskId: Id<'tasks'>, labelIds: Id<'labels'>[]) {
@@ -89,7 +72,7 @@ export const list = queryWithUser({
     let tasks: Document_<'tasks'>[];
 
     // Use appropriate index based on filters
-    if (arguments_.projectId !== undefined && arguments_.projectId !== null) {
+    if (arguments_.projectId !== undefined) {
       tasks = await context.db
         .query('tasks')
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FilterBuilder type complex to import
@@ -181,22 +164,22 @@ export const list = queryWithUser({
  */
 export const create = mutationWithUser({
   args: {
-    projectId: v.optional(v.id('projects')),
+    projectId: v.optional(v.union(v.id('projects'), v.null())),
     title: v.string(),
     description: v.optional(v.string()),
     labelIds: v.optional(v.array(v.id('labels'))),
     priority: v.optional(v.union(v.literal(0), v.literal(1), v.literal(2), v.literal(3))),
-    dueDate: v.optional(v.number()),
+    dueAt: v.optional(v.union(v.number(), v.null())),
   },
   handler: async (
     context: UserMutationContext,
     arguments_: {
-      projectId?: Id<'projects'>;
+      projectId?: Id<'projects'> | null;
       title: string;
       description?: string;
       labelIds?: Id<'labels'>[];
       priority?: 0 | 1 | 2 | 3;
-      dueDate?: number;
+      dueAt?: number | null;
     },
   ) => {
     const { clerkUserId } = context;
@@ -208,6 +191,8 @@ export const create = mutationWithUser({
     if (arguments_.labelIds) {
       await validateLabels(context, arguments_.labelIds, clerkUserId);
     }
+
+    const title = validateString(arguments_.title, 'Task title', 200);
 
     // Get order
     const tasks: Document_<'tasks'>[] = arguments_.projectId
@@ -231,11 +216,11 @@ export const create = mutationWithUser({
     const taskId = await context.db.insert('tasks', {
       ownerClerkUserId: clerkUserId,
       projectId: arguments_.projectId,
-      title: arguments_.title,
+      title,
       description: arguments_.description?.trim(),
       status: 'todo',
       priority: arguments_.priority ?? 0,
-      dueAt: arguments_.dueDate,
+      dueAt: arguments_.dueAt,
       order,
       archived: false,
       createdAt: now,
@@ -297,8 +282,8 @@ export const update = mutationWithUser({
     description: v.optional(v.string()),
     status: v.optional(v.union(v.literal('todo'), v.literal('doing'), v.literal('done'))),
     priority: v.optional(v.number()),
-    dueDate: v.optional(v.number()),
-    projectId: v.optional(v.id('projects')),
+    dueAt: v.optional(v.union(v.number(), v.null())),
+    projectId: v.optional(v.union(v.id('projects'), v.null())),
     labelIds: v.optional(v.array(v.id('labels'))),
   },
   handler: async (
@@ -309,8 +294,8 @@ export const update = mutationWithUser({
       description?: string;
       status?: TaskStatus;
       priority?: number;
-      dueDate?: number;
-      projectId?: Id<'projects'>;
+      dueAt?: number | null;
+      projectId?: Id<'projects'> | null;
       labelIds?: Id<'labels'>[];
     },
   ) => {
@@ -328,11 +313,11 @@ export const update = mutationWithUser({
 
     const patch: Record<string, unknown> = { updatedAt: Date.now() };
     if (arguments_.title !== undefined)
-      patch.title = validateString(arguments_.title, 'Title', 200);
+      patch.title = validateString(arguments_.title, 'Task title', 200);
     if (arguments_.description !== undefined) patch.description = arguments_.description;
     if (arguments_.status !== undefined) patch.status = arguments_.status;
     if (arguments_.priority !== undefined) patch.priority = arguments_.priority;
-    if (arguments_.dueDate !== undefined) patch.dueDate = arguments_.dueDate;
+    if (arguments_.dueAt !== undefined) patch.dueAt = arguments_.dueAt;
     if (arguments_.projectId !== undefined) patch.projectId = arguments_.projectId;
 
     await context.db.patch(arguments_.taskId, patch);
@@ -423,20 +408,6 @@ export const reorder = mutationWithUser({
  * Archive a task
  */
 export const archive = mutationWithUser({
-  args: {
-    taskId: v.id('tasks'),
-  },
-  handler: async (context: UserMutationContext, arguments_: { taskId: Id<'tasks'> }) => {
-    const { clerkUserId } = context;
-
-    await archiveWithCheck(context, arguments_.taskId, clerkUserId, 'Task not found');
-  },
-});
-
-/**
- * Archive a task
- */
-export const remove = mutationWithUser({
   args: {
     taskId: v.id('tasks'),
   },
