@@ -11,25 +11,11 @@ import {
   mutationWithUser,
   queryWithUser,
 } from './lib/auth';
+import { validateLabels } from './lib/labels';
 import { archiveWithCheck, getNextOrder } from './lib/utilities';
 import { checkOwnership, validateString } from './lib/validations';
 
 type TaskStatus = 'todo' | 'doing' | 'done';
-
-// Helper to validate that labels belong to the user
-async function validateLabels(
-  context: QueryContext,
-  labelIds: Id<'labels'>[],
-  clerkUserId: string,
-) {
-  const uniqueLabelIds = [...new Set(labelIds)];
-  const labels = await Promise.all(uniqueLabelIds.map((id: Id<'labels'>) => context.db.get(id)));
-  for (const label of labels) {
-    if (!label) throw new Error('Label not found');
-    if (label.ownerClerkUserId !== clerkUserId) throw new Error('Unauthorized label');
-  }
-  return uniqueLabelIds;
-}
 
 // Helper to sync labels for a task
 async function syncLabels(context: MutationContext, taskId: Id<'tasks'>, labelIds: Id<'labels'>[]) {
@@ -423,20 +409,6 @@ export const reorder = mutationWithUser({
  * Archive a task
  */
 export const archive = mutationWithUser({
-  args: {
-    taskId: v.id('tasks'),
-  },
-  handler: async (context: UserMutationContext, arguments_: { taskId: Id<'tasks'> }) => {
-    const { clerkUserId } = context;
-
-    await archiveWithCheck(context, arguments_.taskId, clerkUserId, 'Task not found');
-  },
-});
-
-/**
- * Archive a task
- */
-export const remove = mutationWithUser({
   args: {
     taskId: v.id('tasks'),
   },

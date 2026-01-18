@@ -1,12 +1,13 @@
 import { v } from 'convex/values';
 
-import { type Doc as Document_, type Id } from './_generated/dataModel';
+import { type Id } from './_generated/dataModel';
 import {
   type UserMutationContext,
   type UserQueryContext,
   mutationWithUser,
   queryWithUser,
 } from './lib/auth';
+import { checkOwnership } from './lib/validations';
 
 export const list = queryWithUser({
   args: {},
@@ -37,13 +38,8 @@ export const deleteLabel = mutationWithUser({
   args: { labelId: v.id('labels') },
   handler: async (context: UserMutationContext, arguments_: { labelId: Id<'labels'> }) => {
     const { clerkUserId } = context;
-    const label: Document_<'labels'> | null = await context.db.get(arguments_.labelId);
 
-    if (!label) return;
-
-    if (label.ownerClerkUserId !== clerkUserId) {
-      throw new Error('Unauthorized');
-    }
+    await checkOwnership(context, arguments_.labelId, clerkUserId, 'Label not found');
 
     // Delete associations in taskLabels
     const associations = await context.db
