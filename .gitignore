@@ -18,6 +18,7 @@ src/convex/_generated/
 
 .vercel
 tsconfig.tsbuildinfo
+tsconfig.strict.tsbuildinfo
 
 # clerk configuration (can include secrets)
 /.clerk/

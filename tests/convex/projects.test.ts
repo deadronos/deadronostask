@@ -124,7 +124,9 @@ describe('projects', () => {
 
       const projects = await user.query(api.projects.list, {});
       expect(projects).toHaveLength(1);
-      expect(projects[0].name).toBe('Project 2');
+      const [firstProject] = projects;
+      expect(firstProject).toBeDefined();
+      expect(firstProject!.name).toBe('Project 2');
     });
 
     it('should include archived projects when specified', async () => {
@@ -152,9 +154,13 @@ describe('projects', () => {
 
       const projects = await user.query(api.projects.list, {});
 
-      expect(projects[0].name).toBe('Project 3');
-      expect(projects[1].name).toBe('Project 2');
-      expect(projects[2].name).toBe('Project 1');
+      const [firstProject, secondProject, thirdProject] = projects;
+      expect(firstProject).toBeDefined();
+      expect(secondProject).toBeDefined();
+      expect(thirdProject).toBeDefined();
+      expect(firstProject!.name).toBe('Project 3');
+      expect(secondProject!.name).toBe('Project 2');
+      expect(thirdProject!.name).toBe('Project 1');
     });
 
     it('should not return projects from other users', async () => {
@@ -168,7 +174,9 @@ describe('projects', () => {
 
       const projects = await user2.query(api.projects.list, {});
       expect(projects).toHaveLength(1);
-      expect(projects[0].name).toBe('User2 Project');
+      const [firstProject] = projects;
+      expect(firstProject).toBeDefined();
+      expect(firstProject!.name).toBe('User2 Project');
     });
 
     it('should throw error if user is not authenticated', async () => {

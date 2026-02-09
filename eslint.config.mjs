@@ -13,6 +13,13 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
+const _applyFiles = (configs, files) =>
+  configs.map(cfg =>
+    cfg?.files
+      ? { ...cfg, files: [...new Set([...cfg.files, ...files])] }
+      : { ...cfg, files },
+  );
+
 // Some environments (or older tooling) can fail to resolve legacy "plugin:.../recommended"
 // shareable-config strings. Import unicorn directly and inline its `recommended` flat
 // config when available — this avoids the "couldn't find the config \"plugin:unicorn/recommended\""
@@ -83,6 +90,23 @@ const _normalizePluginConfig = async cfg => {
 const unicornExtension = await _normalizePluginConfig(unicornExtend);
 const sonarjsExtension = await _normalizePluginConfig(sonarjsExtend);
 
+const baseCompatExtends = compat.extends(
+  'plugin:@typescript-eslint/recommended',
+  'plugin:import/recommended',
+  'plugin:import/typescript',
+  'plugin:promise/recommended',
+  'prettier',
+);
+
+const reactCompatExtends = _applyFiles(
+  compat.extends(
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
+    'plugin:jsx-a11y/recommended',
+  ),
+  ['**/*.{jsx,tsx}'],
+);
+
 export default [
   // Global ignores for generated and build files
   {
@@ -101,16 +125,8 @@ export default [
     ],
   },
   js.configs.recommended,
-  ...compat.extends(
-    'plugin:@typescript-eslint/recommended',
-    'plugin:react/recommended',
-    'plugin:react-hooks/recommended',
-    'plugin:jsx-a11y/recommended',
-    'plugin:import/recommended',
-    'plugin:import/typescript',
-    'plugin:promise/recommended',
-    'prettier',
-  ),
+  ...baseCompatExtends,
+  ...reactCompatExtends,
   ...(unicornExtension ? [unicornExtension] : []),
   ...(sonarjsExtension ? [sonarjsExtension] : []),
   {
@@ -129,7 +145,7 @@ export default [
     },
 
     settings: {
-      react: { version: 'detect' },
+      react: { version: '19.2.4' },
       'import/resolver': {
         typescript: {
           project: './tsconfig.json',
@@ -141,13 +157,6 @@ export default [
     },
     rules: {
       'no-console': ['warn', { allow: ['warn', 'error'] }],
-      'react/react-in-jsx-scope': 'off',
-      'react/jsx-uses-react': 'off',
-      'react/prop-types': 'off',
-      'react/jsx-no-useless-fragment': 'warn',
-      'react/no-unstable-nested-components': 'warn',
-      'react/self-closing-comp': 'warn',
-      'react-hooks/exhaustive-deps': 'warn',
       'import/order': [
         'warn',
         {
@@ -180,6 +189,18 @@ export default [
       ],
       // Generated Convex files may include project-agnostic eslint-disable comments; allow them
       'eslint-comments/no-unused-disable': 'off',
+    },
+  },
+  {
+    files: ['**/*.{jsx,tsx}'],
+    rules: {
+      'react/react-in-jsx-scope': 'off',
+      'react/jsx-uses-react': 'off',
+      'react/prop-types': 'off',
+      'react/jsx-no-useless-fragment': 'warn',
+      'react/no-unstable-nested-components': 'warn',
+      'react/self-closing-comp': 'warn',
+      'react-hooks/exhaustive-deps': 'warn',
     },
   },
   // Tailwind config is TS but not included in the TS project. Use JS parser and Node globals to avoid

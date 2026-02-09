@@ -2,7 +2,7 @@
 
 import { useMutation } from 'convex/react';
 import { FolderPlus } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type SubmitEventHandler } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -24,7 +24,7 @@ export function CreateProjectButton() {
   const [isLoading, setIsLoading] = useState(false);
   const createProject = useMutation(api.projects.create);
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit: SubmitEventHandler<HTMLFormElement> = async event => {
     event.preventDefault();
     if (!name.trim()) return;
 

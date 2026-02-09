@@ -2,7 +2,7 @@
 
 import { useMutation } from 'convex/react';
 import { ListPlus } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type SubmitEventHandler } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -33,7 +33,7 @@ export function CreateTaskButton({ projectId }: CreateTaskButtonProperties) {
   const [isLoading, setIsLoading] = useState(false);
   const createTask = useMutation(api.tasks.create);
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit: SubmitEventHandler<HTMLFormElement> = async event => {
     event.preventDefault();
     if (!title.trim()) return;
 

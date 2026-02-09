@@ -51,7 +51,9 @@ describe('labels', () => {
 
       const labels1 = await user1.query(api.labels.list, {});
       expect(labels1).toHaveLength(1);
-      expect(labels1[0].name).toBe('L1');
+      const [firstLabel] = labels1;
+      expect(firstLabel).toBeDefined();
+      expect(firstLabel!.name).toBe('L1');
     });
   });
 

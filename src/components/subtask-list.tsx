@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery } from 'convex/react';
 import { Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type SubmitEventHandler } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -23,7 +23,7 @@ export function SubtaskList({ taskId }: SubtaskListProperties) {
 
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
 
-  const handleCreate = async (event: React.FormEvent) => {
+  const handleCreate: SubmitEventHandler<HTMLFormElement> = async event => {
     event.preventDefault();
     if (!newSubtaskTitle.trim()) return;
 

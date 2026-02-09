@@ -213,7 +213,9 @@ describe('tasks', () => {
 
       const tasks = await user.query(api.tasks.list, {});
       expect(tasks).toHaveLength(1);
-      expect(tasks[0].title).toBe('Task 2');
+      const [firstTask] = tasks;
+      expect(firstTask).toBeDefined();
+      expect(firstTask!.title).toBe('Task 2');
     });
 
     it('should include archived tasks when specified', async () => {
@@ -283,7 +285,9 @@ describe('tasks', () => {
       // eslint-disable-next-line unicorn/no-null -- API contract requires null to filter by no project
       const tasks = await user.query(api.tasks.list, { projectId: null });
       expect(tasks).toHaveLength(1);
-      expect(tasks[0].title).toBe('Task 1');
+      const [firstTask] = tasks;
+      expect(firstTask).toBeDefined();
+      expect(firstTask!.title).toBe('Task 1');
     });
 
     it('should filter tasks by status', async () => {
@@ -334,7 +338,9 @@ describe('tasks', () => {
 
       const tasks = await user.query(api.tasks.list, { search: 'important' });
       expect(tasks).toHaveLength(1);
-      expect(tasks[0].title).toBe('Task 1');
+      const [firstTask] = tasks;
+      expect(firstTask).toBeDefined();
+      expect(firstTask!.title).toBe('Task 1');
     });
 
     it('should sort tasks by order then creation time', async () => {
@@ -348,9 +354,13 @@ describe('tasks', () => {
       await user.mutation(api.tasks.reorder, { taskId: taskId2, order: 10 });
 
       const tasks = await user.query(api.tasks.list, {});
-      expect(tasks[0]._id).toBe(taskId1);
-      expect(tasks[1]._id).toBe(taskId3);
-      expect(tasks[2]._id).toBe(taskId2);
+      const [firstTask, secondTask, thirdTask] = tasks;
+      expect(firstTask).toBeDefined();
+      expect(secondTask).toBeDefined();
+      expect(thirdTask).toBeDefined();
+      expect(firstTask!._id).toBe(taskId1);
+      expect(secondTask!._id).toBe(taskId3);
+      expect(thirdTask!._id).toBe(taskId2);
     });
 
     it('should not return tasks from other users', async () => {
@@ -364,7 +374,9 @@ describe('tasks', () => {
 
       const tasks = await user2.query(api.tasks.list, {});
       expect(tasks).toHaveLength(1);
-      expect(tasks[0].title).toBe('User2 Task');
+      const [firstTask] = tasks;
+      expect(firstTask).toBeDefined();
+      expect(firstTask!.title).toBe('User2 Task');
     });
   });
 
@@ -737,7 +749,9 @@ describe('tasks', () => {
       });
 
       const task = await user.query(api.tasks.list, {});
-      expect(task[0].labelIds).toEqual([labelId]);
+      const [firstTask] = task;
+      expect(firstTask).toBeDefined();
+      expect(firstTask!.labelIds).toEqual([labelId]);
     });
 
     it('should filter tasks by labels', async () => {
@@ -770,7 +784,9 @@ describe('tasks', () => {
       });
 
       const tasks = await user.query(api.tasks.list, {});
-      expect(tasks[0].labelIds).toEqual([l2]);
+      const [firstTask] = tasks;
+      expect(firstTask).toBeDefined();
+      expect(firstTask!.labelIds).toEqual([l2]);
     });
   });
 });
