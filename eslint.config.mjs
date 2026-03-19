@@ -15,9 +15,7 @@ const compat = new FlatCompat({
 
 const _applyFiles = (configs, files) =>
   configs.map(cfg =>
-    cfg?.files
-      ? { ...cfg, files: [...new Set([...cfg.files, ...files])] }
-      : { ...cfg, files },
+    cfg?.files ? { ...cfg, files: [...new Set([...cfg.files, ...files])] } : { ...cfg, files },
   );
 
 // Some environments (or older tooling) can fail to resolve legacy "plugin:.../recommended"
