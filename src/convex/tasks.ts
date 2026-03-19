@@ -151,8 +151,8 @@ export const list = queryWithUser({
     );
 
     // Sort by order, then creation time
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return [...tasksWithLabels].toSorted((a: any, b: any) => {
+    // eslint-disable-next-line unicorn/no-array-sort, @typescript-eslint/no-explicit-any -- Convex TS config targets ES2021, so toSorted() is unavailable here.
+    return [...tasksWithLabels].sort((a: any, b: any) => {
       if (a.order !== b.order) return a.order - b.order;
       return b.createdAt - a.createdAt;
     });
