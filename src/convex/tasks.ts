@@ -151,8 +151,8 @@ export const list = queryWithUser({
     );
 
     // Sort by order, then creation time
-    // eslint-disable-next-line
-    return [...tasksWithLabels].sort((a: any, b: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return [...tasksWithLabels].toSorted((a: any, b: any) => {
       if (a.order !== b.order) return a.order - b.order;
       return b.createdAt - a.createdAt;
     });
@@ -250,12 +250,12 @@ export const get = queryWithUser({
     const { clerkUserId } = context;
     const task = await context.db.get(arguments_.taskId);
 
-    // eslint-disable-next-line
+    // eslint-disable-next-line unicorn/no-null
     if (!task) return null;
 
     if (task.ownerClerkUserId !== clerkUserId) {
       // Check shared logic here if implemented
-      // eslint-disable-next-line
+      // eslint-disable-next-line unicorn/no-null
       return null;
     }
 

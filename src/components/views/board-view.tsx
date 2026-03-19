@@ -133,8 +133,8 @@ export function TaskBoardView({ tasks, onTaskReorder }: TaskBoardViewProperties)
     const overIndex = newItems.findIndex(t => t._id === overId);
 
     if (activeIndex !== -1) {
-      const activeTask = newItems[activeIndex];
-      if (!activeTask) return;
+      const activeTask = newItems[activeIndex] as Task | undefined;
+      if (activeTask === undefined) return;
       newItems[activeIndex] = {
         ...activeTask,
         status: overStatus,
