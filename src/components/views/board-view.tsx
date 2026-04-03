@@ -27,11 +27,10 @@ import { SortableTaskItem } from '@/components/sortable-task-item';
 import { TaskItem } from '@/components/task-item';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { type Id, type Doc } from '@/convex/_generated/dataModel';
+import { calculateNewOrder, getMaxOrder } from '@/lib/utils/ordering';
+import { STATUS_VALUES, type TaskStatus } from '@/lib/utils/tasks';
 
 type Task = Doc<'tasks'> & { labelIds?: Id<'labels'>[] };
-type TaskStatus = 'todo' | 'doing' | 'done';
-const STATUS_VALUES = new Set<TaskStatus>(['todo', 'doing', 'done']);
-
 function DroppableColumn({ id, children }: Readonly<{ id: string; children: React.ReactNode }>) {
   const { setNodeRef } = useDroppable({ id });
   return (
@@ -49,27 +48,6 @@ function getTargetStatus(
     return overId as TaskStatus;
   }
   return overTask?.status;
-}
-
-function calculateNewOrder(
-  previousItem: { order: number } | undefined,
-  nextItem: { order: number } | undefined,
-): number {
-  if (previousItem && nextItem) {
-    return (previousItem.order + nextItem.order) / 2;
-  }
-  if (previousItem) {
-    return previousItem.order + 1;
-  }
-  if (nextItem && nextItem.order !== Infinity) {
-    return nextItem.order - 1;
-  }
-  return Date.now();
-}
-
-function getMaxOrder(tasks: { order: number }[]): number {
-  if (tasks.length === 0) return 0;
-  return Math.max(...tasks.map(t => t.order));
 }
 
 interface TaskBoardViewProperties {

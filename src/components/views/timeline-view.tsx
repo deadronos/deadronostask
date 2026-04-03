@@ -7,6 +7,7 @@ import { useState, useMemo, useRef } from 'react';
 import { TaskDetailModal } from '@/components/task-detail-modal';
 import { type Doc, type Id } from '@/convex/_generated/dataModel';
 import { cn } from '@/lib/utils/cn';
+import { formatTaskDate } from '@/lib/utils/dates';
 
 type Task = Doc<'tasks'> & { labelIds?: Id<'labels'>[] };
 
@@ -178,9 +179,9 @@ export function TaskTimelineView({ tasks }: TaskTimelineViewProperties) {
                       }}
                       role="button"
                       tabIndex={0}
-                      title={`${task.title} (${format(taskStart, 'MMM d')} - ${
+                      title={`${task.title} (${formatTaskDate(taskStart)} - ${
                         task.dueAt !== null && task.dueAt !== undefined
-                          ? format(new Date(task.dueAt), 'MMM d')
+                          ? formatTaskDate(task.dueAt)
                           : '?'
                       })${
                         dependencies && dependencies.length > 0
