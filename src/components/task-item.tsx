@@ -11,8 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { api } from '@/convex/_generated/api';
 import { type Doc, type Id } from '@/convex/_generated/dataModel';
+import { priorityConfig, statusConfig } from '@/lib/task-display';
 import { cn } from '@/lib/utils/cn';
-import { priorityConfig, statusConfig } from '@/lib/utils/tasks';
 
 interface TaskItemProperties {
   readonly task: Doc<'tasks'> & { labelIds?: Id<'labels'>[] };
@@ -51,7 +51,7 @@ export function TaskItem({ task }: TaskItemProperties) {
         )}
       >
         <div className="flex items-start gap-3">
-          <StatusIcon className={cn('mt-0.5 h-5 w-5 flex-shrink-0', status.color)} />
+          <StatusIcon className={cn('mt-0.5 h-5 w-5 shrink-0', status.color)} />
           <div className="flex-1 space-y-2">
             <div className="flex items-start justify-between gap-2">
               <h4
@@ -59,7 +59,7 @@ export function TaskItem({ task }: TaskItemProperties) {
               >
                 {task.title}
               </h4>
-              <Badge variant={priority.variant} className="flex-shrink-0">
+              <Badge variant={priority.variant} className="shrink-0">
                 {priority.label}
               </Badge>
             </div>

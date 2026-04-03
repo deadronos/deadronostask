@@ -9,9 +9,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { api } from '@/convex/_generated/api';
 import { type Doc, type Id } from '@/convex/_generated/dataModel';
+import { priorityLabels, statusConfig } from '@/lib/task-display';
 import { cn } from '@/lib/utils/cn';
 import { formatTaskDate } from '@/lib/utils/dates';
-import { getNextStatus, statusConfig, priorityLabels } from '@/lib/utils/tasks';
+import { getNextStatus } from '@/lib/utils/tasks';
 
 type Task = Doc<'tasks'> & { labelIds?: Id<'labels'>[] };
 
@@ -69,7 +70,7 @@ function TaskListItem({ task }: { readonly task: Task }) {
             const nextStatus = getNextStatus(task.status);
             setStatus({ taskId: task._id, status: nextStatus });
           }}
-          className={cn('flex-shrink-0 transition-transform hover:scale-110', statusColor)}
+          className={cn('shrink-0 transition-transform hover:scale-110', statusColor)}
         >
           <StatusIcon className="h-5 w-5" />
         </button>
