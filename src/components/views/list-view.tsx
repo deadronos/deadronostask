@@ -1,8 +1,7 @@
 'use client';
 
 import { useMutation, useQuery } from 'convex/react';
-import { format } from 'date-fns';
-import { CheckCircle2, Circle, Clock, Archive } from 'lucide-react';
+import { Archive } from 'lucide-react';
 import { useState } from 'react';
 
 import { TaskDetailModal } from '@/components/task-detail-modal';
@@ -11,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { api } from '@/convex/_generated/api';
 import { type Doc, type Id } from '@/convex/_generated/dataModel';
 import { cn } from '@/lib/utils/cn';
+import { formatTaskDate } from '@/lib/utils/dates';
+import { getNextStatus, statusConfig, priorityLabels } from '@/lib/utils/tasks';
 
 type Task = Doc<'tasks'> & { labelIds?: Id<'labels'>[] };
 
@@ -36,12 +37,6 @@ export function TaskListView({ tasks }: TaskListViewProperties) {
   );
 }
 
-function getNextStatus(status: 'todo' | 'doing' | 'done'): 'todo' | 'doing' | 'done' {
-  if (status === 'todo') return 'doing';
-  if (status === 'doing') return 'done';
-  return 'todo';
-}
-
 function TaskListItem({ task }: { readonly task: Task }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const setStatus = useMutation(api.tasks.setStatus);
@@ -50,21 +45,8 @@ function TaskListItem({ task }: { readonly task: Task }) {
   // We fetch labels to show colors
   const labels = useQuery(api.labels.list, {});
 
-  const statusConfig = {
-    todo: { icon: Circle, color: 'text-muted-foreground' },
-    doing: { icon: Clock, color: 'text-primary' },
-    done: { icon: CheckCircle2, color: 'text-emerald-600' },
-  };
-
   const StatusIcon = statusConfig[task.status].icon;
   const statusColor = statusConfig[task.status].color;
-
-  const priorityLabels = {
-    0: 'Low',
-    1: 'Medium',
-    2: 'High',
-    3: 'Urgent',
-  };
 
   return (
     <>
@@ -123,7 +105,7 @@ function TaskListItem({ task }: { readonly task: Task }) {
             )}
 
             {task.dueAt !== null && task.dueAt !== undefined && (
-              <span>{format(new Date(task.dueAt), 'MMM d')}</span>
+              <span>{formatTaskDate(task.dueAt)}</span>
             )}
 
             <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-normal">

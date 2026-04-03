@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery } from 'convex/react';
-import { CheckCircle2, Circle, Clock, AlertCircle, Archive } from 'lucide-react';
+import { Archive } from 'lucide-react';
 import { useState } from 'react';
 
 import { TaskDetailModal } from './task-detail-modal';
@@ -12,6 +12,7 @@ import { Select } from '@/components/ui/select';
 import { api } from '@/convex/_generated/api';
 import { type Doc, type Id } from '@/convex/_generated/dataModel';
 import { cn } from '@/lib/utils/cn';
+import { priorityConfig, statusConfig } from '@/lib/utils/tasks';
 
 interface TaskItemProperties {
   readonly task: Doc<'tasks'> & { labelIds?: Id<'labels'>[] };
@@ -27,19 +28,6 @@ export function TaskItem({ task }: TaskItemProperties) {
   // But for now, we'll fetch labels for the project to display correct colors
   const labels = useQuery(api.labels.list, {});
   const subtasks = useQuery(api.subtasks.list, { taskId: task._id });
-
-  const priorityConfig = {
-    0: { label: 'Low', variant: 'secondary' as const, icon: Circle },
-    1: { label: 'Medium', variant: 'default' as const, icon: Clock },
-    2: { label: 'High', variant: 'default' as const, icon: AlertCircle },
-    3: { label: 'Urgent', variant: 'destructive' as const, icon: AlertCircle },
-  };
-
-  const statusConfig = {
-    todo: { label: 'To Do', icon: Circle, color: 'text-muted-foreground' },
-    doing: { label: 'In Progress', icon: Clock, color: 'text-primary' },
-    done: { label: 'Done', icon: CheckCircle2, color: 'text-emerald-600' },
-  };
 
   const completedSubtasks = subtasks?.filter(s => s.completed).length ?? 0;
   const totalSubtasks = subtasks?.length ?? 0;
